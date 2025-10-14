@@ -9,14 +9,14 @@ Helm and Flux.
 <div align="center">
   <table>
     <tr>
-      <td><img src="https://raw.githubusercontent.com/ricoberger/grafana-kubernetes-plugin/main/src/img/screenshots/kubernetes-resources.png" /></td>
-      <td><img src="https://raw.githubusercontent.com/ricoberger/grafana-kubernetes-plugin/main/src/img/screenshots/kubernetes-resources-details.png" /></td>
-      <td><img src="https://raw.githubusercontent.com/ricoberger/grafana-kubernetes-plugin/main/src/img/screenshots/kubernetes-resources-actions.png" /></td>
+      <td><img src="https://raw.githubusercontent.com/ricoberger/grafana-kubernetes-plugin/refs/heads/main/src/img/screenshots/kubernetes-resources.png" /></td>
+      <td><img src="https://raw.githubusercontent.com/ricoberger/grafana-kubernetes-plugin/refs/heads/main/src/img/screenshots/kubernetes-resources-details.png" /></td>
+      <td><img src="https://raw.githubusercontent.com/ricoberger/grafana-kubernetes-plugin/refs/heads/main/src/img/screenshots/kubernetes-resources-actions.png" /></td>
     </tr>
     <tr>
-      <td><img src="https://raw.githubusercontent.com/ricoberger/grafana-kubernetes-plugin/main/src/img/screenshots/kubernetes-logs.png" /></td>
-      <td><img src="https://raw.githubusercontent.com/ricoberger/grafana-kubernetes-plugin/main/src/img/screenshots/helm.png" /></td>
-      <td><img src="https://raw.githubusercontent.com/ricoberger/grafana-kubernetes-plugin/main/src/img/screenshots/flux.png" /></td>
+      <td><img src="https://raw.githubusercontent.com/ricoberger/grafana-kubernetes-plugin/refs/heads/main/src/img/screenshots/kubernetes-logs.png" /></td>
+      <td><img src="https://raw.githubusercontent.com/ricoberger/grafana-kubernetes-plugin/refs/heads/main/src/img/screenshots/helm.png" /></td>
+      <td><img src="https://raw.githubusercontent.com/ricoberger/grafana-kubernetes-plugin/refs/heads/main/src/img/screenshots/flux.png" /></td>
     </tr>
   </table>
 </div>
@@ -55,7 +55,7 @@ environment variable.
 
 To add a new Kubernetes cluster to Grafana, create a new Kubernetes data source.
 
-![Datasource Configuration](https://raw.githubusercontent.com/ricoberger/grafana-kubernetes-plugin/main/src/img/screenshots/datasource-configuration.png)
+![Datasource Configuration](https://raw.githubusercontent.com/ricoberger/grafana-kubernetes-plugin/refs/heads/main/src/img/screenshots/datasource-configuration.png)
 
 You can choose between multiple providers to add a Kubernetes cluster:
 
@@ -114,7 +114,7 @@ generated, a time-to-live for the genated service account token in seconds and a
 port, which will be used to start the server responsible for authenticating the
 user and proxing the request to the Kubernetes API.
 
-![Kubeconfig](https://raw.githubusercontent.com/ricoberger/grafana-kubernetes-plugin/main/src/img/screenshots/kubeconfig.png)
+![Kubeconfig](https://raw.githubusercontent.com/ricoberger/grafana-kubernetes-plugin/refs/heads/main/src/img/screenshots/kubeconfig.png)
 
 ## Contributing
 
