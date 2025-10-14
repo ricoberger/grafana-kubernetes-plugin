@@ -7,8 +7,6 @@ updates:
       interval: 'monthly'
     assignees:
       - 'ricoberger'
-    labels:
-      - 'changelog: changed'
     groups:
       github-actions:
         patterns:
@@ -20,8 +18,6 @@ updates:
       interval: 'monthly'
     assignees:
       - 'ricoberger'
-    labels:
-      - 'changelog: changed'
     groups:
       gomod:
         patterns:
@@ -33,8 +29,6 @@ updates:
       interval: 'monthly'
     assignees:
       - 'ricoberger'
-    labels:
-      - 'changelog: changed'
     groups:
       gomod:
         patterns:
