@@ -179,7 +179,7 @@ jobs:
       - name: Execute Permissions on Binary
         if: needs.build.outputs.has-backend == 'true'
         run: |
-          chmod +x ./dist/gpx_*
+          chmod +x ./dist/datasource/gpx_*
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
