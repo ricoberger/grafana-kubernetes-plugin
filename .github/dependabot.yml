@@ -30,6 +30,6 @@ updates:
     assignees:
       - 'ricoberger'
     groups:
-      gomod:
+      npm:
         patterns:
           - '*'
