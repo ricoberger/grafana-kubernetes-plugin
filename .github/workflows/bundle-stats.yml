@@ -1,0 +1,30 @@
+---
+name: Bundle Stats
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+
+jobs:
+  compare:
+    name: Compare
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Compare Bundle Size
+        uses: grafana/plugin-actions/bundle-size@main

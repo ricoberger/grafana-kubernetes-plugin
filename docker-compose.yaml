@@ -1,0 +1,42 @@
+services:
+  grafana:
+    depends_on:
+      - jaeger
+      - k3s
+    extends:
+      file: .config/docker-compose-base.yaml
+      service: grafana
+    build:
+      args:
+        anonymous_auth_enabled: ${ANONYMOUS_AUTH_ENABLED:-false}
+    environment:
+      JAEGER_SERVICE_NAME: grafana
+      JAEGER_ENDPOINT: jaeger:4317
+
+  jaeger:
+    container_name: grafana-jaeger
+    image: cr.jaegertracing.io/jaegertracing/jaeger:2.10.0
+
+  k3s:
+    container_name: grafana-k3s
+    image: rancher/k3s:v1.32.1-k3s1
+    command:
+      - server
+      - --disable=traefik
+      - --tls-san=grafana-k3s
+    tmpfs:
+      - /run
+      - /var/run
+    privileged: true
+    environment:
+      - K3S_CLUSTER_SECRET=somethingsecret
+      - K3S_KUBECONFIG_OUTPUT=/output/kubeconfig.yaml
+      - K3S_KUBECONFIG_MODE=666
+    volumes:
+      - k3s-grafana:/var/lib/rancher/k3s
+      - .:/output
+    ports:
+      - 6443:6443
+
+volumes:
+  k3s-grafana: {}

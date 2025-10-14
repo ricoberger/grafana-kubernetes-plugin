@@ -1,0 +1,32 @@
+# This GitHub Action automates the process of building Grafana plugins.
+# (For more information, see
+# https://github.com/grafana/plugin-actions/blob/main/build-plugin/README.md)
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions: read-all
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+      attestations: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Build Plugin
+        uses: grafana/plugin-actions/build-plugin@main
+        with:
+          attestation: true
+          use_changelog_generator: true

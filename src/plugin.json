@@ -1,0 +1,126 @@
+{
+  "$schema": "https://raw.githubusercontent.com/grafana/grafana/main/docs/sources/developers/plugins/plugin.schema.json",
+  "type": "app",
+  "name": "Kubernetes",
+  "id": "ricoberger-kubernetes-app",
+  "info": {
+    "keywords": [
+      "app",
+      "datasource",
+      "kubernetes",
+      "logs"
+    ],
+    "description": "Kubernetes plugin for Grafana. Explore your Kubernetes resources and logs.",
+    "author": {
+      "name": "Rico Berger"
+    },
+    "logos": {
+      "small": "img/logo.svg",
+      "large": "img/logo.svg"
+    },
+    "links": [
+      {
+        "name": "Repository",
+        "url": "https://github.com/ricoberger/grafana-kubernetes-plugin"
+      },
+      {
+        "name": "Documentation",
+        "url": "https://github.com/ricoberger/grafana-kubernetes-plugin/blob/main/src/README.md"
+      },
+      {
+        "name": "Issues",
+        "url": "https://github.com/ricoberger/grafana-kubernetes-plugin/issues"
+      },
+      {
+        "name": "License",
+        "url": "https://github.com/ricoberger/grafana-kubernetes-plugin/blob/main/LICENSE"
+      },
+      {
+        "name": "Sponsorship",
+        "url": "https://github.com/ricoberger"
+      }
+    ],
+    "screenshots": [
+      {
+        "name": "Kubernetes Resources",
+        "path": "img/screenshots/kubernetes-resources.png"
+      },
+      {
+        "name": "Kubernetes Resources - Details",
+        "path": "img/screenshots/kubernetes-details.png"
+      },
+      {
+        "name": "Kubernetes Resources - Actions",
+        "path": "img/screenshots/kubernetes-actions.png"
+      },
+      {
+        "name": "Kubernetes Logs",
+        "path": "img/screenshots/kubernetes-logs.png"
+      },
+      {
+        "name": "Kubeconfig",
+        "path": "img/screenshots/kubeconfig.png"
+      },
+      {
+        "name": "Helm",
+        "path": "img/screenshots/helm.png"
+      },
+      {
+        "name": "Flux",
+        "path": "img/screenshots/flux.png"
+      },
+      {
+        "name": "Datasource Configuration",
+        "path": "img/screenshots/datasource-configuration.png"
+      }
+    ],
+    "version": "%VERSION%",
+    "updated": "%TODAY%"
+  },
+  "includes": [
+    {
+      "type": "datasource",
+      "name": "Kubernetes Datasource",
+      "path": "datasource/plugin.json"
+    },
+    {
+      "type": "page",
+      "name": "Home",
+      "path": "/a/%PLUGIN_ID%/home",
+      "addToNav": true,
+      "defaultNav": true
+    },
+    {
+      "type": "page",
+      "name": "Resources",
+      "path": "/a/%PLUGIN_ID%/resources",
+      "addToNav": true,
+      "defaultNav": false
+    },
+    {
+      "type": "page",
+      "name": "Helm",
+      "path": "/a/%PLUGIN_ID%/helm",
+      "addToNav": true,
+      "defaultNav": false
+    },
+    {
+      "type": "page",
+      "name": "Flux",
+      "path": "/a/%PLUGIN_ID%/flux",
+      "addToNav": true,
+      "defaultNav": false
+    },
+    {
+      "type": "page",
+      "name": "Kubeconfig",
+      "path": "/a/%PLUGIN_ID%/kubeconfig",
+      "addToNav": true,
+      "defaultNav": false
+    }
+  ],
+  "dependencies": {
+    "grafanaDependency": ">=10.4.0",
+    "plugins": []
+  }
+}

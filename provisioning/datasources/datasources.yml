@@ -1,0 +1,28 @@
+apiVersion: 1
+
+datasources:
+  - name: Kubernetes
+    type: ricoberger-kubernetes-datasource
+    access: proxy
+    isDefault: false
+    orgId: 1
+    version: 1
+    editable: true
+    jsonData:
+      clusterProvider: path
+      clusterPath: /kubeconfig-docker-compose.yaml
+      clusterContext: default
+      grafanaUsername: admin
+      impersonateUser: false
+      impersonateGroups: false
+      generateKubeconfig: true
+      generateKubeconfigName: grafana
+      generateKubeconfigTTL: 604800
+      generateKubeconfigPort: 11716
+    secureJsonData:
+      clusterKubeconfig:
+      grafanaPassword: admin
+  - name: Jaeger
+    type: jaeger
+    url: http://jaeger:16686
+    access: proxy

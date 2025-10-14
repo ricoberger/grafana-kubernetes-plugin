@@ -1,0 +1,27 @@
+services:
+  grafana:
+    user: root
+    container_name: ricoberger-kubernetes-app
+
+    build:
+      context: .
+      args:
+        grafana_image: ${GRAFANA_IMAGE:-grafana}
+        grafana_version: ${GRAFANA_VERSION:-12.1.1}
+        development: ${DEVELOPMENT:-false}
+        anonymous_auth_enabled: ${ANONYMOUS_AUTH_ENABLED:-true}
+    ports:
+      - 3000:3000/tcp
+    volumes:
+      - ../dist:/var/lib/grafana/plugins/ricoberger-kubernetes-app
+      - ../provisioning:/etc/grafana/provisioning
+      - ..:/root/ricoberger-kubernetes-app
+      - ../kubeconfig.yaml:/kubeconfig.yaml
+
+    environment:
+      NODE_ENV: development
+      GF_LOG_FILTERS: plugin.ricoberger-kubernetes-datasource:debug
+      GF_LOG_LEVEL: error
+      GF_DATAPROXY_LOGGING: 1
+      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: ricoberger-kubernetes-app
+      GF_PATHS_CONFIG: /etc/grafana/provisioning/custom.ini

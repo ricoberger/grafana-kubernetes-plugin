@@ -1,0 +1,38 @@
+{
+  "$schema": "https://raw.githubusercontent.com/grafana/grafana/main/docs/sources/developers/plugins/plugin.schema.json",
+  "type": "datasource",
+  "name": "Kubernetes",
+  "id": "ricoberger-kubernetes-datasource",
+  "metrics": true,
+  "logs": true,
+  "backend": true,
+  "executable": "gpx_kubernetes",
+  "info": {
+    "description": "",
+    "author": {
+      "name": "Rico Berger"
+    },
+    "keywords": [
+      "datasource"
+    ],
+    "logos": {
+      "small": "img/logo.svg",
+      "large": "img/logo.svg"
+    },
+    "links": [],
+    "screenshots": [],
+    "version": "%VERSION%",
+    "updated": "%TODAY%"
+  },
+  "routes": [
+    {
+      "path": "proxy",
+      "method": "*",
+      "url": "http://localhost:{{ .JsonData.generateKubeconfigPort }}"
+    }
+  ],
+  "dependencies": {
+    "grafanaDependency": ">=10.4.0",
+    "plugins": []
+  }
+}
