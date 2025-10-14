@@ -61,6 +61,10 @@ jobs:
         with:
           go-version-file: go.mod
 
+      - name: Lint Backend
+        if: steps.check-for-backend.outputs.has-backend == 'true'
+        uses: golangci/golangci-lint-action@v8
+
       - name: Test Backend
         if: steps.check-for-backend.outputs.has-backend == 'true'
         uses: magefile/mage-action@v3
@@ -83,11 +87,11 @@ jobs:
             echo "has-e2e=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Sign plugin
+      - name: Sign Plugin
         if: ${{ env.GRAFANA_ACCESS_POLICY_TOKEN != '' }}
         run: npm run sign
 
-      - name: Get plugin metadata
+      - name: Get Plugin Metadata
         id: metadata
         run: |
           sudo apt-get install jq
