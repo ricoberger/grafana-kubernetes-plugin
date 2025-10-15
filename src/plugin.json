@@ -43,35 +43,35 @@
     "screenshots": [
       {
         "name": "Kubernetes Resources",
-        "path": "src/img/screenshots/kubernetes-resources.png"
+        "path": "img/screenshots/kubernetes-resources.png"
       },
       {
         "name": "Kubernetes Resources - Details",
-        "path": "src/img/screenshots/kubernetes-details.png"
+        "path": "img/screenshots/kubernetes-resources-details.png"
       },
       {
         "name": "Kubernetes Resources - Actions",
-        "path": "src/img/screenshots/kubernetes-actions.png"
+        "path": "img/screenshots/kubernetes-resources-actions.png"
       },
       {
         "name": "Kubernetes Logs",
-        "path": "src/img/screenshots/kubernetes-logs.png"
+        "path": "img/screenshots/kubernetes-logs.png"
       },
       {
         "name": "Kubeconfig",
-        "path": "src/img/screenshots/kubeconfig.png"
+        "path": "img/screenshots/kubeconfig.png"
       },
       {
         "name": "Helm",
-        "path": "src/img/screenshots/helm.png"
+        "path": "img/screenshots/helm.png"
       },
       {
         "name": "Flux",
-        "path": "src/img/screenshots/flux.png"
+        "path": "img/screenshots/flux.png"
       },
       {
         "name": "Datasource Configuration",
-        "path": "src/img/screenshots/datasource-configuration.png"
+        "path": "img/screenshots/datasource-configuration.png"
       }
     ],
     "version": "%VERSION%",
