@@ -7,9 +7,39 @@ import { DataQuery } from '@grafana/schema';
  */
 export const DEFAULT_QUERY: Partial<Query> = {
   queryType: 'kubernetes-resources',
-  namespace: 'default',
   resource: 'pods',
+  namespace: 'default',
   wide: false,
+};
+
+/**
+ * DEFAULT_QUERIES provides default values for each query type. This is used
+ * when the user changes the query type in the query editor.
+ */
+export const DEFAULT_QUERIES: Record<QueryType, Partial<Query>> = {
+  'kubernetes-resourceids': {},
+  'kubernetes-namespaces': {},
+  'kubernetes-containers': {},
+  'kubernetes-resources': {
+    resource: 'pods',
+    namespace: 'default',
+    wide: false,
+  },
+  'kubernetes-logs': {
+    resource: 'pods',
+    namespace: 'default',
+    wide: false,
+  },
+  'helm-releases': {
+    namespace: 'default',
+  },
+  'helm-release-history': {
+    namespace: 'default',
+  },
+  'flux-resources': {
+    resource: 'kustomizations.kustomize.toolkit.fluxcd.io',
+    namespace: 'default',
+  },
 };
 
 /**
