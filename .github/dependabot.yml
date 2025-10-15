@@ -22,14 +22,3 @@ updates:
       gomod:
         patterns:
           - '*'
-
-  - package-ecosystem: 'npm'
-    directory: '/'
-    schedule:
-      interval: 'monthly'
-    assignees:
-      - 'ricoberger'
-    groups:
-      npm:
-        patterns:
-          - '*'
