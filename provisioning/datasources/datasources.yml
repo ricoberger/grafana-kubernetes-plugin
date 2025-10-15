@@ -10,7 +10,7 @@ datasources:
     editable: true
     jsonData:
       clusterProvider: path
-      clusterPath: /kubeconfig-docker-compose.yaml
+      clusterPath: /kubeconfig-grafana.yaml
       clusterContext: default
       grafanaUsername: admin
       impersonateUser: false

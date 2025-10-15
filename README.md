@@ -70,9 +70,12 @@ You can choose between multiple providers to add a Kubernetes cluster:
 
 To use the **Impersonate** and **Generate Kubeconfig** features of the plugin,
 you have to enable basic authentication first, e.g. by setting the
-`GF_AUTH_BASIC_ENABLED` environment variable to `true`. Afterwards you have to
-provide a Grafana username and password for the plugin, so that the plugin can
-interact with the Grafana API. The provided user should have the `Admin` role.
+`GF_AUTH_BASIC_ENABLED` environment variable to `true` or by enabling basic auth
+in the
+[Grafana configuration](https://grafana.com/docs/grafana/latest/setup-grafana/configure-security/configure-authentication/grafana/).
+Afterwards you have to provide a Grafana username and password for the plugin,
+so that the plugin can interact with the Grafana API. The provided user should
+have the `Admin` role.
 
 ### Impersonate
 

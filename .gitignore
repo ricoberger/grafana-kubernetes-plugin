@@ -47,3 +47,4 @@ ci/
 
 # k3s kubeconfig
 kubeconfig.yaml
+kubeconfig-grafana.yaml

@@ -1,7 +1,5 @@
 #!/bin/sh
 
-sed "s/127.0.0.1/grafana-k3s/g" /kubeconfig.yaml > /kubeconfig-docker-compose.yaml
-
 if [ "${DEV}" = "false" ]; then
     echo "Starting test mode"
     exec /run.sh

@@ -39,5 +39,5 @@ jobs:
         with:
           # module: ${{ steps.find-module-ts.outputs.modulets }}
           module: ./src/module.tsx
-          comment-pr: 'no'
-          fail-if-incompatible: 'yes'
+          comment-pr: no
+          fail-if-incompatible: yes
