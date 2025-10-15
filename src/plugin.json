@@ -25,7 +25,7 @@
       },
       {
         "name": "Documentation",
-        "url": "https://github.com/ricoberger/grafana-kubernetes-plugin/blob/main/src/README.md"
+        "url": "https://github.com/ricoberger/grafana-kubernetes-plugin/blob/main/README.md"
       },
       {
         "name": "Issues",
@@ -43,35 +43,35 @@
     "screenshots": [
       {
         "name": "Kubernetes Resources",
-        "path": "img/screenshots/kubernetes-resources.png"
+        "path": "src/img/screenshots/kubernetes-resources.png"
       },
       {
         "name": "Kubernetes Resources - Details",
-        "path": "img/screenshots/kubernetes-details.png"
+        "path": "src/img/screenshots/kubernetes-details.png"
       },
       {
         "name": "Kubernetes Resources - Actions",
-        "path": "img/screenshots/kubernetes-actions.png"
+        "path": "src/img/screenshots/kubernetes-actions.png"
       },
       {
         "name": "Kubernetes Logs",
-        "path": "img/screenshots/kubernetes-logs.png"
+        "path": "src/img/screenshots/kubernetes-logs.png"
       },
       {
         "name": "Kubeconfig",
-        "path": "img/screenshots/kubeconfig.png"
+        "path": "src/img/screenshots/kubeconfig.png"
       },
       {
         "name": "Helm",
-        "path": "img/screenshots/helm.png"
+        "path": "src/img/screenshots/helm.png"
       },
       {
         "name": "Flux",
-        "path": "img/screenshots/flux.png"
+        "path": "src/img/screenshots/flux.png"
       },
       {
         "name": "Datasource Configuration",
-        "path": "img/screenshots/datasource-configuration.png"
+        "path": "src/img/screenshots/datasource-configuration.png"
       }
     ],
     "version": "%VERSION%",
