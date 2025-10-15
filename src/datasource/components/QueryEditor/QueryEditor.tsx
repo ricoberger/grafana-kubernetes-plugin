@@ -8,7 +8,7 @@ import {
 import { QueryEditorProps } from '@grafana/data';
 
 import { DataSource } from '../../datasource';
-import { Query, QueryType } from '../../types/query';
+import { DEFAULT_QUERIES, Query, QueryType } from '../../types/query';
 import { DataSourceOptions } from '../../types/settings';
 import { KubernetesLogs } from './KubernetesLogs';
 import { KubernetesResources } from './KubernetesResources';
@@ -34,8 +34,8 @@ export function QueryEditor({
   const onTypeChange = (option: ComboboxOption<QueryType>) => {
     onChange({
       ...query,
+      ...DEFAULT_QUERIES[option.value],
       queryType: option.value,
-      resource: '',
     });
     onRunQuery();
   };
