@@ -8,8 +8,7 @@ on:
     tags:
       - 'v*'
 
-permissions:
-  contents: write
+permissions: read-all
 
 jobs:
   release:
@@ -29,5 +28,8 @@ jobs:
       - name: Build Plugin
         uses: grafana/plugin-actions/build-plugin@main
         with:
+          go-version: '1.24'
+          node-versio: '22'
           attestation: true
           use_changelog_generator: true
+          token: ${{ secrets.GITHUB_TOKEN }}
