@@ -1,0 +1,254 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 3,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "ricoberger-kubernetes-datasource",
+        "uid": "kubernetes"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "hideFrom": {
+              "viz": false
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "ricoberger-kubernetes-datasource",
+            "uid": "kubernetes"
+          },
+          "namespace": "${namespace}",
+          "parameterName": "",
+          "parameterValue": "",
+          "queryType": "kubernetes-resources",
+          "refId": "A",
+          "resource": "${resource}",
+          "variableField": "Name",
+          "wide": false
+        }
+      ],
+      "title": "Resources",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "ricoberger-kubernetes-datasource",
+        "uid": "kubernetes"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 6
+      },
+      "id": 2,
+      "options": {
+        "dedupStrategy": "none",
+        "enableInfiniteScrolling": false,
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "container": "${container}",
+          "filter": "",
+          "name": "${name}",
+          "namespace": "${namespace}",
+          "queryType": "kubernetes-logs",
+          "refId": "A",
+          "resource": "${resource}"
+        }
+      ],
+      "title": "Logs",
+      "type": "logs"
+    }
+  ],
+  "preload": false,
+  "schemaVersion": 42,
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "allowCustomValue": false,
+        "current": {
+          "text": "deployments",
+          "value": "deployments"
+        },
+        "description": "",
+        "label": "Resource",
+        "name": "resource",
+        "options": [
+          {
+            "selected": false,
+            "text": "DaemonSets",
+            "value": "daemonsets"
+          },
+          {
+            "selected": true,
+            "text": "Deployments",
+            "value": "deployments"
+          },
+          {
+            "selected": false,
+            "text": "Pods",
+            "value": "pods"
+          },
+          {
+            "selected": false,
+            "text": "Jobs",
+            "value": "jobs"
+          },
+          {
+            "selected": false,
+            "text": "StatefulSets",
+            "value": "statefulsets"
+          }
+        ],
+        "query": "DaemonSets : daemonsets, Deployments : deployments, Pods : pods, Jobs : jobs, StatefulSets : statefulsets",
+        "type": "custom"
+      },
+      {
+        "allowCustomValue": false,
+        "current": {
+          "text": "kube-system",
+          "value": "kube-system"
+        },
+        "definition": "",
+        "description": "",
+        "label": "Namespace",
+        "name": "namespace",
+        "options": [],
+        "query": {
+          "queryType": "kubernetes-namespaces"
+        },
+        "refresh": 1,
+        "regex": "",
+        "type": "query"
+      },
+      {
+        "allowCustomValue": false,
+        "current": {
+          "text": "coredns",
+          "value": "coredns"
+        },
+        "definition": "",
+        "label": "Name",
+        "name": "name",
+        "options": [],
+        "query": {
+          "namespace": "${namespace}",
+          "parameterName": "",
+          "parameterValue": "",
+          "queryType": "kubernetes-resources",
+          "resource": "${resource}",
+          "variableField": "Name",
+          "wide": false
+        },
+        "refresh": 1,
+        "regex": "",
+        "type": "query"
+      },
+      {
+        "allowCustomValue": false,
+        "current": {
+          "text": "coredns",
+          "value": "coredns"
+        },
+        "definition": "",
+        "label": "Container",
+        "name": "container",
+        "options": [],
+        "query": {
+          "name": "${name}",
+          "namespace": "${namespace}",
+          "queryType": "kubernetes-containers",
+          "resource": "${resource}"
+        },
+        "refresh": 1,
+        "regex": "",
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Kubernetes Workloads",
+  "uid": "kubernetes-workloads",
+  "version": 1
+}
