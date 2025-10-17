@@ -47,8 +47,8 @@ export function KubernetesLogs({
 
   /**
    * Fetch available names from the datasource, which can then be used as
-   * options in the "name" field. The names are only fetched when the query type
-   * is "logs". The list is refreshed when a new "namespace" is selected.
+   * options in the "name" field. The names are only fetched a "namespace" is
+   * selected.
    */
   useEffect(() => {
     const fetchNames = async () => {
@@ -67,16 +67,15 @@ export function KubernetesLogs({
       );
     };
 
-    if (query.queryType === 'kubernetes-logs' && query.namespace) {
+    if (query.namespace) {
       fetchNames();
     }
-  }, [datasource, query.queryType, query.resource, query.namespace]);
+  }, [datasource, query.resource, query.namespace]);
 
   /**
    * Fetch available containers from the datasource, which can then be used as
-   * options in the "container" field. The containers are only fetched when the
-   * query type is "logs". The list is refreshed when a new "namespace" or
-   * "name" is selected.
+   * options in the "container" field. The containers are only fetched a
+   * "namespace" or "name" is selected.
    */
   useEffect(() => {
     const fetchContainers = async () => {
@@ -99,21 +98,11 @@ export function KubernetesLogs({
       }
     };
 
-    if (
-      query.queryType === 'kubernetes-logs' &&
-      query.namespace &&
-      query.name
-    ) {
+    if (query.namespace && query.name) {
       fetchContainers();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    datasource,
-    query.queryType,
-    query.resource,
-    query.namespace,
-    query.name,
-  ]);
+  }, [datasource, query.resource, query.namespace, query.name]);
 
   /**
    * Handle "resource" field change. If the "resource" changes we also clear the
@@ -178,6 +167,7 @@ export function KubernetesLogs({
         <InlineField label="Resource">
           <Combobox<string>
             value={query.resource}
+            createCustomValue={true}
             options={[
               { value: 'daemonsets' },
               { value: 'deployments' },

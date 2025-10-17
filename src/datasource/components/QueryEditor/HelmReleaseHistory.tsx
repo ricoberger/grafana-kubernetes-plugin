@@ -45,8 +45,8 @@ export function HelmReleaseHistory({
 
   /**
    * Fetch available names from the datasource, which can then be used as
-   * options in the "name" field. The names are only fetched when the query type
-   * is "logs". The list is refreshed when a new "namespace" is selected.
+   * options in the "name" field. The names are only fetched when a "namespace"
+   * is selected.
    */
   useEffect(() => {
     const fetchNames = async () => {
@@ -64,10 +64,10 @@ export function HelmReleaseHistory({
       );
     };
 
-    if (query.queryType === 'helm-release-history' && query.namespace) {
+    if (query.namespace) {
       fetchNames();
     }
-  }, [datasource, query.queryType, query.namespace]);
+  }, [datasource, query.namespace]);
 
   /**
    * Handle "namespace" field change. If the "namespace" changes we also clear
@@ -78,7 +78,7 @@ export function HelmReleaseHistory({
    * user gets instant feedback in the UI.
    */
   const onNamespaceChange = (option: ComboboxOption<string>) => {
-    onChange({ ...query, namespace: option.value, name: '', container: '' });
+    onChange({ ...query, namespace: option.value, name: '' });
     onRunQuery();
   };
 
