@@ -68,28 +68,24 @@ export function KubernetesResources({
   }, [datasource]);
 
   /**
-   * Handle "resource" field change. If the "resource" changes we also clear the
-   * "name" and "container" fields, because the newly selected resource might
-   * not have the same names and containers as the previously selected one.
+   * Handle "resource" field change.
    *
    * When the namespace changes we also immediately run the query, so that the
    * user gets instant feedback in the UI.
    */
   const onResourceChange = (option: ComboboxOption<string>) => {
-    onChange({ ...query, resource: option.value, name: '', container: '' });
+    onChange({ ...query, resource: option.value });
     onRunQuery();
   };
 
   /**
-   * Handle "namespace" field change. If the "namespace" changes we also clear
-   * the "name" and "container" fields, because the newly selected namespace
-   * might not have the same resources as the previously selected one.
+   * Handle "namespace" field change.
    *
    * When the namespace changes we also immediately run the query, so that the
    * user gets instant feedback in the UI.
    */
   const onNamespaceChange = (option: ComboboxOption<string>) => {
-    onChange({ ...query, namespace: option.value, name: '', container: '' });
+    onChange({ ...query, namespace: option.value });
     onRunQuery();
   };
 

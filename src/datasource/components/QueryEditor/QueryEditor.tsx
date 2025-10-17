@@ -25,8 +25,8 @@ export function QueryEditor({
   onRunQuery,
 }: Props) {
   /**
-   * Handle "type" field change. If the "type" change we also reset the
-   * "resource" field.
+   * Handle "queryType" field change. If the "queryType" is changed we also set
+   * the default queriy for that query tpe.
    *
    * When the query type changes we also immediately run the query, so that the
    * user gets instant feedback in the UI.
