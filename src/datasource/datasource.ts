@@ -38,15 +38,17 @@ export class DataSource extends DataSourceWithBackend<
   applyTemplateVariables(query: Query, scopedVars: ScopedVars) {
     return {
       ...query,
-      namespace: getTemplateSrv().replace(query.namespace, scopedVars),
+      variableField: getTemplateSrv().replace(query.variableField, scopedVars),
       resource: getTemplateSrv().replace(query.resource, scopedVars),
-      name: getTemplateSrv().replace(query.name, scopedVars),
-      container: getTemplateSrv().replace(query.container, scopedVars),
+      namespace: getTemplateSrv().replace(query.namespace, scopedVars),
       parameterName: getTemplateSrv().replace(query.parameterName, scopedVars),
       parameterValue: getTemplateSrv().replace(
         query.parameterValue,
         scopedVars,
       ),
+      name: getTemplateSrv().replace(query.name, scopedVars),
+      container: getTemplateSrv().replace(query.container, scopedVars),
+      filter: getTemplateSrv().replace(query.filter, scopedVars),
     };
   }
 
