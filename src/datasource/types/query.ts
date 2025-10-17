@@ -19,22 +19,38 @@ export const DEFAULT_QUERY: Partial<Query> = {
 export const DEFAULT_QUERIES: Record<QueryType, Partial<Query>> = {
   'kubernetes-resourceids': {},
   'kubernetes-namespaces': {},
-  'kubernetes-containers': {},
+  'kubernetes-containers': {
+    resource: 'pods',
+    namespace: 'default',
+    name: '',
+  },
   'kubernetes-resources': {
     resource: 'pods',
     namespace: 'default',
+    parameterName: '',
+    parameterValue: '',
     wide: false,
+    /**
+     * When using the "kubernetes-resources" query type for a Variable, this
+     * defines which field from the resource should be used as the variable
+     * value. The default is "Name", which will return the metadata.name field
+     * from the resource.
+     */
+    variableField: 'Name',
   },
   'kubernetes-logs': {
     resource: 'pods',
     namespace: 'default',
-    wide: false,
+    name: '',
+    container: '',
+    filter: '',
   },
   'helm-releases': {
     namespace: 'default',
   },
   'helm-release-history': {
     namespace: 'default',
+    name: '',
   },
   'flux-resources': {
     resource: 'kustomizations.kustomize.toolkit.fluxcd.io',
