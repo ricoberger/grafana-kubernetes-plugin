@@ -8,6 +8,7 @@ import {
 import { AppEvents, GrafanaTheme2 } from '@grafana/data';
 import { getAppEvents } from '@grafana/runtime';
 import { css } from '@emotion/css';
+import { V1Job } from '@kubernetes/client-node';
 
 import {
   getResource,
@@ -49,7 +50,7 @@ export function CreateJobAction(props: Props) {
         props.name,
       );
 
-      const job: any = {
+      const job: V1Job = {
         apiVersion: 'batch/v1',
         kind: 'Job',
         metadata: {

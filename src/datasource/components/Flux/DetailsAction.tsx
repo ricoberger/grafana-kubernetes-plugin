@@ -21,18 +21,20 @@ import {
   SceneQueryRunner,
 } from '@grafana/scenes';
 import { initPluginTranslations } from '@grafana/i18n';
+import { V1Condition } from '@kubernetes/client-node';
 
 import {
   getResource,
   getResourceManifest,
 } from '../../../utils/utils.resource';
-import datasourcePluginJson from '../../../datasource/plugin.json';
+import datasourcePluginJson from '../../plugin.json';
 import {
   DefinitionItem,
   DefinitionList,
   DefinitionLists,
 } from '../DefinitionList/DefinitionList';
 import { formatTimeString, timeDifference } from '../../../utils/utils.time';
+import { KubernetesManifest } from '../../types/kubernetes';
 
 initPluginTranslations('ricoberger-kubernetes-app');
 
@@ -52,7 +54,7 @@ export function DetailsAction(props: Props) {
   const [activeTab, setActiveTab] = useState('overview');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [manifest, setManifest] = useState<any>();
+  const [manifest, setManifest] = useState<KubernetesManifest>();
 
   /**
    * Fetch the manifest of the reqources, which is identified by the
@@ -149,7 +151,9 @@ export function DetailsAction(props: Props) {
  * The DetailsActionYaml component fetches and displays the YAML manifest of a
  * Flux resource.
  */
-function DetailsActionYaml(props: { manifest: any }) {
+function DetailsActionYaml(props: {
+  manifest: KubernetesManifest | undefined;
+}) {
   return (
     <Stack direction="column" height="100%">
       <AutoSizer>
@@ -212,7 +216,7 @@ function DetailsActionEvents(props: Props) {
  * important information of the Kubernetes resource.
  */
 interface DetailsActionOverviewProps extends Props {
-  manifest: any;
+  manifest: KubernetesManifest | undefined;
 }
 
 function DetailsActionOverview(props: DetailsActionOverviewProps) {
@@ -231,7 +235,7 @@ function DetailsActionOverview(props: DetailsActionOverviewProps) {
               <Badge
                 key={key}
                 color="darkgrey"
-                text={`${key}: ${props.manifest?.metadata?.labels[key]}`}
+                text={`${key}: ${props.manifest?.metadata?.labels![key]}`}
               />
             ))}
           </DefinitionItem>
@@ -242,7 +246,7 @@ function DetailsActionOverview(props: DetailsActionOverviewProps) {
               <Badge
                 key={key}
                 color="darkgrey"
-                text={`${key}: ${props.manifest?.metadata?.annotations[key]}`}
+                text={`${key}: ${props.manifest?.metadata?.annotations![key]}`}
               />
             ))}
           </DefinitionItem>
@@ -255,7 +259,11 @@ function DetailsActionOverview(props: DetailsActionOverviewProps) {
                 props.manifest.metadata.creationTimestamp.toString(),
               ).getTime(),
             )}{' '}
-            ({formatTimeString(props.manifest.metadata.creationTimestamp)})
+            (
+            {formatTimeString(
+              props.manifest.metadata.creationTimestamp.toString(),
+            )}
+            )
           </DefinitionItem>
         )}
         {props.manifest?.metadata?.ownerReferences && (
@@ -281,7 +289,7 @@ function DetailsActionOverview(props: DetailsActionOverviewProps) {
   );
 }
 
-function Conditions(props: { conditions: any[] }) {
+function Conditions(props: { conditions: V1Condition[] }) {
   return (
     <DefinitionList title="Conditions">
       <InteractiveTable
@@ -313,7 +321,7 @@ function Conditions(props: { conditions: any[] }) {
           status: condition.status,
           type: condition.type,
           lastTransitionTime: condition.lastTransitionTime
-            ? formatTimeString(condition.lastTransitionTime)
+            ? formatTimeString(condition.lastTransitionTime.toString())
             : '-',
           reason: condition.reason || '-',
           message: condition.message || '-',

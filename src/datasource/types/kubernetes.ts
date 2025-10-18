@@ -1,3 +1,5 @@
+import { KubernetesObject } from '@kubernetes/client-node';
+
 /**
  * Resource is the interface for a Kubernetes resource with all the required
  * fields to identify and work with this resource.
@@ -15,4 +17,9 @@ export interface ResourceColumn {
   jsonPath: string;
   name: string;
   type: string;
+}
+
+export interface KubernetesManifest extends KubernetesObject {
+  spec: any;
+  status: any;
 }
