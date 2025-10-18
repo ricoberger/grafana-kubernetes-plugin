@@ -1,4 +1,4 @@
-import { Resource } from '../datasource/types/kubernetes';
+import { KubernetesManifest, Resource } from '../datasource/types/kubernetes';
 
 export const getResource = async (
   datasource: string | undefined,
@@ -23,7 +23,7 @@ export const getResourceManifest = async (
   resource: Resource,
   namespace: string | undefined,
   name: string | undefined,
-): Promise<any> => {
+): Promise<KubernetesManifest> => {
   if (!datasource || !resource) {
     throw new Error();
   }

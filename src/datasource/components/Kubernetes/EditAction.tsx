@@ -16,6 +16,7 @@ import {
   getResource,
   getResourceManifest,
 } from '../../../utils/utils.resource';
+import { KubernetesManifest } from '../../types/kubernetes';
 
 interface Props {
   datasource?: string;
@@ -31,7 +32,7 @@ interface Props {
 export function EditAction(props: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [manifest, setManifest] = useState<any>();
+  const [manifest, setManifest] = useState<KubernetesManifest>();
   const [value, setValue] = useState('');
 
   /**
@@ -79,7 +80,7 @@ export function EditAction(props: Props) {
       setIsLoading(true);
 
       const parsedValue = YAML.parse(value);
-      const diff = compare(manifest, parsedValue);
+      const diff = compare(manifest!, parsedValue);
 
       const resource = await getResource(props.datasource, props.resource);
 

@@ -23,6 +23,31 @@ import {
   SceneQueryRunner,
 } from '@grafana/scenes';
 import { initPluginTranslations } from '@grafana/i18n';
+import {
+  V1Condition,
+  V1ContainerPort,
+  V1ContainerState,
+  V1ContainerStatus,
+  V1CronJob,
+  V1EnvVar,
+  V1EnvVarSource,
+  V1DaemonSet,
+  V1Deployment,
+  V1DeploymentCondition,
+  V1Job,
+  V1JobCondition,
+  V1LabelSelector,
+  V1NodeCondition,
+  V1OwnerReference,
+  V1PersistentVolumeClaimCondition,
+  V1Pod,
+  V1PodCondition,
+  V1Probe,
+  V1ReplicaSetCondition,
+  V1ReplicationControllerCondition,
+  V1StatefulSet,
+  V1StatefulSetCondition,
+} from '@kubernetes/client-node';
 
 import {
   getResource,
@@ -39,6 +64,7 @@ import {
   formatTimeString,
   timeDifference,
 } from '../../../utils/utils.time';
+import { KubernetesManifest } from '../../types/kubernetes';
 
 initPluginTranslations('ricoberger-kubernetes-app');
 
@@ -58,7 +84,7 @@ export function DetailsAction(props: Props) {
   const [activeTab, setActiveTab] = useState('overview');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [manifest, setManifest] = useState<any>();
+  const [manifest, setManifest] = useState<KubernetesManifest>();
 
   /**
    * Fetch the manifest of the reqources, which is identified by the
@@ -174,7 +200,7 @@ export function DetailsAction(props: Props) {
  * The DetailsActionYaml component fetches and displays the YAML manifest of a
  * Kubernetes resource.
  */
-function DetailsActionYaml(props: { manifest: any }) {
+function DetailsActionYaml(props: { manifest?: KubernetesManifest }) {
   return (
     <Stack direction="column" height="100%">
       <AutoSizer>
@@ -237,7 +263,7 @@ function DetailsActionEvents(props: Props) {
  * related to a Kubernetes resource.
  */
 interface DetailsActionPodsProps extends Props {
-  manifest: any;
+  manifest?: KubernetesManifest;
 }
 
 function DetailsActionPods(props: DetailsActionPodsProps) {
@@ -248,8 +274,10 @@ function DetailsActionPods(props: DetailsActionPodsProps) {
    * which are running on a node.
    */
   const selector = props.manifest?.spec?.selector?.matchLabels
-    ? Object.keys(props.manifest.spec.selector.matchLabels)
-      .map((key) => `${key}=${props.manifest.spec.selector.matchLabels[key]}`)
+    ? Object.keys(props.manifest?.spec.selector.matchLabels)
+      .map(
+        (key) => `${key}=${props.manifest?.spec.selector.matchLabels[key]}`,
+      )
       .join(',')
     : '';
 
@@ -267,7 +295,7 @@ function DetailsActionPods(props: DetailsActionPodsProps) {
         parameterName: selector ? 'labelSelector' : 'fieldSelector',
         parameterValue: selector
           ? selector
-          : `spec.nodeName=${props.manifest.metadata?.name}`,
+          : `spec.nodeName=${props.manifest?.metadata?.name}`,
       },
     ],
   });
@@ -291,64 +319,75 @@ function DetailsActionPods(props: DetailsActionPodsProps) {
  * important information of the Kubernetes resource.
  */
 interface DetailsActionOverviewProps extends Props {
-  manifest: any;
+  manifest?: KubernetesManifest;
 }
 
 function DetailsActionOverview(props: DetailsActionOverviewProps) {
   return (
     <DefinitionLists>
-      <DefinitionList title="Metadata">
-        {props.name && (
-          <DefinitionItem label="Name">{props.name}</DefinitionItem>
-        )}
-        {props.namespace && (
-          <DefinitionItem label="Namespace">{props.namespace}</DefinitionItem>
-        )}
-        {props.manifest?.metadata?.labels && (
-          <DefinitionItem label="Labels">
-            {Object.keys(props.manifest?.metadata?.labels).map((key) => (
-              <Badge
-                key={key}
-                color="darkgrey"
-                text={`${key}: ${props.manifest?.metadata?.labels[key]}`}
-              />
-            ))}
-          </DefinitionItem>
-        )}
-        {props.manifest?.metadata?.annotations && (
-          <DefinitionItem label="Annotations">
-            {Object.keys(props.manifest?.metadata?.annotations).map((key) => (
-              <Badge
-                key={key}
-                color="darkgrey"
-                text={`${key}: ${props.manifest?.metadata?.annotations[key]}`}
-              />
-            ))}
-          </DefinitionItem>
-        )}
-        {props.manifest?.metadata?.creationTimestamp && (
-          <DefinitionItem label="Age">
-            {timeDifference(
-              new Date().getTime(),
-              new Date(
-                props.manifest.metadata.creationTimestamp.toString(),
-              ).getTime(),
-            )}{' '}
-            ({formatTimeString(props.manifest.metadata.creationTimestamp)})
-          </DefinitionItem>
-        )}
-        {props.manifest?.metadata?.ownerReferences && (
-          <DefinitionItem label="Owner">
-            {props.manifest?.metadata?.ownerReferences.map(
-              (owner: any, index: number) => (
-                <Text key={index} element="span">
-                  {owner.kind} ({owner.name})
-                </Text>
-              ),
-            )}
-          </DefinitionItem>
-        )}
-      </DefinitionList>
+      {props.manifest && (
+        <DefinitionList title="Metadata">
+          {props.name && (
+            <DefinitionItem label="Name">{props.name}</DefinitionItem>
+          )}
+          {props.namespace && (
+            <DefinitionItem label="Namespace">{props.namespace}</DefinitionItem>
+          )}
+          {props.manifest.metadata?.labels && (
+            <DefinitionItem label="Labels">
+              {Object.keys(props.manifest.metadata?.labels).map((key) => (
+                <Badge
+                  key={key}
+                  color="darkgrey"
+                  text={`${key}: ${props.manifest?.metadata?.labels![key]}`}
+                />
+              ))}
+            </DefinitionItem>
+          )}
+          {props.manifest.metadata?.annotations && (
+            <DefinitionItem label="Annotations">
+              {Object.keys(props.manifest.metadata?.annotations).map((key) => (
+                <Badge
+                  key={key}
+                  color="darkgrey"
+                  text={`${key}: ${props.manifest?.metadata?.annotations![key]}`}
+                />
+              ))}
+            </DefinitionItem>
+          )}
+          {props.manifest.metadata?.creationTimestamp && (
+            <DefinitionItem label="Age">
+              {timeDifference(
+                new Date().getTime(),
+                new Date(
+                  /**
+                   * The "lastTransitionTime" field in the condition is returned
+                   * as string not date from the API. For that we have to call
+                   * "toString()" to avoid type errors.
+                   */
+                  props.manifest.metadata.creationTimestamp.toString(),
+                ).getTime(),
+              )}{' '}
+              (
+              {formatTimeString(
+                props.manifest?.metadata.creationTimestamp.toString(),
+              )}
+              )
+            </DefinitionItem>
+          )}
+          {props.manifest.metadata?.ownerReferences && (
+            <DefinitionItem label="Owner">
+              {props.manifest.metadata?.ownerReferences.map(
+                (owner: V1OwnerReference, index: number) => (
+                  <Text key={index} element="span">
+                    {owner.kind} ({owner.name})
+                  </Text>
+                ),
+              )}
+            </DefinitionItem>
+          )}
+        </DefinitionList>
+      )}
 
       {props.manifest &&
         props.manifest.status &&
@@ -357,17 +396,40 @@ function DetailsActionOverview(props: DetailsActionOverviewProps) {
         <Conditions conditions={props.manifest.status.conditions} />
       ) : null}
 
-      {props.resource === 'cronjobs' && <CronJob {...props} />}
-      {props.resource === 'daemonsets' && <DaemonSet {...props} />}
-      {props.resource === 'deployments' && <Deployment {...props} />}
-      {props.resource === 'jobs' && <Job {...props} />}
-      {props.resource === 'pods' && <Pod {...props} />}
-      {props.resource === 'statefulsets' && <StatefulSet {...props} />}
+      {props.manifest && props.resource === 'cronjobs' && (
+        <CronJob {...props} manifest={props.manifest as V1CronJob} />
+      )}
+      {props.manifest && props.resource === 'daemonsets' && (
+        <DaemonSet {...props} manifest={props.manifest as V1DaemonSet} />
+      )}
+      {props.manifest && props.resource === 'deployments' && (
+        <Deployment {...props} manifest={props.manifest as V1Deployment} />
+      )}
+      {props.manifest && props.resource === 'jobs' && (
+        <Job {...props} manifest={props.manifest as V1Job} />
+      )}
+      {props.manifest && props.resource === 'pods' && (
+        <Pod {...props} manifest={props.manifest as V1Pod} />
+      )}
+      {props.manifest && props.resource === 'statefulsets' && (
+        <StatefulSet {...props} manifest={props.manifest as V1StatefulSet} />
+      )}
     </DefinitionLists>
   );
 }
 
-function Conditions(props: { conditions: any[] }) {
+type Condition =
+  | V1Condition
+  | V1DeploymentCondition
+  | V1JobCondition
+  | V1NodeCondition
+  | V1PodCondition
+  | V1PersistentVolumeClaimCondition
+  | V1ReplicaSetCondition
+  | V1ReplicationControllerCondition
+  | V1StatefulSetCondition;
+
+function Conditions(props: { conditions: Condition[] }) {
   return (
     <DefinitionList title="Conditions">
       <InteractiveTable
@@ -399,7 +461,12 @@ function Conditions(props: { conditions: any[] }) {
           status: condition.status,
           type: condition.type,
           lastTransitionTime: condition.lastTransitionTime
-            ? formatTimeString(condition.lastTransitionTime)
+            ? /**
+               * The "lastTransitionTime" field in the condition is returned as
+               * string not date from the API. For that we have to call
+               * "toString()" to avoid type errors.
+               */
+            formatTimeString(condition.lastTransitionTime.toString())
             : '-',
           reason: condition.reason || '-',
           message: condition.message || '-',
@@ -412,7 +479,7 @@ function Conditions(props: { conditions: any[] }) {
 function Selector(props: {
   datasource: string;
   namespace: string;
-  selector: any;
+  selector: V1LabelSelector;
 }) {
   return (
     <DefinitionItem label="Selector">
@@ -439,230 +506,246 @@ function Selector(props: {
   );
 }
 
-function CronJob(props: DetailsActionOverviewProps) {
+interface CronJobProps extends Props {
+  manifest: V1CronJob;
+}
+
+function CronJob(props: CronJobProps) {
   return (
     <DefinitionList title="Details">
       <DefinitionItem label="Schedule">
-        {props.manifest?.spec?.schedule ? props.manifest?.spec?.schedule : '-'}
+        {props.manifest.spec?.schedule ? props.manifest.spec?.schedule : '-'}
       </DefinitionItem>
       <DefinitionItem label="Suspended">
-        {props.manifest?.spec?.suspend ? 'True' : 'False'}
+        {props.manifest.spec?.suspend ? 'True' : 'False'}
       </DefinitionItem>
       <DefinitionItem label="History Limit">
         <Badge
           color="darkgrey"
-          text={`success=${props.manifest?.spec?.successfulJobsHistoryLimit ? props.manifest?.spec?.successfulJobsHistoryLimit : 0}`}
+          text={`success=${props.manifest.spec?.successfulJobsHistoryLimit ? props.manifest.spec?.successfulJobsHistoryLimit : 0}`}
         />
         <Badge
           color="darkgrey"
-          text={`failed=${props.manifest?.spec?.failedJobsHistoryLimit ? props.manifest?.spec?.failedJobsHistoryLimit : 0}`}
+          text={`failed=${props.manifest.spec?.failedJobsHistoryLimit ? props.manifest.spec?.failedJobsHistoryLimit : 0}`}
         />
       </DefinitionItem>
       <DefinitionItem label="Active">
-        {props.manifest?.status?.active ? 'True' : 'False'}
+        {props.manifest.status?.active ? 'True' : 'False'}
       </DefinitionItem>
-      {props.manifest?.status?.lastScheduleTime && (
+      {props.manifest.status?.lastScheduleTime && (
         <DefinitionItem label="Last Schedule">
           {timeDifference(
             new Date().getTime(),
             new Date(
-              props.manifest?.status.lastScheduleTime.toString(),
+              props.manifest.status.lastScheduleTime.toString(),
             ).getTime(),
           )}{' '}
-          ({formatTime(new Date(props.manifest?.status.lastScheduleTime))})
+          ({formatTime(new Date(props.manifest.status.lastScheduleTime))})
         </DefinitionItem>
       )}
     </DefinitionList>
   );
 }
 
-function DaemonSet(props: DetailsActionOverviewProps) {
+interface DaemonSetProps extends Props {
+  manifest: V1DaemonSet;
+}
+
+function DaemonSet(props: DaemonSetProps) {
   return (
     <DefinitionList title="Details">
       <DefinitionItem label="Replicas">
         <Badge
           color="darkgrey"
-          text={`${props.manifest?.status?.desiredNumberScheduled ? props.manifest?.status?.desiredNumberScheduled : 0} desired`}
+          text={`${props.manifest.status?.desiredNumberScheduled ? props.manifest.status?.desiredNumberScheduled : 0} desired`}
         />
         <Badge
           color="darkgrey"
-          text={`${props.manifest?.status?.currentNumberScheduled ? props.manifest?.status?.currentNumberScheduled : 0} current`}
+          text={`${props.manifest.status?.currentNumberScheduled ? props.manifest.status?.currentNumberScheduled : 0} current`}
         />
         <Badge
           color="darkgrey"
-          text={`${props.manifest?.status?.numberMisscheduled ? props.manifest?.status?.numberMisscheduled : 0} misscheduled`}
+          text={`${props.manifest.status?.numberMisscheduled ? props.manifest.status?.numberMisscheduled : 0} misscheduled`}
         />
         <Badge
           color="darkgrey"
-          text={`${props.manifest?.status?.numberReady ? props.manifest?.status?.numberReady : 0} ready`}
+          text={`${props.manifest.status?.numberReady ? props.manifest.status?.numberReady : 0} ready`}
         />
         <Badge
           color="darkgrey"
-          text={`${props.manifest?.status?.updatedNumberScheduled ? props.manifest?.status?.updatedNumberScheduled : 0} updated`}
+          text={`${props.manifest.status?.updatedNumberScheduled ? props.manifest.status?.updatedNumberScheduled : 0} updated`}
         />
         <Badge
           color="darkgrey"
-          text={`${props.manifest?.status?.numberAvailable ? props.manifest?.status?.numberAvailable : 0} available`}
+          text={`${props.manifest.status?.numberAvailable ? props.manifest.status?.numberAvailable : 0} available`}
         />
         <Badge
           color="darkgrey"
-          text={`${props.manifest?.status?.numberUnavailable ? props.manifest?.status?.numberUnavailable : 0} unavailable`}
+          text={`${props.manifest.status?.numberUnavailable ? props.manifest.status?.numberUnavailable : 0} unavailable`}
         />
       </DefinitionItem>
-      {props.manifest?.spec?.updateStrategy?.type && (
+      {props.manifest.spec?.updateStrategy?.type && (
         <DefinitionItem label="Strategy">
-          {props.manifest?.spec.updateStrategy.type}
+          {props.manifest.spec.updateStrategy.type}
         </DefinitionItem>
       )}
-      {props.datasource &&
-        props.namespace &&
-        props.manifest?.spec?.selector && (
-          <Selector
-            datasource={props.datasource}
-            namespace={props.namespace}
-            selector={props.manifest.spec.selector}
-          />
-        )}
+      {props.datasource && props.namespace && props.manifest.spec?.selector && (
+        <Selector
+          datasource={props.datasource}
+          namespace={props.namespace}
+          selector={props.manifest.spec.selector}
+        />
+      )}
     </DefinitionList>
   );
 }
 
-function Deployment(props: DetailsActionOverviewProps) {
+interface DeploymentProps extends Props {
+  manifest: V1Deployment;
+}
+
+function Deployment(props: DeploymentProps) {
   return (
     <DefinitionList title="Details">
       <DefinitionItem label="Replicas">
         <Badge
           color="darkgrey"
-          text={`${props.manifest?.status?.replicas ? props.manifest?.status?.replicas : 0} desired`}
+          text={`${props.manifest.status?.replicas ? props.manifest.status?.replicas : 0} desired`}
         />
         <Badge
           color="darkgrey"
-          text={`${props.manifest?.status?.updatedReplicas ? props.manifest?.status?.updatedReplicas : 0} updated`}
+          text={`${props.manifest.status?.updatedReplicas ? props.manifest.status?.updatedReplicas : 0} updated`}
         />
         <Badge
           color="darkgrey"
-          text={`${props.manifest?.status?.readyReplicas ? props.manifest?.status?.readyReplicas : 0} ready`}
+          text={`${props.manifest.status?.readyReplicas ? props.manifest.status?.readyReplicas : 0} ready`}
         />
         <Badge
           color="darkgrey"
-          text={`${props.manifest?.status?.availableReplicas ? props.manifest?.status?.availableReplicas : 0} available`}
+          text={`${props.manifest.status?.availableReplicas ? props.manifest.status?.availableReplicas : 0} available`}
         />
         <Badge
           color="darkgrey"
-          text={`${props.manifest?.status?.unavailableReplicas ? props.manifest?.status?.unavailableReplicas : 0} unavailable`}
+          text={`${props.manifest.status?.unavailableReplicas ? props.manifest.status?.unavailableReplicas : 0} unavailable`}
         />
       </DefinitionItem>
-      {props.manifest?.spec?.strategy?.type && (
+      {props.manifest.spec?.strategy?.type && (
         <DefinitionItem label="Strategy">
-          {props.manifest?.spec.strategy.type}
+          {props.manifest.spec.strategy.type}
         </DefinitionItem>
       )}
-      {props.datasource &&
-        props.namespace &&
-        props.manifest?.spec?.selector && (
-          <Selector
-            datasource={props.datasource}
-            namespace={props.namespace}
-            selector={props.manifest.spec.selector}
-          />
-        )}
+      {props.datasource && props.namespace && props.manifest.spec?.selector && (
+        <Selector
+          datasource={props.datasource}
+          namespace={props.namespace}
+          selector={props.manifest.spec.selector}
+        />
+      )}
     </DefinitionList>
   );
 }
 
-function Job(props: DetailsActionOverviewProps) {
+interface JobProps extends Props {
+  manifest: V1Job;
+}
+
+function Job(props: JobProps) {
   return (
     <DefinitionList title="Details">
       <DefinitionItem label="Completions">
-        {props.manifest?.spec?.completions
-          ? props.manifest?.spec?.completions
+        {props.manifest.spec?.completions
+          ? props.manifest.spec?.completions
           : 0}
       </DefinitionItem>
       <DefinitionItem label="Backoff Limit">
-        {props.manifest?.spec?.backoffLimit
-          ? props.manifest?.spec?.backoffLimit
+        {props.manifest.spec?.backoffLimit
+          ? props.manifest.spec?.backoffLimit
           : 0}
       </DefinitionItem>
       <DefinitionItem label="Active">
-        {props.manifest?.status?.active ? 'True' : 'False'}
+        {props.manifest.status?.active ? 'True' : 'False'}
       </DefinitionItem>
       <DefinitionItem label="Status">
         <Badge
           color="darkgrey"
-          text={`succeeded=${props.manifest?.status?.succeeded ? props.manifest?.status?.succeeded : 0}`}
+          text={`succeeded=${props.manifest.status?.succeeded ? props.manifest.status?.succeeded : 0}`}
         />
         <Badge
           color="darkgrey"
-          text={`failed=${props.manifest?.status?.failed ? props.manifest?.status?.failed : 0}`}
+          text={`failed=${props.manifest.status?.failed ? props.manifest.status?.failed : 0}`}
         />
       </DefinitionItem>
-      {props.datasource &&
-        props.namespace &&
-        props.manifest?.spec?.selector && (
-          <Selector
-            datasource={props.datasource}
-            namespace={props.namespace}
-            selector={props.manifest.spec.selector}
-          />
-        )}
+      {props.datasource && props.namespace && props.manifest.spec?.selector && (
+        <Selector
+          datasource={props.datasource}
+          namespace={props.namespace}
+          selector={props.manifest.spec.selector}
+        />
+      )}
     </DefinitionList>
   );
 }
 
-function StatefulSet(props: DetailsActionOverviewProps) {
+interface StatefulSetProps extends Props {
+  manifest: V1StatefulSet;
+}
+
+function StatefulSet(props: StatefulSetProps) {
   return (
     <DefinitionList title="Details">
       <DefinitionItem label="Replicas">
         <Badge
           color="darkgrey"
-          text={`${props.manifest?.status?.replicas ? props.manifest?.status?.replicas : 0} desired`}
+          text={`${props.manifest.status?.replicas ? props.manifest.status?.replicas : 0} desired`}
         />
         <Badge
           color="darkgrey"
-          text={`${props.manifest?.status?.currentReplicas ? props.manifest?.status?.currentReplicas : 0} current`}
+          text={`${props.manifest.status?.currentReplicas ? props.manifest.status?.currentReplicas : 0} current`}
         />
         <Badge
           color="darkgrey"
-          text={`${props.manifest?.status?.readyReplicas ? props.manifest?.status?.readyReplicas : 0} ready`}
+          text={`${props.manifest.status?.readyReplicas ? props.manifest.status?.readyReplicas : 0} ready`}
         />
         <Badge
           color="darkgrey"
-          text={`${props.manifest?.status?.updatedReplicas ? props.manifest?.status?.updatedReplicas : 0} updated`}
+          text={`${props.manifest.status?.updatedReplicas ? props.manifest.status?.updatedReplicas : 0} updated`}
         />
       </DefinitionItem>
-      {props.manifest?.spec?.updateStrategy?.type && (
+      {props.manifest.spec?.updateStrategy?.type && (
         <DefinitionItem label="Strategy">
-          {props.manifest?.spec.updateStrategy.type}
+          {props.manifest.spec.updateStrategy.type}
         </DefinitionItem>
       )}
-      {props.datasource &&
-        props.namespace &&
-        props.manifest?.spec?.selector && (
-          <Selector
-            datasource={props.datasource}
-            namespace={props.namespace}
-            selector={props.manifest.spec.selector}
-          />
-        )}
+      {props.datasource && props.namespace && props.manifest.spec?.selector && (
+        <Selector
+          datasource={props.datasource}
+          namespace={props.namespace}
+          selector={props.manifest.spec.selector}
+        />
+      )}
     </DefinitionList>
   );
 }
 
-function Pod(props: DetailsActionOverviewProps) {
+interface PodProps extends Props {
+  manifest: V1Pod;
+}
+
+function Pod(props: PodProps) {
   const phase =
-    props.manifest?.status && props.manifest?.status.phase
-      ? props.manifest?.status.phase
+    props.manifest.status && props.manifest.status.phase
+      ? props.manifest.status.phase
       : 'Unknown';
   let reason =
-    props.manifest?.status && props.manifest?.status.reason
-      ? props.manifest?.status.reason
+    props.manifest.status && props.manifest.status.reason
+      ? props.manifest.status.reason
       : '';
   let shouldReady = 0;
   let isReady = 0;
   let restarts = 0;
 
-  if (props.manifest?.status && props.manifest?.status.containerStatuses) {
-    for (const container of props.manifest?.status.containerStatuses) {
+  if (props.manifest.status && props.manifest.status.containerStatuses) {
+    for (const container of props.manifest.status.containerStatuses) {
       shouldReady = shouldReady + 1;
       if (container.ready) {
         isReady = isReady + 1;
@@ -697,23 +780,23 @@ function Pod(props: DetailsActionOverviewProps) {
           {reason ? reason : phase}
         </DefinitionItem>
         <DefinitionItem label="Priority Class">
-          {props.manifest?.spec && props.manifest?.spec.priorityClassName
-            ? props.manifest?.spec.priorityClassName
+          {props.manifest.spec && props.manifest.spec.priorityClassName
+            ? props.manifest.spec.priorityClassName
             : '-'}
         </DefinitionItem>
         <DefinitionItem label="QoS Class">
-          {props.manifest?.status && props.manifest?.status.qosClass
-            ? props.manifest?.status.qosClass
+          {props.manifest.status && props.manifest.status.qosClass
+            ? props.manifest.status.qosClass
             : '-'}
         </DefinitionItem>
         <DefinitionItem label="Node">
-          {props.manifest?.spec?.nodeName ? (
+          {props.manifest.spec?.nodeName ? (
             <TextLink
-              href={`/explore?schemaVersion=1&panes={"ncx":{"datasource":"${props.datasource}","queries":[{"queryType":"kubernetes-resources","namespace":"${props.namespace}","resource":"nodes","parameterName":"fieldSelector","parameterValue":"metadata.name=${props.manifest?.spec.nodeName}","wide":false,"refId":"A","datasource":{"type":"${datasourcePluginJson.id}","uid":"${props.datasource}"}}],"range":{"from":"now-1h","to":"now"}}}`}
+              href={`/explore?schemaVersion=1&panes={"ncx":{"datasource":"${props.datasource}","queries":[{"queryType":"kubernetes-resources","namespace":"${props.namespace}","resource":"nodes","parameterName":"fieldSelector","parameterValue":"metadata.name=${props.manifest.spec.nodeName}","wide":false,"refId":"A","datasource":{"type":"${datasourcePluginJson.id}","uid":"${props.datasource}"}}],"range":{"from":"now-1h","to":"now"}}}`}
               color="secondary"
               variant="body"
             >
-              {props.manifest?.spec.nodeName}
+              {props.manifest.spec.nodeName}
             </TextLink>
           ) : (
             '-'
@@ -743,12 +826,12 @@ function Pod(props: DetailsActionOverviewProps) {
             },
           ]}
           data={[
-            ...(props.manifest?.spec?.initContainers || []),
-            ...(props.manifest?.spec?.containers || []),
+            ...(props.manifest.spec?.initContainers || []),
+            ...(props.manifest.spec?.containers || []),
           ].map((container) => {
             const containerStatus = getContainerStatus(container.name, [
-              ...(props.manifest?.status?.initContainerStatuses || []),
-              ...(props.manifest?.status?.containerStatuses || []),
+              ...(props.manifest.status?.initContainerStatuses || []),
+              ...(props.manifest.status?.containerStatuses || []),
             ]);
 
             return {
@@ -835,20 +918,22 @@ function Pod(props: DetailsActionOverviewProps) {
               {row.container.ports && (
                 <DefinitionItem label="Ports">
                   <Stack direction="column" rowGap={0}>
-                    {row.container.ports.map((port: any, index: number) => (
-                      <Box key={index}>
-                        {port.containerPort}
-                        {port.protocol ? `/${port.protocol}` : ''}
-                        {port.name ? ` (${port.name})` : ''}
-                      </Box>
-                    ))}
+                    {row.container.ports.map(
+                      (port: V1ContainerPort, index: number) => (
+                        <Box key={index}>
+                          {port.containerPort}
+                          {port.protocol ? `/${port.protocol}` : ''}
+                          {port.name ? ` (${port.name})` : ''}
+                        </Box>
+                      ),
+                    )}
                   </Stack>
                 </DefinitionItem>
               )}
               {row.container.env && (
                 <DefinitionItem label="Environment">
                   <Stack direction="column" rowGap={0}>
-                    {row.container.env.map((env: any, index: number) => (
+                    {row.container.env.map((env: V1EnvVar, index: number) => (
                       <Box key={index}>
                         {env.name}:{' '}
                         {env.value
@@ -875,7 +960,7 @@ function Pod(props: DetailsActionOverviewProps) {
   );
 }
 
-const getProbe = (title: string, probe: any): ReactNode => {
+const getProbe = (title: string, probe: V1Probe): ReactNode => {
   return (
     <DefinitionItem label={title}>
       {probe.exec && (
@@ -937,7 +1022,10 @@ const getProbe = (title: string, probe: any): ReactNode => {
  * `getContainerStatus` returns the container status for the container with the
  * provided `name` form a list of `status`.
  */
-export const getContainerStatus = (name: string, status?: any[]): any => {
+export const getContainerStatus = (
+  name: string,
+  status?: V1ContainerStatus[],
+): V1ContainerStatus | undefined => {
   if (!status) {
     return undefined;
   }
@@ -954,7 +1042,7 @@ export const getContainerStatus = (name: string, status?: any[]): any => {
 /**
  * `getContainerState` formates the provided container state.
  */
-export const getContainerState = (state: any): string => {
+export const getContainerState = (state: V1ContainerState): string => {
   if (state?.running) {
     return `Started at ${state?.running?.startedAt}`;
   } else if (state?.waiting) {
@@ -971,7 +1059,7 @@ export const getContainerState = (state: any): string => {
 /**
  * `getValueFrom` formates the `valueFrom` property for our UI.
  */
-export const getValueFrom = (valueFrom: any): string => {
+export const getValueFrom = (valueFrom: V1EnvVarSource): string => {
   if (valueFrom.configMapKeyRef) {
     return `configMapKeyRef(${valueFrom.configMapKeyRef.name}: ${valueFrom.configMapKeyRef.key})`;
   }

@@ -10,6 +10,7 @@ import {
 import YAML from 'yaml';
 
 import { fileDownload } from 'utils/utils.download';
+import { KubeConfig } from './types';
 
 interface Props {
   datasource: string | null;
@@ -19,7 +20,7 @@ interface Props {
 export function Kubeconfig(props: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [kubeconfig, setKubeconfig] = useState<any>();
+  const [kubeconfig, setKubeconfig] = useState<KubeConfig>();
 
   useEffect(() => {
     const fetchKubeconfig = async () => {
