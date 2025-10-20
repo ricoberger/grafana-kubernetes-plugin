@@ -7,6 +7,7 @@ import {
 } from '../../types/settings';
 import { Cluster } from './Cluster';
 import { Impersonate } from './Impersonate';
+import { Integrations } from './Integrations';
 import { GenerateKubeconfig } from './GenerateKubeconfig';
 import { Grafana } from './Grafana';
 
@@ -23,6 +24,7 @@ export function ConfigEditor(props: Props) {
       <Grafana {...props} />
       <Impersonate {...props} />
       <GenerateKubeconfig {...props} />
+      <Integrations {...props} />
     </>
   );
 }

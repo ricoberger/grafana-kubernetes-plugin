@@ -47,3 +47,44 @@ export const kubernetesResourcesTransformation = (
     ],
   };
 };
+
+export const kubernetesLogsTransformation = (
+  frame: DataFrame,
+  tracesLink: string,
+) => {
+  const labels = frame.fields.find((field) => field.name === 'labels')?.values;
+  if (!labels) {
+    return frame;
+  }
+
+  return {
+    ...frame,
+    fields: [
+      ...frame.fields,
+      {
+        name: 'traceID',
+        type: FieldType.string,
+        values: labels.map((labels) => {
+          for (const [key, value] of Object.entries(labels)) {
+            if (key.toLowerCase() === 'traceid') {
+              return value;
+            } else if (key.toLowerCase() === 'trace_id') {
+              return value;
+            }
+          }
+
+          return null;
+        }),
+        config: {
+          links: [
+            {
+              title: 'Trace',
+              url: tracesLink,
+              targetBlank: true,
+            },
+          ],
+        },
+      },
+    ],
+  };
+};

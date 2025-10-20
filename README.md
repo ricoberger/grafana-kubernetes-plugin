@@ -119,6 +119,18 @@ user and proxing the request to the Kubernetes API.
 
 ![Kubeconfig](https://raw.githubusercontent.com/ricoberger/grafana-kubernetes-plugin/refs/heads/main/src/img/screenshots/kubeconfig.png)
 
+### Integrations
+
+Integrations allow you to integrate the Kubernetes datasource with other
+datasources.
+
+To link traces from the Kubernetes logs to a tracing datasource (e.g. Jaeger)
+you have to enable the tracing integration an a link to the tracing datasource.
+Within the link you can use the `${__value.raw}` variable which will be replaced
+with the actual trace id. To link to a Jaeger datasource the following link can
+be used:
+`/explore?schemaVersion=1&panes={"ao9":{"datasource":"jaeger","queries":[{"query":"${__value.raw}","refId":"A"}]}}`.
+
 ## Contributing
 
 If you want to contribute to the project, please read through the

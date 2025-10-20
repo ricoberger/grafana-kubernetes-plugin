@@ -23,6 +23,8 @@ export interface DataSourceOptions extends DataSourceJsonData {
   generateKubeconfigName?: string;
   generateKubeconfigTTL?: number;
   generateKubeconfigPort?: number;
+  integrationsTraces?: boolean;
+  integrationsTracesLink?: string;
 }
 
 export interface KubernetesSecureJsonData {
