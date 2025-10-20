@@ -24,6 +24,8 @@ type PluginSettings struct {
 	GenerateKubeconfigName string                `json:"generateKubeconfigName"`
 	GenerateKubeconfigTTL  int64                 `json:"generateKubeconfigTTL"`
 	GenerateKubeconfigPort int64                 `json:"generateKubeconfigPort"`
+	IntegrationsTraces     bool                  `json:"integrationsTraces"`
+	IntegrationsTracesLink string                `json:"integrationsTracesLink"`
 	Secrets                *SecretPluginSettings `json:"-"`
 }
 

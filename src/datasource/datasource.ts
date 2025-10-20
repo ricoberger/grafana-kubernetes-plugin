@@ -14,7 +14,10 @@ import { lastValueFrom, map, Observable } from 'rxjs';
 import { Query, DEFAULT_QUERY } from './types/query';
 import { DataSourceOptions } from './types/settings';
 import { VariableSupport } from './variablesupport';
-import { kubernetesResourcesTransformation } from './components/Kubernetes/Kubernetes';
+import {
+  kubernetesResourcesTransformation,
+  kubernetesLogsTransformation,
+} from './components/Kubernetes/Kubernetes';
 import { helmTransformation } from './components/Helm/Helm';
 import { fluxResourcesTransformation } from './components/Flux/Flux';
 
@@ -22,8 +25,11 @@ export class DataSource extends DataSourceWithBackend<
   Query,
   DataSourceOptions
 > {
+  settings: DataSourceOptions | undefined;
+
   constructor(instanceSettings: DataSourceInstanceSettings<DataSourceOptions>) {
     super(instanceSettings);
+    this.settings = instanceSettings.jsonData;
     this.variables = new VariableSupport(this);
   }
 
@@ -58,15 +64,6 @@ export class DataSource extends DataSourceWithBackend<
   query(request: DataQueryRequest<Query>): Observable<DataQueryResponse> {
     let response = super.query(request);
 
-    /**
-     * To be honest, I have no idea why, but if the query is executed in the
-     * explore view the modification of the response is not working, so that we
-     * directly return the response and skip our modifications.
-     */
-    if (request.app === CoreApp.Explore) {
-      return response;
-    }
-
     return response.pipe(
       map((dataQueryResponse) => {
         return {
@@ -78,20 +75,36 @@ export class DataSource extends DataSourceWithBackend<
 
             const query = request.targets.find((t) => t.refId === frame.refId);
 
-            if (query?.queryType === 'kubernetes-resources') {
+            if (
+              request.app !== CoreApp.Explore &&
+              query?.queryType === 'kubernetes-resources'
+            ) {
               return kubernetesResourcesTransformation(
                 this.applyTemplateVariables(query, request.scopedVars),
                 frame,
               );
             } else if (
-              query?.queryType === 'helm-releases' ||
-              query?.queryType === 'helm-release-history'
+              query?.queryType === 'kubernetes-logs' &&
+              this.settings?.integrationsTraces &&
+              this.settings?.integrationsTracesLink
+            ) {
+              return kubernetesLogsTransformation(
+                frame,
+                this.settings.integrationsTracesLink,
+              );
+            } else if (
+              request.app !== CoreApp.Explore &&
+              (query?.queryType === 'helm-releases' ||
+                query?.queryType === 'helm-release-history')
             ) {
               return helmTransformation(
                 this.applyTemplateVariables(query, request.scopedVars),
                 frame,
               );
-            } else if (query?.queryType === 'flux-resources') {
+            } else if (
+              request.app !== CoreApp.Explore &&
+              query?.queryType === 'flux-resources'
+            ) {
               return fluxResourcesTransformation(
                 this.applyTemplateVariables(query, request.scopedVars),
                 frame,
