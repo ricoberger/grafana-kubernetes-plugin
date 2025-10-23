@@ -28,7 +28,7 @@ type PluginSettings struct {
 	IntegrationsMetricsKubeletJob          string                `json:"integrationsMetricsKubeletJob"`
 	IntegrationsMetricsKubeStateMetricsJob string                `json:"integrationsMetricsKubeStateMetricsJob"`
 	IntegrationsMetricsNodeExporterJob     string                `json:"integrationsMetricsNodeExporterJob"`
-	IntegrationsTracesLink                 string                `json:"integrationsTracesLink"`
+	IntegrationsTracesQuery                string                `json:"integrationsTracesQuery"`
 	Secrets                                *SecretPluginSettings `json:"-"`
 }
 

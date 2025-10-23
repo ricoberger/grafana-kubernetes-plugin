@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { IconButton, Menu, WithContextMenu } from '@grafana/ui';
 import { DataFrame } from '@grafana/data';
 
-import datasourcePluginJson from '../../../datasource/plugin.json';
 import { Query } from '../../types/query';
 import { DataSourceOptions } from '../../types/settings';
 import { DeleteAction } from './DeleteAction';
@@ -68,7 +67,7 @@ export function Actions(props: Props) {
                 <Menu.Item
                   label="Logs"
                   target="_blank"
-                  url={`/explore?schemaVersion=1&panes={"ncx":{"datasource":"${datasource}","queries":[{"queryType":"kubernetes-logs","namespace":"${namespace}","resource":"${resource}","parameterName":"","parameterValue":"","wide":false,"refId":"A","datasource":{"type":"${datasourcePluginJson.id}","uid":"${datasource}"},"name":"${name}","container":""}],"range":{"from":"now-1h","to":"now"}}}`}
+                  url={`/explore?left=${encodeURIComponent(JSON.stringify({ datasource: datasource, queries: [{ queryType: 'kubernetes-logs', namespace: namespace, resource: resource, refId: 'A', name: name, container: '' }] }))}`}
                 />
               )}
             <Menu.Item label="Edit" onClick={() => setOpen('edit')} />

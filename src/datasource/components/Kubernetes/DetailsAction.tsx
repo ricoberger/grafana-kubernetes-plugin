@@ -555,7 +555,7 @@ function Selector(props: {
             color="darkgrey"
             text={
               <TextLink
-                href={`/explore?schemaVersion=1&panes={"ncx":{"datasource":"${props.datasource}","queries":[{"queryType":"kubernetes-resources","namespace":"${props.namespace}","resource":"pods","parameterName":"labelSelector","parameterValue":"${key}=${props.selector.matchLabels ? props.selector.matchLabels[key] : ''}","wide":false,"refId":"A","datasource":{"type":"${datasourcePluginJson.id}","uid":"${props.datasource}"}}],"range":{"from":"now-1h","to":"now"}}}`}
+                href={`/explore?left=${encodeURIComponent(JSON.stringify({ datasource: props.datasource, queries: [{ queryType: 'kubernetes-resources', namespace: props.namespace, resource: 'pods', parameterName: 'labelSelector', parameterValue: `${key}=${props.selector.matchLabels ? props.selector.matchLabels[key] : ''}`, wide: false, refId: 'A' }] }))}`}
                 color="secondary"
                 variant="bodySmall"
               >
@@ -857,7 +857,7 @@ function Pod(props: PodProps) {
         <DefinitionItem label="Node">
           {props.manifest.spec?.nodeName ? (
             <TextLink
-              href={`/explore?schemaVersion=1&panes={"ncx":{"datasource":"${props.datasource}","queries":[{"queryType":"kubernetes-resources","namespace":"${props.namespace}","resource":"nodes","parameterName":"fieldSelector","parameterValue":"metadata.name=${props.manifest.spec.nodeName}","wide":false,"refId":"A","datasource":{"type":"${datasourcePluginJson.id}","uid":"${props.datasource}"}}],"range":{"from":"now-1h","to":"now"}}}`}
+              href={`/explore?left=${encodeURIComponent(JSON.stringify({ datasource: props.datasource, queries: [{ queryType: 'kubernetes-resources', namespace: props.namespace, resource: 'nodes', parameterName: 'fieldSelector', parameterValue: `metadata.name=${props.manifest.spec.nodeName}`, wide: false, refId: 'A' }] }))}`}
               color="secondary"
               variant="body"
             >

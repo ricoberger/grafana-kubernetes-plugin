@@ -24,7 +24,7 @@ datasources:
       integrationsMetricsKubeletJob: kubelet
       integrationsMetricsKubeStateMetricsJob: kube-state-metrics
       integrationsMetricsNodeExporterJob: node-exporter
-      integrationsTracesLink: /explore?schemaVersion=1&panes={"ao9":{"datasource":"jaeger","queries":[{"query":"$${__value.raw}","refId":"A"}]}}
+      integrationsTracesQuery: '{"datasource":"jaeger","queries":[{"query":"$${__value.raw}","refId":"A"}]}'
     secureJsonData:
       clusterKubeconfig:
       grafanaPassword: admin
