@@ -50,10 +50,30 @@ Helm and Flux.
 
 ## Installation
 
-To install the plugin you have to add `ricoberger-kubernetes-app` to the
+Before you can install the plugin, you have to add `ricoberger-kubernetes-app`
+and `ricoberger-kubernetes-datasource` to the
 [`allow_loading_unsigned_plugins`](https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#allow_loading_unsigned_plugins)
 configuration option or to the `GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS`
-environment variable.
+environment variable. The plugin can then be installed by adding
+`ricoberger-kubernetes-app@<VERSION>@https://github.com/ricoberger/grafana-kubernetes-plugin/releases/download/v<VERSION>/ricoberger-kubernetes-app-<VERSION>.zip`
+to the
+[`preinstall_sync`](https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#preinstall_sync)
+configuration option or the `GF_PLUGINS_PREINSTALL_SYNC` environment variable.
+
+### Configuration File
+
+```ini
+[plugins]
+allow_loading_unsigned_plugins = ricoberger-kubernetes-app,ricoberger-kubernetes-datasource
+preinstall_sync = ricoberger-kubernetes-app@0.2.0@https://github.com/ricoberger/grafana-kubernetes-plugin/releases/download/v0.2.0/ricoberger-kubernetes-app-0.2.0.zip
+```
+
+### Environment Variables
+
+```bash
+GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: ricoberger-kubernetes-app,ricoberger-kubernetes-datasource
+GF_PLUGINS_PREINSTALL_SYNC: ricoberger-kubernetes-app@0.2.0@https://github.com/ricoberger/grafana-kubernetes-plugin/releases/download/v0.2.0/ricoberger-kubernetes-app-0.2.0.zip
+```
 
 ## Configuration
 
