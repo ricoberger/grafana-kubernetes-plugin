@@ -43,6 +43,8 @@ func (c *client) getResources(ctx context.Context) (map[string]Resource, error) 
 	resources["events"] = Resource{IsCRD: false, Path: "/api/v1", Resource: "events", Scope: "Namespaced"}
 	resources["namespaces"] = Resource{IsCRD: false, Path: "/api/v1", Resource: "namespaces", Scope: "Cluster"}
 	resources["nodes"] = Resource{IsCRD: false, Path: "/api/v1", Resource: "nodes", Scope: "Cluster"}
+	resources["pods.metrics.k8s.io"] = Resource{IsCRD: false, Path: "/apis/metrics.k8s.io/v1beta1", Resource: "pods", Scope: "Namespaced"}
+	resources["nodes.metrics.k8s.io"] = Resource{IsCRD: false, Path: "/apis/metrics.k8s.io/v1beta1", Resource: "nodes", Scope: "Cluster"}
 
 	// Get all CustomResourceDefinitions deployed in the Kubernetes cluster and
 	// add them to the resources map. The key in the map for the resources is

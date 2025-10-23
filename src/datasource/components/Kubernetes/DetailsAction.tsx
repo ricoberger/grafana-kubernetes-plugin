@@ -179,6 +179,23 @@ export function DetailsAction(props: Props) {
                   }}
                 />
               )}
+            {[
+              'daemonsets',
+              'deployments',
+              'jobs',
+              'nodes',
+              'pods',
+              'statefulsets',
+            ].includes(props.resource || '') && (
+                <Tab
+                  label="Top"
+                  active={activeTab === 'top'}
+                  onChangeTab={(ev) => {
+                    ev?.preventDefault();
+                    setActiveTab('top');
+                  }}
+                />
+              )}
             {props.settings.integrationsMetricsDatasourceUid &&
               props.settings.integrationsMetricsKubeletJob &&
               props.settings.integrationsMetricsKubeStateMetricsJob &&
@@ -226,6 +243,9 @@ export function DetailsAction(props: Props) {
           {activeTab === 'events' && <DetailsActionEvents {...props} />}
           {activeTab === 'pods' && (
             <DetailsActionPods {...props} manifest={manifest} />
+          )}
+          {activeTab === 'top' && (
+            <DetailsActionTop {...props} manifest={manifest} />
           )}
 
           {activeTab === 'metrics' && (
@@ -371,6 +391,60 @@ function DetailsActionPods(props: DetailsActionPodsProps) {
       children: [
         new SceneFlexItem({
           body: PanelBuilders.table().setTitle('Pods').build(),
+        }),
+      ],
+    }),
+  });
+
+  return <scene.Component model={scene} />;
+}
+
+/**
+ * The DetailsActionTop component fetches and displays the "kubectl top pods"
+ * and "kubectl top nodes" metrics for all pods / nodes, which are related to a
+ * Kubernetes resource.
+ */
+interface DetailsActionTopProps extends Props {
+  manifest?: KubernetesManifest;
+}
+
+function DetailsActionTop(props: DetailsActionTopProps) {
+  const selector = props.manifest?.spec?.selector?.matchLabels
+    ? Object.keys(props.manifest?.spec.selector.matchLabels)
+      .map(
+        (key) => `${key}=${props.manifest?.spec.selector.matchLabels[key]}`,
+      )
+      .join(',')
+    : '';
+
+  const queryRunner = new SceneQueryRunner({
+    datasource: {
+      type: datasourcePluginJson.id,
+      uid: props.datasource || undefined,
+    },
+    queries: [
+      {
+        refId: 'A',
+        queryType: 'kubernetes-resources',
+        resource:
+          props.resource === 'nodes'
+            ? 'nodes.metrics.k8s.io'
+            : 'pods.metrics.k8s.io',
+        namespace: selector ? props.namespace : '*',
+        parameterName: selector ? 'labelSelector' : 'fieldSelector',
+        parameterValue: selector
+          ? selector
+          : `metadata.name=${props.manifest?.metadata?.name}`,
+      },
+    ],
+  });
+
+  const scene = new EmbeddedScene({
+    $data: queryRunner,
+    body: new SceneFlexLayout({
+      children: [
+        new SceneFlexItem({
+          body: PanelBuilders.table().setTitle('Top').build(),
         }),
       ],
     }),
