@@ -3,6 +3,7 @@ import { CustomCellRendererProps, TableCellDisplayMode } from '@grafana/ui';
 import { DataFrame, FieldType } from '@grafana/data';
 
 import { Query } from '../../types/query';
+import { DataSourceOptions } from '../../types/settings';
 import { Actions } from './Actions';
 
 /**
@@ -13,6 +14,7 @@ import { Actions } from './Actions';
 export const kubernetesResourcesTransformation = (
   query: Query,
   frame: DataFrame,
+  settings: DataSourceOptions,
 ) => {
   return {
     ...frame,
@@ -33,6 +35,7 @@ export const kubernetesResourcesTransformation = (
                     query={query}
                     frame={props.frame}
                     rowIndex={props.rowIndex}
+                    settings={settings}
                   />
                 );
               },

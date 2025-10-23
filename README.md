@@ -39,6 +39,10 @@ Helm and Flux.
   authorize all Kubernetes requests.
 - Generate Kubeconfig files, so users can access the Kubernetes API using tools
   like `kubectl` for exec and port-forward actions.
+- Integrations for metrics and traces:
+  - Metrics: View metrics for Kubenretes resources like Pods, Nodes,
+    Deployments, etc. using a Prometheus datasource.
+  - Traces: Link traces from Pod logs to a tracing datasource like Jaeger.
 - Integrations for other cloud-native tools like Helm and Flux:
   - Helm: View Helm releases including the history, rollback and uninstall Helm
     releases.
@@ -122,7 +126,11 @@ user and proxing the request to the Kubernetes API.
 ### Integrations
 
 Integrations allow you to integrate the Kubernetes datasource with other
-datasources.
+datasources to view metrics or traces related to your Kubernetes resources.
+
+To view the metrics of your Kubernetes resources you have to provide the UID of
+a Prometheus datasource and the job label for the kubelet, kube-state-metrics
+and node-exporter metrics.
 
 To link traces from the Kubernetes logs to a tracing datasource (e.g. Jaeger)
 you have to enable the tracing integration an a link to the tracing datasource.
@@ -130,6 +138,8 @@ Within the link you can use the `${__value.raw}` variable which will be replaced
 with the actual trace id. To link to a Jaeger datasource the following link can
 be used:
 `/explore?schemaVersion=1&panes={"ao9":{"datasource":"jaeger","queries":[{"query":"${__value.raw}","refId":"A"}]}}`.
+
+![Metrics](https://raw.githubusercontent.com/ricoberger/grafana-kubernetes-plugin/refs/heads/main/src/img/screenshots/kubernetes-resources-metrics.png)
 
 ## Contributing
 
