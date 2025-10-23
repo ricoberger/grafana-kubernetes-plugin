@@ -93,18 +93,18 @@ export function Integrations(props: Props) {
           width={65}
         />
       </InlineField>
-      <InlineField label="Traces link" labelWidth={30} interactive>
+      <InlineField label="Traces query" labelWidth={30} interactive>
         <Input
           onChange={(event: ChangeEvent<HTMLInputElement>) => {
             onOptionsChange({
               ...options,
               jsonData: {
                 ...jsonData,
-                integrationsTracesLink: event.target.value,
+                integrationsTracesQuery: event.target.value,
               },
             });
           }}
-          value={jsonData.integrationsTracesLink}
+          value={jsonData.integrationsTracesQuery}
           width={65}
         />
       </InlineField>

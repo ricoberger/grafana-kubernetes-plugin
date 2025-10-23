@@ -27,7 +27,7 @@ export interface DataSourceOptions extends DataSourceJsonData {
   integrationsMetricsKubeletJob?: string;
   integrationsMetricsKubeStateMetricsJob?: string;
   integrationsMetricsNodeExporterJob?: string;
-  integrationsTracesLink?: string;
+  integrationsTracesQuery?: string;
 }
 
 export interface KubernetesSecureJsonData {

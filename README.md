@@ -137,7 +137,12 @@ you have to enable the tracing integration an a link to the tracing datasource.
 Within the link you can use the `${__value.raw}` variable which will be replaced
 with the actual trace id. To link to a Jaeger datasource the following link can
 be used:
-`/explore?schemaVersion=1&panes={"ao9":{"datasource":"jaeger","queries":[{"query":"${__value.raw}","refId":"A"}]}}`.
+
+To view the traces of your Kubernetes logs you have to provide a query for your
+traces. In the query you can use the `${__value.raw}` variable which will be
+replaced with the actual trace id. For example, the following query can be used
+to link to a Jaeger datasource:
+`{"datasource":"jaeger","queries":[{"query":"${__value.raw}","refId":"A"}]}`.
 
 ![Metrics](https://raw.githubusercontent.com/ricoberger/grafana-kubernetes-plugin/refs/heads/main/src/img/screenshots/kubernetes-resources-metrics.png)
 

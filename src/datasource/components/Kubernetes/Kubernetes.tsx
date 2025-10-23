@@ -53,7 +53,7 @@ export const kubernetesResourcesTransformation = (
 
 export const kubernetesLogsTransformation = (
   frame: DataFrame,
-  tracesLink: string,
+  tracesQuery: string,
 ) => {
   const labels = frame.fields.find((field) => field.name === 'labels')?.values;
   if (!labels) {
@@ -82,7 +82,7 @@ export const kubernetesLogsTransformation = (
           links: [
             {
               title: 'Trace',
-              url: tracesLink,
+              url: `/explore?left=${tracesQuery}`,
               targetBlank: true,
             },
           ],

@@ -86,11 +86,11 @@ export class DataSource extends DataSourceWithBackend<
               );
             } else if (
               query?.queryType === 'kubernetes-logs' &&
-              this.settings?.integrationsTracesLink
+              this.settings?.integrationsTracesQuery
             ) {
               return kubernetesLogsTransformation(
                 frame,
-                this.settings.integrationsTracesLink,
+                this.settings.integrationsTracesQuery,
               );
             } else if (
               request.app !== CoreApp.Explore &&
