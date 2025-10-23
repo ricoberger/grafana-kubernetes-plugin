@@ -71,8 +71,8 @@ preinstall_sync = ricoberger-kubernetes-app@0.2.0@https://github.com/ricoberger/
 ### Environment Variables
 
 ```bash
-GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: ricoberger-kubernetes-app,ricoberger-kubernetes-datasource
-GF_PLUGINS_PREINSTALL_SYNC: ricoberger-kubernetes-app@0.2.0@https://github.com/ricoberger/grafana-kubernetes-plugin/releases/download/v0.2.0/ricoberger-kubernetes-app-0.2.0.zip
+export GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=ricoberger-kubernetes-app,ricoberger-kubernetes-datasource
+export GF_PLUGINS_PREINSTALL_SYNC=ricoberger-kubernetes-app@0.2.0@https://github.com/ricoberger/grafana-kubernetes-plugin/releases/download/v0.2.0/ricoberger-kubernetes-app-0.2.0.zip
 ```
 
 ## Configuration
@@ -151,12 +151,6 @@ datasources to view metrics or traces related to your Kubernetes resources.
 To view the metrics of your Kubernetes resources you have to provide the UID of
 a Prometheus datasource and the job label for the kubelet, kube-state-metrics
 and node-exporter metrics.
-
-To link traces from the Kubernetes logs to a tracing datasource (e.g. Jaeger)
-you have to enable the tracing integration an a link to the tracing datasource.
-Within the link you can use the `${__value.raw}` variable which will be replaced
-with the actual trace id. To link to a Jaeger datasource the following link can
-be used:
 
 To view the traces of your Kubernetes logs you have to provide a query for your
 traces. In the query you can use the `${__value.raw}` variable which will be
