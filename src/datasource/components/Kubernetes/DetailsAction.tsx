@@ -65,10 +65,22 @@ import {
   timeDifference,
 } from '../../../utils/utils.time';
 import { KubernetesManifest } from '../../types/kubernetes';
+import { DataSourceOptions } from '../../types/settings';
+import { MetricsPods } from './Metrics/Pods';
+import { MetricsPersistentVolumeClaims } from './Metrics/PersistentVolumeClaims';
+import { MetricsDaemonSets } from './Metrics/DaemonSets';
+import { MetricsDeployments } from './Metrics/Deployments';
+import { MetricsStatefulSets } from './Metrics/StatefulSets';
+import { MetricsJobs } from './Metrics/Jobs';
+import { MetricsCronJobs } from './Metrics/CronJobs';
+import { MetricsHPAs } from './Metrics/HPAs';
+import { MetricsVPAs } from './Metrics/VPAs';
+import { MetricsNodes } from './Metrics/Nodes';
 
 initPluginTranslations('ricoberger-kubernetes-app');
 
 interface Props {
+  settings: DataSourceOptions;
   datasource?: string;
   resource?: string;
   namespace?: string;
@@ -167,6 +179,31 @@ export function DetailsAction(props: Props) {
                   }}
                 />
               )}
+            {props.settings.integrationsMetricsDatasourceUid &&
+              props.settings.integrationsMetricsKubeletJob &&
+              props.settings.integrationsMetricsKubeStateMetricsJob &&
+              props.settings.integrationsMetricsNodeExporterJob &&
+              [
+                'daemonsets',
+                'deployments',
+                'cronjobs',
+                'horizontalpodautoscalers',
+                'jobs',
+                'nodes',
+                'persistentvolumeclaims',
+                'pods',
+                'statefulsets',
+                'verticalpodautoscalers.autoscaling.k8s.io',
+              ].includes(props.resource || '') && (
+                <Tab
+                  label="Metrics"
+                  active={activeTab === 'metrics'}
+                  onChangeTab={(ev) => {
+                    ev?.preventDefault();
+                    setActiveTab('metrics');
+                  }}
+                />
+              )}
           </TabsBar>
         )
       }
@@ -189,6 +226,34 @@ export function DetailsAction(props: Props) {
           {activeTab === 'events' && <DetailsActionEvents {...props} />}
           {activeTab === 'pods' && (
             <DetailsActionPods {...props} manifest={manifest} />
+          )}
+
+          {activeTab === 'metrics' && (
+            <>
+              {props.resource === 'daemonsets' && (
+                <MetricsDaemonSets {...props} />
+              )}
+              {props.resource === 'deployments' && (
+                <MetricsDeployments {...props} />
+              )}
+              {props.resource === 'cronjobs' && <MetricsCronJobs {...props} />}
+              {props.resource === 'horizontalpodautoscalers' && (
+                <MetricsHPAs {...props} />
+              )}
+              {props.resource === 'jobs' && <MetricsJobs {...props} />}
+              {props.resource === 'nodes' && <MetricsNodes {...props} />}
+              {props.resource === 'persistentvolumeclaims' && (
+                <MetricsPersistentVolumeClaims {...props} />
+              )}
+              {props.resource === 'pods' && <MetricsPods {...props} />}
+              {props.resource === 'statefulsets' && (
+                <MetricsStatefulSets {...props} />
+              )}
+              {props.resource ===
+                'verticalpodautoscalers.autoscaling.k8s.io' && (
+                  <MetricsVPAs {...props} />
+                )}
+            </>
           )}
         </>
       )}

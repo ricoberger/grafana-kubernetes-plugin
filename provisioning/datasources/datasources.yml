@@ -20,7 +20,10 @@ datasources:
       generateKubeconfigName: grafana
       generateKubeconfigTTL: 604800
       generateKubeconfigPort: 11716
-      integrationsTraces: true
+      integrationsMetricsDatasourceUid: prometheus
+      integrationsMetricsKubeletJob: kubelet
+      integrationsMetricsKubeStateMetricsJob: kube-state-metrics
+      integrationsMetricsNodeExporterJob: node-exporter
       integrationsTracesLink: /explore?schemaVersion=1&panes={"ao9":{"datasource":"jaeger","queries":[{"query":"$${__value.raw}","refId":"A"}]}}
     secureJsonData:
       clusterKubeconfig:
@@ -33,3 +36,11 @@ datasources:
     # below and comment out the line above.
     # url: http://host.docker.internal:16686
     access: proxy
+  # To use a Prometheus instance running on the host machine, uncomment the
+  # lines bewlow. This can be used to test the metrics integration of the
+  # Kubernetes datasource.
+  # - name: Prometheus
+  #   type: prometheus
+  #   uid: prometheus
+  #   url: http://host.docker.internal:8481/select/0/prometheus
+  #   access: proxy

@@ -82,10 +82,10 @@ export class DataSource extends DataSourceWithBackend<
               return kubernetesResourcesTransformation(
                 this.applyTemplateVariables(query, request.scopedVars),
                 frame,
+                this.settings!,
               );
             } else if (
               query?.queryType === 'kubernetes-logs' &&
-              this.settings?.integrationsTraces &&
               this.settings?.integrationsTracesLink
             ) {
               return kubernetesLogsTransformation(

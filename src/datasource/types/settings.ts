@@ -23,7 +23,10 @@ export interface DataSourceOptions extends DataSourceJsonData {
   generateKubeconfigName?: string;
   generateKubeconfigTTL?: number;
   generateKubeconfigPort?: number;
-  integrationsTraces?: boolean;
+  integrationsMetricsDatasourceUid?: string;
+  integrationsMetricsKubeletJob?: string;
+  integrationsMetricsKubeStateMetricsJob?: string;
+  integrationsMetricsNodeExporterJob?: string;
   integrationsTracesLink?: string;
 }
 

@@ -4,6 +4,7 @@ import { DataFrame } from '@grafana/data';
 
 import datasourcePluginJson from '../../../datasource/plugin.json';
 import { Query } from '../../types/query';
+import { DataSourceOptions } from '../../types/settings';
 import { DeleteAction } from './DeleteAction';
 import { ScaleAction } from './ScaleAction';
 import { RestartAction } from './RestartAction';
@@ -15,6 +16,7 @@ interface Props {
   query: Query;
   frame: DataFrame;
   rowIndex: number;
+  settings: DataSourceOptions;
 }
 
 /**
@@ -81,6 +83,7 @@ export function Actions(props: Props) {
 
       {open === 'details' && (
         <DetailsAction
+          settings={props.settings}
           datasource={datasource}
           resource={resource}
           namespace={namespace}

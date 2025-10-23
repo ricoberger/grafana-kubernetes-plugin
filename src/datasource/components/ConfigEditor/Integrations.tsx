@@ -1,5 +1,5 @@
 import React, { ChangeEvent } from 'react';
-import { InlineField, InlineSwitch, Input, useStyles2 } from '@grafana/ui';
+import { InlineField, Input, useStyles2 } from '@grafana/ui';
 import {
   DataSourcePluginOptionsEditorProps,
   GrafanaTheme2,
@@ -25,29 +25,75 @@ export function Integrations(props: Props) {
   return (
     <div className={styles.containerKubeconfigGeneration}>
       <h3>Integrations</h3>
-      <InlineField label="Traces" labelWidth={20}>
-        <InlineSwitch
-          value={jsonData.integrationsTraces || false}
+      <InlineField label="Metrics datasource uid" labelWidth={30} interactive>
+        <Input
           onChange={(event: ChangeEvent<HTMLInputElement>) => {
             onOptionsChange({
               ...options,
               jsonData: {
                 ...jsonData,
-                integrationsTraces: event.target.checked,
-                integrationsTracesLink: !event.target.checked
-                  ? ''
-                  : jsonData.integrationsTracesLink,
+                integrationsMetricsDatasourceUid: event.target.value,
               },
             });
           }}
+          value={jsonData.integrationsMetricsDatasourceUid}
+          width={65}
+        />
+      </InlineField>
+      <InlineField label="Metrics kubelet job" labelWidth={30} interactive>
+        <Input
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            onOptionsChange({
+              ...options,
+              jsonData: {
+                ...jsonData,
+                integrationsMetricsKubeletJob: event.target.value,
+              },
+            });
+          }}
+          value={jsonData.integrationsMetricsKubeletJob}
+          width={65}
         />
       </InlineField>
       <InlineField
-        label="Traces link"
-        labelWidth={20}
+        label="Metrics kube-state-metrics job"
+        labelWidth={30}
         interactive
-        disabled={!jsonData.integrationsTraces}
       >
+        <Input
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            onOptionsChange({
+              ...options,
+              jsonData: {
+                ...jsonData,
+                integrationsMetricsKubeStateMetricsJob: event.target.value,
+              },
+            });
+          }}
+          value={jsonData.integrationsMetricsKubeStateMetricsJob}
+          width={65}
+        />
+      </InlineField>
+      <InlineField
+        label="Metrics node-exporter job"
+        labelWidth={30}
+        interactive
+      >
+        <Input
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            onOptionsChange({
+              ...options,
+              jsonData: {
+                ...jsonData,
+                integrationsMetricsNodeExporterJob: event.target.value,
+              },
+            });
+          }}
+          value={jsonData.integrationsMetricsNodeExporterJob}
+          width={65}
+        />
+      </InlineField>
+      <InlineField label="Traces link" labelWidth={30} interactive>
         <Input
           onChange={(event: ChangeEvent<HTMLInputElement>) => {
             onOptionsChange({

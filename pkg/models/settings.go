@@ -14,19 +14,22 @@ const PluginID = "ricoberger-kubernetes-datasource"
 // PluginSettings holds the settings for the Kubernetes datasource plugin, which
 // can be configured in the Grafana UI.
 type PluginSettings struct {
-	ClusterProvider        string                `json:"clusterProvider"`
-	ClusterPath            string                `json:"clusterPath"`
-	ClusterContext         string                `json:"clusterContext"`
-	GrafanaUsername        string                `json:"grafanaUsername"`
-	ImpersonateUser        bool                  `json:"impersonateUser"`
-	ImpersonateGroups      bool                  `json:"impersonateGroups"`
-	GenerateKubeconfig     bool                  `json:"generateKubeconfig"`
-	GenerateKubeconfigName string                `json:"generateKubeconfigName"`
-	GenerateKubeconfigTTL  int64                 `json:"generateKubeconfigTTL"`
-	GenerateKubeconfigPort int64                 `json:"generateKubeconfigPort"`
-	IntegrationsTraces     bool                  `json:"integrationsTraces"`
-	IntegrationsTracesLink string                `json:"integrationsTracesLink"`
-	Secrets                *SecretPluginSettings `json:"-"`
+	ClusterProvider                        string                `json:"clusterProvider"`
+	ClusterPath                            string                `json:"clusterPath"`
+	ClusterContext                         string                `json:"clusterContext"`
+	GrafanaUsername                        string                `json:"grafanaUsername"`
+	ImpersonateUser                        bool                  `json:"impersonateUser"`
+	ImpersonateGroups                      bool                  `json:"impersonateGroups"`
+	GenerateKubeconfig                     bool                  `json:"generateKubeconfig"`
+	GenerateKubeconfigName                 string                `json:"generateKubeconfigName"`
+	GenerateKubeconfigTTL                  int64                 `json:"generateKubeconfigTTL"`
+	GenerateKubeconfigPort                 int64                 `json:"generateKubeconfigPort"`
+	IntegrationsMetricsDatasourceUid       string                `json:"integrationsMetricsDatasourceUid"`
+	IntegrationsMetricsKubeletJob          string                `json:"integrationsMetricsKubeletJob"`
+	IntegrationsMetricsKubeStateMetricsJob string                `json:"integrationsMetricsKubeStateMetricsJob"`
+	IntegrationsMetricsNodeExporterJob     string                `json:"integrationsMetricsNodeExporterJob"`
+	IntegrationsTracesLink                 string                `json:"integrationsTracesLink"`
+	Secrets                                *SecretPluginSettings `json:"-"`
 }
 
 type SecretPluginSettings struct {
