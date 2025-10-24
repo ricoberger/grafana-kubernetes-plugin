@@ -14,7 +14,8 @@ services:
       GF_AUTH_BASIC_ENABLED: true
       GF_PATHS_CONFIG: /etc/grafana/provisioning/custom.ini
     volumes:
-      - ./kubeconfig-grafana.yaml:/kubeconfig-grafana.yaml
+      # - ./kubeconfig-grafana.yaml:/kubeconfig-grafana.yaml
+      - /Users/ricoberger/.kube/config:/kubeconfig-grafana.yaml
     extra_hosts:
       - host.docker.internal:host-gateway
     depends_on:

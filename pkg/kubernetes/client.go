@@ -56,7 +56,7 @@ type client struct {
 func (c *client) refreshCache(ctx context.Context) {
 	if !c.cache.IsValid() {
 		if resources, err := c.getResources(ctx); err != nil {
-			c.logger.Error("Failed to refresh cache", "err", err.Error())
+			c.logger.Error("Failed to refresh cache", "error", err.Error())
 		} else {
 			c.logger.Debug("Cache refreshed", "resources", len(resources))
 			c.cache.SetAll(resources)
@@ -155,6 +155,9 @@ func (c *client) GetResources(ctx context.Context, user string, groups []string,
 	}
 	namespaces := strings.Split(namespace, ",")
 
+	var errors []error
+	errorsMutex := &sync.Mutex{}
+
 	var resources [][]byte
 	resourcesMutex := &sync.Mutex{}
 
@@ -168,7 +171,10 @@ func (c *client) GetResources(ctx context.Context, user string, groups []string,
 
 			result, err := c.clientset.CoreV1().RESTClient().Get().AbsPath(resource.Path).Namespace(namespace).Resource(resource.Resource).Param(parameterName, parameterValue).SetHeader("Accept", "application/json;as=Table;v=v1;g=meta.k8s.io,application/json;as=Table;v=v1beta1;g=meta.k8s.io,application/json").SetHeader("Impersonate-User", user).SetHeader("Impersonate-Group", groups...).DoRaw(ctx)
 			if err != nil {
-				c.logger.Error("Failed to get resources", "err", err.Error())
+				c.logger.Error("Failed to get resources", "error", err.Error())
+				errorsMutex.Lock()
+				errors = append(errors, err)
+				errorsMutex.Unlock()
 				return
 			}
 
@@ -179,6 +185,10 @@ func (c *client) GetResources(ctx context.Context, user string, groups []string,
 	}
 
 	resourcesWG.Wait()
+
+	if len(resources) == 0 && len(errors) > 0 {
+		return nil, errors[0]
+	}
 
 	return createResourcesDataFrame(resources, resource.Scope == "Namespaced", wide)
 }
@@ -332,7 +342,7 @@ func (c *client) GetLogs(ctx context.Context, user string, groups []string, reso
 				SinceTime:  &metav1.Time{Time: timeRange.From},
 			}).Stream(ctx)
 			if err != nil {
-				c.logger.Error("Failed to get stream", "err", err.Error())
+				c.logger.Error("Failed to get stream", "error", err.Error())
 				return
 			}
 
@@ -366,7 +376,7 @@ func (c *client) GetLogs(ctx context.Context, user string, groups []string, reso
 
 			timestamp, err := time.Parse(time.RFC3339Nano, parts[0])
 			if err != nil {
-				c.logger.Error("Failed to parse timestamp", "err", err.Error())
+				c.logger.Error("Failed to parse timestamp", "error", err.Error())
 				continue
 			}
 
@@ -445,8 +455,8 @@ func (c *client) Proxy(user string, groups []string, requestUrl string, w http.R
 	// the Kubernetes API server.
 	url, err := url.Parse(fmt.Sprintf("%s/%s", c.restConfig.Host, requestUrl))
 	if err != nil {
-		c.logger.Error("Failed to parse url.", "error", err.Error())
-		http.Error(w, "Failed to parse url.", http.StatusBadGateway)
+		c.logger.Error("Failed to parse url", "error", err.Error())
+		http.Error(w, "Failed to parse url", http.StatusBadGateway)
 		return
 	}
 
@@ -455,8 +465,8 @@ func (c *client) Proxy(user string, groups []string, requestUrl string, w http.R
 	// Create round tripper for the request based on the Kubernetes rest config.
 	tlsConfig, err := rest.TLSConfigFor(c.restConfig)
 	if err != nil {
-		c.logger.Error("Failed to create tls config.", "error", err.Error())
-		http.Error(w, "Failed to create tls config.", http.StatusBadGateway)
+		c.logger.Error("Failed to create tls config", "error", err.Error())
+		http.Error(w, "Failed to create tls config", http.StatusBadGateway)
 		return
 	}
 
@@ -467,15 +477,15 @@ func (c *client) Proxy(user string, groups []string, requestUrl string, w http.R
 
 	restTransportConfig, err := c.restConfig.TransportConfig()
 	if err != nil {
-		c.logger.Error("Failed to create transporter config.", "error", err.Error())
-		http.Error(w, "Failed to create transporter config.", http.StatusBadGateway)
+		c.logger.Error("Failed to create transporter config", "error", err.Error())
+		http.Error(w, "Failed to create transporter config", http.StatusBadGateway)
 		return
 	}
 
 	clientRoundTripper, err := transport.HTTPWrappersForConfig(restTransportConfig, tlsTransport)
 	if err != nil {
-		c.logger.Error("Failed to create round tripper.", "error", err.Error())
-		http.Error(w, "Failed to create round tripper.", http.StatusBadGateway)
+		c.logger.Error("Failed to create round tripper", "error", err.Error())
+		http.Error(w, "Failed to create round tripper", http.StatusBadGateway)
 		return
 	}
 
@@ -506,8 +516,8 @@ func (c *client) Proxy(user string, groups []string, requestUrl string, w http.R
 	}
 
 	proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
-		c.logger.Error("Client request failed.", "error", err.Error())
-		http.Error(w, "Client request failed.", http.StatusBadGateway)
+		c.logger.Error("Client request failed", "error", err.Error())
+		http.Error(w, "Client request failed", http.StatusBadGateway)
 	}
 
 	proxy.ServeHTTP(w, r)

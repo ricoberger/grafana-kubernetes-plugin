@@ -44,25 +44,25 @@ func NewDatasource(ctx context.Context, pCtx backend.DataSourceInstanceSettings)
 	}
 
 	logger := backend.Logger.With("datasource", pCtx.Name).With("datasourceId", pCtx.ID).With("datasourceUid", pCtx.UID).With("instanceId", instanceId.String())
-	logger.Debug("Creating new datasource instance.")
+	logger.Debug("Creating new datasource instance")
 
 	// Load the data source configuration and create the Grafana and Kubernetes
 	// clients.
 	config, err := models.LoadPluginSettings(pCtx)
 	if err != nil {
-		logger.Error("Failed to load plugin settings.", "error", err.Error())
+		logger.Error("Failed to load plugin settings", "error", err.Error())
 		return nil, err
 	}
 
 	grafanaClient, err := grafana.NewClient(ctx, config.ImpersonateUser, config.ImpersonateGroups, config.GrafanaUsername, config.Secrets.GrafanaPassword)
 	if err != nil {
-		logger.Error("Failed to create Grafana client.", "error", err.Error())
+		logger.Error("Failed to create Grafana client", "error", err.Error())
 		return nil, err
 	}
 
 	kubeClient, err := kubernetes.NewClient(ctx, config, logger)
 	if err != nil {
-		logger.Error("Failed to create Kubernets client.", "error", err.Error())
+		logger.Error("Failed to create Kubernets client", "error", err.Error())
 		return nil, err
 	}
 
@@ -78,14 +78,14 @@ func NewDatasource(ctx context.Context, pCtx backend.DataSourceInstanceSettings)
 	if config.GenerateKubeconfig {
 		kubeServer, err = kubernetes.NewServer(config.GenerateKubeconfigPort, kubeClient, grafanaClient, logger)
 		if err != nil {
-			logger.Error("Failed to create Kubernets server.", "error", err.Error())
+			logger.Error("Failed to create Kubernets server", "error", err.Error())
 			return nil, err
 		}
 
 		go func() {
 			for {
 				if err := kubeServer.Start(); err != nil {
-					logger.Debug("Failed to start Kubernets server.", "error", err.Error())
+					logger.Debug("Failed to start Kubernets server", "error", err.Error())
 					time.Sleep(1 * time.Second)
 					continue
 				}
@@ -152,7 +152,7 @@ func (d *Datasource) CheckHealth(ctx context.Context, req *backend.CheckHealthRe
 
 	err := d.kubeClient.CheckHealth(ctx)
 	if err != nil {
-		d.logger.Error("Data source is not working, failed to get namespaces.", "error", err)
+		d.logger.Error("Data source is not working, failed to get namespaces", "error", err)
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 
@@ -162,7 +162,7 @@ func (d *Datasource) CheckHealth(ctx context.Context, req *backend.CheckHealthRe
 		}, nil
 	}
 
-	d.logger.Debug("Data source is working.")
+	d.logger.Debug("Data source is working")
 
 	return &backend.CheckHealthResult{
 		Status:  backend.HealthStatusOk,
@@ -196,7 +196,7 @@ func (d *Datasource) CallResource(ctx context.Context, req *backend.CallResource
 // old datasource instance will be disposed and a new one will be created using
 // NewSampleDatasource factory function.
 func (d *Datasource) Dispose() {
-	d.logger.Debug("Dispose datasource instance.")
+	d.logger.Debug("Dispose datasource instance")
 
 	// If the generate Kubeconfig feature is enabled and a new Kubernetes server
 	// was created, we stop the server when the data source instance is

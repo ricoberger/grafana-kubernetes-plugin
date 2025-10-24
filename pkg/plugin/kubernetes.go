@@ -34,7 +34,7 @@ func (d *Datasource) handleKubernetesResourceIds(ctx context.Context, query conc
 
 	frame, err := d.kubeClient.GetResourceIds(ctx)
 	if err != nil {
-		d.logger.Error("Failed to get resource kinds.", "error", err.Error())
+		d.logger.Error("Failed to get resource ids", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		return backend.ErrorResponseWithErrorSource(err)
@@ -61,7 +61,7 @@ func (d *Datasource) handleKubernetesNamespaces(ctx context.Context, query concu
 
 	frame, err := d.kubeClient.GetNamespaces(ctx)
 	if err != nil {
-		d.logger.Error("Failed to get namespaces.", "error", err.Error())
+		d.logger.Error("Failed to get namespaces", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		return backend.ErrorResponseWithErrorSource(err)
@@ -88,7 +88,7 @@ func (d *Datasource) handleKubernetesResources(ctx context.Context, query concur
 
 	user, err := d.grafanaClient.GetImpersonateUser(ctx, query.Headers)
 	if err != nil {
-		d.logger.Error("Failed to get user.", "error", err.Error())
+		d.logger.Error("Failed to get user", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		return backend.ErrorResponseWithErrorSource(err)
@@ -96,7 +96,7 @@ func (d *Datasource) handleKubernetesResources(ctx context.Context, query concur
 
 	groups, err := d.grafanaClient.GetImpersonateGroups(ctx, query.Headers)
 	if err != nil {
-		d.logger.Error("Failed to get groups.", "error", err.Error())
+		d.logger.Error("Failed to get groups", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		return backend.ErrorResponseWithErrorSource(err)
@@ -105,7 +105,7 @@ func (d *Datasource) handleKubernetesResources(ctx context.Context, query concur
 	var qm models.QueryModelKubernetesResources
 	err = json.Unmarshal(query.DataQuery.JSON, &qm)
 	if err != nil {
-		d.logger.Error("Failed to unmarshal query model.", "error", err.Error())
+		d.logger.Error("Failed to unmarshal query model", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		return backend.ErrorResponseWithErrorSource(err)
@@ -122,7 +122,7 @@ func (d *Datasource) handleKubernetesResources(ctx context.Context, query concur
 
 	frame, err := d.kubeClient.GetResources(ctx, user, groups, qm.Resource, qm.Namespace, qm.ParameterName, qm.ParameterValue, qm.Wide)
 	if err != nil {
-		d.logger.Error("Failed to get resource kinds.", "error", err.Error())
+		d.logger.Error("Failed to get resources", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		return backend.ErrorResponseWithErrorSource(err)
@@ -150,7 +150,7 @@ func (d *Datasource) handleKubernetesContainers(ctx context.Context, query concu
 
 	user, err := d.grafanaClient.GetImpersonateUser(ctx, query.Headers)
 	if err != nil {
-		d.logger.Error("Failed to get user.", "error", err.Error())
+		d.logger.Error("Failed to get user", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		return backend.ErrorResponseWithErrorSource(err)
@@ -158,7 +158,7 @@ func (d *Datasource) handleKubernetesContainers(ctx context.Context, query concu
 
 	groups, err := d.grafanaClient.GetImpersonateGroups(ctx, query.Headers)
 	if err != nil {
-		d.logger.Error("Failed to get groups.", "error", err.Error())
+		d.logger.Error("Failed to get groups", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		return backend.ErrorResponseWithErrorSource(err)
@@ -167,7 +167,7 @@ func (d *Datasource) handleKubernetesContainers(ctx context.Context, query concu
 	var qm models.QueryModelKubernetesContainers
 	err = json.Unmarshal(query.DataQuery.JSON, &qm)
 	if err != nil {
-		d.logger.Error("Failed to unmarshal query model.", "error", err.Error())
+		d.logger.Error("Failed to unmarshal query model", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		return backend.ErrorResponseWithErrorSource(err)
@@ -182,7 +182,7 @@ func (d *Datasource) handleKubernetesContainers(ctx context.Context, query concu
 
 	frame, err := d.kubeClient.GetContainers(ctx, user, groups, qm.Resource, qm.Namespace, qm.Name)
 	if err != nil {
-		d.logger.Error("Failed to get containers.", "error", err.Error())
+		d.logger.Error("Failed to get containers", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		return backend.ErrorResponseWithErrorSource(err)
@@ -209,7 +209,7 @@ func (d *Datasource) handleKubernetesLogs(ctx context.Context, query concurrent.
 
 	user, err := d.grafanaClient.GetImpersonateUser(ctx, query.Headers)
 	if err != nil {
-		d.logger.Error("Failed to get user.", "error", err.Error())
+		d.logger.Error("Failed to get user", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		return backend.ErrorResponseWithErrorSource(err)
@@ -217,7 +217,7 @@ func (d *Datasource) handleKubernetesLogs(ctx context.Context, query concurrent.
 
 	groups, err := d.grafanaClient.GetImpersonateGroups(ctx, query.Headers)
 	if err != nil {
-		d.logger.Error("Failed to get groups.", "error", err.Error())
+		d.logger.Error("Failed to get groups", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		return backend.ErrorResponseWithErrorSource(err)
@@ -226,7 +226,7 @@ func (d *Datasource) handleKubernetesLogs(ctx context.Context, query concurrent.
 	var qm models.QueryModelKubernetesLogs
 	err = json.Unmarshal(query.DataQuery.JSON, &qm)
 	if err != nil {
-		d.logger.Error("Failed to unmarshal query model.", "error", err.Error())
+		d.logger.Error("Failed to unmarshal query model", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		return backend.ErrorResponseWithErrorSource(err)
@@ -243,7 +243,7 @@ func (d *Datasource) handleKubernetesLogs(ctx context.Context, query concurrent.
 
 	frame, err := d.kubeClient.GetLogs(ctx, user, groups, qm.Resource, qm.Namespace, qm.Name, qm.Container, qm.Filter, query.DataQuery.TimeRange)
 	if err != nil {
-		d.logger.Error("Failed to get logs.", "error", err.Error())
+		d.logger.Error("Failed to get logs", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		return backend.ErrorResponseWithErrorSource(err)

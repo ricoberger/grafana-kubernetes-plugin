@@ -29,7 +29,7 @@ func (d *Datasource) handleHelmReleases(ctx context.Context, query concurrent.Qu
 
 	user, err := d.grafanaClient.GetImpersonateUser(ctx, query.Headers)
 	if err != nil {
-		d.logger.Error("Failed to get user.", "error", err.Error())
+		d.logger.Error("Failed to get user", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		return backend.ErrorResponseWithErrorSource(err)
@@ -37,7 +37,7 @@ func (d *Datasource) handleHelmReleases(ctx context.Context, query concurrent.Qu
 
 	groups, err := d.grafanaClient.GetImpersonateGroups(ctx, query.Headers)
 	if err != nil {
-		d.logger.Error("Failed to get groups.", "error", err.Error())
+		d.logger.Error("Failed to get groups", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		return backend.ErrorResponseWithErrorSource(err)
@@ -46,7 +46,7 @@ func (d *Datasource) handleHelmReleases(ctx context.Context, query concurrent.Qu
 	var qm models.QueryModelHelmReleases
 	err = json.Unmarshal(query.DataQuery.JSON, &qm)
 	if err != nil {
-		d.logger.Error("Failed to unmarshal query model.", "error", err.Error())
+		d.logger.Error("Failed to unmarshal query model", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		return backend.ErrorResponseWithErrorSource(err)
@@ -60,7 +60,7 @@ func (d *Datasource) handleHelmReleases(ctx context.Context, query concurrent.Qu
 	restConfig := d.kubeClient.RestConfig()
 	helmClient, err := helm.NewClient(user, groups, qm.Namespace, &restConfig, d.logger)
 	if err != nil {
-		d.logger.Error("Failed to create Helm client.", "error", err.Error())
+		d.logger.Error("Failed to create Helm client", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		return backend.ErrorResponseWithErrorSource(err)
@@ -68,7 +68,7 @@ func (d *Datasource) handleHelmReleases(ctx context.Context, query concurrent.Qu
 
 	frame, err := helmClient.ListReleases()
 	if err != nil {
-		d.logger.Error("Failed to get Helm releases.", "error", err.Error())
+		d.logger.Error("Failed to get Helm releases", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		return backend.ErrorResponseWithErrorSource(err)
@@ -93,7 +93,7 @@ func (d *Datasource) handleHelmReleaseHistory(ctx context.Context, query concurr
 
 	user, err := d.grafanaClient.GetImpersonateUser(ctx, query.Headers)
 	if err != nil {
-		d.logger.Error("Failed to get user.", "error", err.Error())
+		d.logger.Error("Failed to get user", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		return backend.ErrorResponseWithErrorSource(err)
@@ -101,7 +101,7 @@ func (d *Datasource) handleHelmReleaseHistory(ctx context.Context, query concurr
 
 	groups, err := d.grafanaClient.GetImpersonateGroups(ctx, query.Headers)
 	if err != nil {
-		d.logger.Error("Failed to get groups.", "error", err.Error())
+		d.logger.Error("Failed to get groups", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		return backend.ErrorResponseWithErrorSource(err)
@@ -110,7 +110,7 @@ func (d *Datasource) handleHelmReleaseHistory(ctx context.Context, query concurr
 	var qm models.QueryModelHelmReleaseHistory
 	err = json.Unmarshal(query.DataQuery.JSON, &qm)
 	if err != nil {
-		d.logger.Error("Failed to unmarshal query model.", "error", err.Error())
+		d.logger.Error("Failed to unmarshal query model", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		return backend.ErrorResponseWithErrorSource(err)
@@ -125,7 +125,7 @@ func (d *Datasource) handleHelmReleaseHistory(ctx context.Context, query concurr
 	restConfig := d.kubeClient.RestConfig()
 	helmClient, err := helm.NewClient(user, groups, qm.Namespace, &restConfig, d.logger)
 	if err != nil {
-		d.logger.Error("Failed to create Helm client.", "error", err.Error())
+		d.logger.Error("Failed to create Helm client", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		return backend.ErrorResponseWithErrorSource(err)
@@ -133,7 +133,7 @@ func (d *Datasource) handleHelmReleaseHistory(ctx context.Context, query concurr
 
 	frame, err := helmClient.ListReleaseHistory(qm.Name)
 	if err != nil {
-		d.logger.Error("Failed to get Helm release history.", "error", err.Error())
+		d.logger.Error("Failed to get Helm release history", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		return backend.ErrorResponseWithErrorSource(err)
@@ -154,7 +154,7 @@ func (d *Datasource) handleHelmGetRelease(w http.ResponseWriter, r *http.Request
 
 	version, err := strconv.ParseInt(r.PathValue("version"), 10, 64)
 	if err != nil {
-		d.logger.Error("Failed to parse release version.", "error", err.Error())
+		d.logger.Error("Failed to parse release version", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 
@@ -164,7 +164,7 @@ func (d *Datasource) handleHelmGetRelease(w http.ResponseWriter, r *http.Request
 
 	user, err := d.grafanaClient.GetImpersonateUser(ctx, r.Header)
 	if err != nil {
-		d.logger.Error("Failed to get user.", "error", err.Error())
+		d.logger.Error("Failed to get user", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 
@@ -174,7 +174,7 @@ func (d *Datasource) handleHelmGetRelease(w http.ResponseWriter, r *http.Request
 
 	groups, err := d.grafanaClient.GetImpersonateGroups(ctx, r.Header)
 	if err != nil {
-		d.logger.Error("Failed to get groups.", "error", err.Error())
+		d.logger.Error("Failed to get groups", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 
@@ -192,7 +192,7 @@ func (d *Datasource) handleHelmGetRelease(w http.ResponseWriter, r *http.Request
 	restConfig := d.kubeClient.RestConfig()
 	helmClient, err := helm.NewClient(user, groups, namespace, &restConfig, d.logger)
 	if err != nil {
-		d.logger.Error("Failed to create Helm client.", "error", err.Error())
+		d.logger.Error("Failed to create Helm client", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 
@@ -202,7 +202,7 @@ func (d *Datasource) handleHelmGetRelease(w http.ResponseWriter, r *http.Request
 
 	release, err := helmClient.GetRelease(name, version)
 	if err != nil {
-		d.logger.Error("Failed to get Helm release.", "error", err.Error())
+		d.logger.Error("Failed to get Helm release", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 
@@ -229,7 +229,7 @@ func (d *Datasource) handleHelmRollback(w http.ResponseWriter, r *http.Request) 
 
 	version, err := strconv.ParseInt(r.PathValue("version"), 10, 64)
 	if err != nil {
-		d.logger.Error("Failed to parse release version.", "error", err.Error())
+		d.logger.Error("Failed to parse release version", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 
@@ -239,7 +239,7 @@ func (d *Datasource) handleHelmRollback(w http.ResponseWriter, r *http.Request) 
 
 	user, err := d.grafanaClient.GetImpersonateUser(ctx, r.Header)
 	if err != nil {
-		d.logger.Error("Failed to get user.", "error", err.Error())
+		d.logger.Error("Failed to get user", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 
@@ -249,7 +249,7 @@ func (d *Datasource) handleHelmRollback(w http.ResponseWriter, r *http.Request) 
 
 	groups, err := d.grafanaClient.GetImpersonateGroups(ctx, r.Header)
 	if err != nil {
-		d.logger.Error("Failed to get groups.", "error", err.Error())
+		d.logger.Error("Failed to get groups", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 
@@ -267,7 +267,7 @@ func (d *Datasource) handleHelmRollback(w http.ResponseWriter, r *http.Request) 
 	var options helm.RollbackOptions
 	err = json.NewDecoder(r.Body).Decode(&options)
 	if err != nil {
-		d.logger.Error("Failed to unmarshal options.", "error", err.Error())
+		d.logger.Error("Failed to unmarshal options", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 
@@ -278,7 +278,7 @@ func (d *Datasource) handleHelmRollback(w http.ResponseWriter, r *http.Request) 
 	restConfig := d.kubeClient.RestConfig()
 	helmClient, err := helm.NewClient(user, groups, namespace, &restConfig, d.logger)
 	if err != nil {
-		d.logger.Error("Failed to create Helm client.", "error", err.Error())
+		d.logger.Error("Failed to create Helm client", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 
@@ -288,7 +288,7 @@ func (d *Datasource) handleHelmRollback(w http.ResponseWriter, r *http.Request) 
 
 	err = helmClient.RollbackRelease(name, version, options)
 	if err != nil {
-		d.logger.Error("Failed to rollback Helm release.", "error", err.Error())
+		d.logger.Error("Failed to rollback Helm release", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 
@@ -306,7 +306,7 @@ func (d *Datasource) handleHelmUninstall(w http.ResponseWriter, r *http.Request)
 
 	version, err := strconv.ParseInt(r.PathValue("version"), 10, 64)
 	if err != nil {
-		d.logger.Error("Failed to parse release version.", "error", err.Error())
+		d.logger.Error("Failed to parse release version", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 
@@ -316,7 +316,7 @@ func (d *Datasource) handleHelmUninstall(w http.ResponseWriter, r *http.Request)
 
 	user, err := d.grafanaClient.GetImpersonateUser(ctx, r.Header)
 	if err != nil {
-		d.logger.Error("Failed to get user.", "error", err.Error())
+		d.logger.Error("Failed to get user", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 
@@ -326,7 +326,7 @@ func (d *Datasource) handleHelmUninstall(w http.ResponseWriter, r *http.Request)
 
 	groups, err := d.grafanaClient.GetImpersonateGroups(ctx, r.Header)
 	if err != nil {
-		d.logger.Error("Failed to get groups.", "error", err.Error())
+		d.logger.Error("Failed to get groups", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 
@@ -344,7 +344,7 @@ func (d *Datasource) handleHelmUninstall(w http.ResponseWriter, r *http.Request)
 	var options helm.UninstallOptions
 	err = json.NewDecoder(r.Body).Decode(&options)
 	if err != nil {
-		d.logger.Error("Failed to unmarshal options.", "error", err.Error())
+		d.logger.Error("Failed to unmarshal options", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 
@@ -355,7 +355,7 @@ func (d *Datasource) handleHelmUninstall(w http.ResponseWriter, r *http.Request)
 	restConfig := d.kubeClient.RestConfig()
 	helmClient, err := helm.NewClient(user, groups, namespace, &restConfig, d.logger)
 	if err != nil {
-		d.logger.Error("Failed to create Helm client.", "error", err.Error())
+		d.logger.Error("Failed to create Helm client", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 
@@ -365,7 +365,7 @@ func (d *Datasource) handleHelmUninstall(w http.ResponseWriter, r *http.Request)
 
 	info, err := helmClient.UninstallRelease(name, options)
 	if err != nil {
-		d.logger.Error("Failed to uninstall Helm release.", "error", err.Error())
+		d.logger.Error("Failed to uninstall Helm release", "error", err.Error())
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 
