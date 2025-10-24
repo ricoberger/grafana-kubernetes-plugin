@@ -32,15 +32,15 @@ type server struct {
 // If the server can not be started an error is returned. If the server is
 // stopped via the "Stop" method no error is returned.
 func (s *server) Start() error {
-	s.logger.Info("Start server.", "address", s.server.Addr)
+	s.logger.Info("Start server", "address", s.server.Addr)
 
 	if err := s.server.ListenAndServe(); err != nil {
 		if errors.Is(err, http.ErrServerClosed) {
-			s.logger.Debug("Server closed.")
+			s.logger.Debug("Server closed")
 			return nil
 		}
 
-		s.logger.Error("Server died unexpected.", "error", err.Error())
+		s.logger.Error("Server died unexpected", "error", err.Error())
 		return err
 	}
 
@@ -54,11 +54,11 @@ func (s *server) Stop() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
-	s.logger.Debug("Start shutdown of the server.")
+	s.logger.Debug("Start shutdown of the server")
 
 	err := s.server.Shutdown(ctx)
 	if err != nil {
-		s.logger.Error("Graceful shutdown of the server failed.", "error", err.Error())
+		s.logger.Error("Graceful shutdown of the server failed", "error", err.Error())
 		return err
 	}
 
