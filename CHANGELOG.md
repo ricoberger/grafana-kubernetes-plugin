@@ -1,5 +1,21 @@
 # Changelog
 
+## [v0.2.0](https://github.com/ricoberger/grafana-kubernetes-plugin/tree/v0.2.0) (2025-10-24)
+
+[Full Changelog](https://github.com/ricoberger/grafana-kubernetes-plugin/compare/v0.1.0...v0.2.0)
+
+- Improve Logs and Error Handling [\#18](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/18) ([ricoberger](https://github.com/ricoberger))
+- Improve Installation Instructions [\#17](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/17) ([ricoberger](https://github.com/ricoberger))
+- Add Metrics to Kubernetes Resources [\#16](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/16) ([ricoberger](https://github.com/ricoberger))
+- Replace Link with Query in Traces Integration [\#15](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/15) ([ricoberger](https://github.com/ricoberger))
+- Add Support for Metrics [\#14](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/14) ([ricoberger](https://github.com/ricoberger))
+- Add Support to Link Traces [\#12](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/12) ([ricoberger](https://github.com/ricoberger))
+- Improve Typings [\#11](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/11) ([ricoberger](https://github.com/ricoberger))
+- Apply Template Variables to All Fields [\#10](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/10) ([ricoberger](https://github.com/ricoberger))
+- Add Dashboard [\#9](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/9) ([ricoberger](https://github.com/ricoberger))
+- Improve Query Editor [\#8](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/8) ([ricoberger](https://github.com/ricoberger))
+- Add More Variable Types [\#7](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/7) ([ricoberger](https://github.com/ricoberger))
+
 ## [v0.1.0](https://github.com/ricoberger/grafana-kubernetes-plugin/tree/v0.1.0) (2025-10-16)
 
 [Full Changelog](https://github.com/ricoberger/grafana-kubernetes-plugin/compare/04df6a3abc81a487afe3c147c56cc929e31f3032...v0.1.0)
