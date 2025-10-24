@@ -12,7 +12,7 @@ datasources:
     jsonData:
       clusterProvider: path
       clusterPath: /kubeconfig-grafana.yaml
-      clusterContext: grafana
+      clusterContext: default
       grafanaUsername: admin
       impersonateUser: true
       impersonateGroups: false
