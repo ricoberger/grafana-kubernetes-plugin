@@ -50,15 +50,23 @@ Helm and Flux.
 
 ## Installation
 
-Before you can install the plugin, you have to add `ricoberger-kubernetes-app`
-and `ricoberger-kubernetes-datasource` to the
-[`allow_loading_unsigned_plugins`](https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#allow_loading_unsigned_plugins)
-configuration option or to the `GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS`
-environment variable. The plugin can then be installed by adding
-`ricoberger-kubernetes-app@<VERSION>@https://github.com/ricoberger/grafana-kubernetes-plugin/releases/download/v<VERSION>/ricoberger-kubernetes-app-<VERSION>.zip`
-to the
-[`preinstall_sync`](https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#preinstall_sync)
-configuration option or the `GF_PLUGINS_PREINSTALL_SYNC` environment variable.
+1. Before you can install the plugin, you have to add
+   `ricoberger-kubernetes-app` and `ricoberger-kubernetes-datasource` to the
+   [`allow_loading_unsigned_plugins`](https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#allow_loading_unsigned_plugins)
+   configuration option or to the `GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS`
+   environment variable.
+2. The plugin can then be installed by adding
+   `ricoberger-kubernetes-app@<VERSION>@https://github.com/ricoberger/grafana-kubernetes-plugin/releases/download/v<VERSION>/ricoberger-kubernetes-app-<VERSION>.zip`
+   to the
+   [`preinstall_sync`](https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#preinstall_sync)
+   configuration option or the `GF_PLUGINS_PREINSTALL_SYNC` environment
+   variable.
+3. Once the plugin is installed, you have to activate the app in you Grafana
+   instance by navigating to **Administration** -> **Plugins and data** ->
+   **Plugins** -> **Kubernetes** and clicking on the **Enable** button
+   (`<GRAFANA-INSTANCE-URL>/plugins/ricoberger-kubernetes-app`).
+4. Last but not least, you have to add a new Kubernetes data source to your
+   Grafana instance.
 
 ### Configuration File
 
