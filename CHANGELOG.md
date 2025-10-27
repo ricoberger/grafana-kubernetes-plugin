@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.2.1](https://github.com/ricoberger/grafana-kubernetes-plugin/tree/v0.2.1) (2025-10-27)
+
+[Full Changelog](https://github.com/ricoberger/grafana-kubernetes-plugin/compare/v0.2.0...v0.2.1)
+
+- Add Kubeconfig Name as Prefix for User in Kubeconfig [\#19](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/19) ([ricoberger](https://github.com/ricoberger))
+
 ## [v0.2.0](https://github.com/ricoberger/grafana-kubernetes-plugin/tree/v0.2.0) (2025-10-24)
 
 [Full Changelog](https://github.com/ricoberger/grafana-kubernetes-plugin/compare/v0.1.0...v0.2.0)
