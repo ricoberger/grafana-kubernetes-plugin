@@ -253,7 +253,7 @@ func (c *client) GetImpersonateGroups(ctx context.Context, headers http.Header) 
 		return nil, fmt.Errorf("failed to get teams: %s", getTeamsRes.Error())
 	}
 
-	groups := make([]string, len(getTeamsRes.Payload))
+	var groups []string
 	for _, team := range getTeamsRes.Payload {
 		groups = append(groups, team.Name)
 	}

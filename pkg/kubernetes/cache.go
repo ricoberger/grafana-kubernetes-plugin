@@ -37,7 +37,7 @@ func (c *cache) GetKeys() []string {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
 
-	keys := make([]string, 0, len(c.resources))
+	var keys []string
 	for k := range c.resources {
 		keys = append(keys, k)
 	}
