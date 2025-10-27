@@ -340,13 +340,13 @@ func (d *Datasource) handleKubernetesKubeconfig(w http.ResponseWriter, r *http.R
 			Name: d.generateKubeconfigName,
 			Context: clientcmdapiv1.Context{
 				Cluster:   d.generateKubeconfigName,
-				AuthInfo:  user,
+				AuthInfo:  fmt.Sprintf("%s-%s", d.generateKubeconfigName, user),
 				Namespace: "default",
 			},
 		}},
 		CurrentContext: d.generateKubeconfigName,
 		AuthInfos: []clientcmdapiv1.NamedAuthInfo{{
-			Name: user,
+			Name: fmt.Sprintf("%s-%s", d.generateKubeconfigName, user),
 			AuthInfo: clientcmdapiv1.AuthInfo{
 				// Token: token,
 				Exec: &clientcmdapiv1.ExecConfig{
