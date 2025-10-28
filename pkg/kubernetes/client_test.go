@@ -20,6 +20,7 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/rest"
 )
 
 func setupTest(t *testing.T) (Client, func(), error) {
@@ -259,7 +260,7 @@ func TestGetResource(t *testing.T) {
 }
 
 func TestProxy(t *testing.T) {
-	client, teardown, err := setupTest(t)
+	kubeClient, teardown, err := setupTest(t)
 	defer teardown()
 	require.NoError(t, err)
 
@@ -267,7 +268,7 @@ func TestProxy(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "https://localhost:3000/api/datasources/proxy/uid/UID/proxy/api/v1/namespaces/default/pods?limit=500", nil)
 		w := httptest.NewRecorder()
 
-		client.Proxy("", nil, "api/v1/namespaces/default/pods?limit=500", w, req)
+		kubeClient.Proxy("", nil, "api/v1/namespaces/default/pods?limit=500", w, req)
 		res := w.Result()
 		defer res.Body.Close()
 
@@ -281,7 +282,7 @@ func TestProxy(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "https://localhost:3000/api/datasources/proxy/uid/UID/proxy/api/v1/namespaces/default/pods?limit=500", nil)
 		w := httptest.NewRecorder()
 
-		client.Proxy("test@user", []string{"test@group"}, "api/v1/namespaces/default/pods?limit=500", w, req)
+		kubeClient.Proxy("test@user", []string{"test@group"}, "api/v1/namespaces/default/pods?limit=500", w, req)
 		res := w.Result()
 		defer res.Body.Close()
 
@@ -292,5 +293,57 @@ func TestProxy(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, "Failure", status.Status)
 		require.Equal(t, metav1.StatusReasonForbidden, status.Reason)
+	})
+
+	t.Run("should not use existing impersonate headers when user and groups are not set", func(t *testing.T) {
+		testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			require.Equal(t, []string(nil), r.Header.Values("Impersonate-User"))
+			require.Equal(t, []string(nil), r.Header.Values("Impersonate-Uid"))
+			require.Equal(t, []string(nil), r.Header.Values("Impersonate-Group"))
+		}))
+		defer testServer.Close()
+
+		client := &client{
+			restConfig: &rest.Config{
+				Host: testServer.URL,
+			},
+		}
+
+		req := httptest.NewRequest(http.MethodGet, testServer.URL, nil)
+		req.Header.Add("Impersonate-User", "existinguser")
+		req.Header.Add("Impersonate-Uid", "existinguid")
+		req.Header.Add("Impersonate-Group", "existinggroup1")
+		req.Header.Add("Impersonate-Group", "existinggroup2")
+		w := httptest.NewRecorder()
+
+		client.Proxy("", nil, "/", w, req)
+		res := w.Result()
+		defer res.Body.Close()
+	})
+
+	t.Run("should not use existing impersonate headers when user and groups are set", func(t *testing.T) {
+		testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			require.Equal(t, []string{"testuser"}, r.Header.Values("Impersonate-User"))
+			require.Equal(t, []string(nil), r.Header.Values("Impersonate-Uid"))
+			require.Equal(t, []string{"testgroup1", "testgroup2"}, r.Header.Values("Impersonate-Group"))
+		}))
+		defer testServer.Close()
+
+		client := &client{
+			restConfig: &rest.Config{
+				Host: testServer.URL,
+			},
+		}
+
+		req := httptest.NewRequest(http.MethodGet, testServer.URL, nil)
+		req.Header.Add("Impersonate-User", "existinguser")
+		req.Header.Add("Impersonate-Uid", "existinguid")
+		req.Header.Add("Impersonate-Group", "existinggroup1")
+		req.Header.Add("Impersonate-Group", "existinggroup2")
+		w := httptest.NewRecorder()
+
+		client.Proxy("testuser", []string{"testgroup1", "testgroup2"}, "/", w, req)
+		res := w.Result()
+		defer res.Body.Close()
 	})
 }
