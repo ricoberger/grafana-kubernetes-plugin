@@ -430,7 +430,7 @@ function DetailsActionTop(props: DetailsActionTopProps) {
           props.resource === 'nodes'
             ? 'nodes.metrics.k8s.io'
             : 'pods.metrics.k8s.io',
-        namespace: selector ? props.namespace : '*',
+        namespace: props.resource === 'nodes' ? '*' : props.namespace,
         parameterName: selector ? 'labelSelector' : 'fieldSelector',
         parameterValue: selector
           ? selector
