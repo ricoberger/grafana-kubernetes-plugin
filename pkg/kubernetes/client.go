@@ -506,10 +506,21 @@ func (c *client) Proxy(user string, groups []string, requestUrl string, w http.R
 			req.Header = make(http.Header)
 		}
 
+		// Always delete the impersonate user, uid and group headers, to ensure
+		// that privileges can not be escalated. Then set the impersonate user
+		// and group header if the feature is enabled and a user and list of
+		// groups was provided.
+		//
+		// NOTE: This also means that we do not support the "--as", "--as-uid"
+		// and "--as-group" flags of kubectl.
 		req.Header.Del("Impersonate-User")
+		req.Header.Del("Impersonate-Uid")
 		req.Header.Del("Impersonate-Group")
 
-		req.Header.Add("Impersonate-User", user)
+		if user != "" {
+			req.Header.Add("Impersonate-User", user)
+		}
+
 		for _, group := range groups {
 			req.Header.Add("Impersonate-Group", group)
 		}
