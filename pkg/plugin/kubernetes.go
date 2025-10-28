@@ -424,13 +424,13 @@ func (d *Datasource) handleKubernetesProxy(w http.ResponseWriter, r *http.Reques
 	}
 
 	pathname := r.PathValue("pathname")
-	requestURL := fmt.Sprintf("%s?%s", pathname, r.URL.RawQuery)
+	requestUrl := fmt.Sprintf("%s?%s", pathname, r.URL.RawQuery)
 
-	d.logger.Info("handleKubernetesProxy request", "user", user, "groups", groups, "method", r.Method, "requestURL", requestURL)
+	d.logger.Info("handleKubernetesProxy request", "user", user, "groups", groups, "method", r.Method, "requestUrl", requestUrl)
 	span.SetAttributes(attribute.Key("user").String(user))
 	span.SetAttributes(attribute.Key("groups").StringSlice(groups))
 	span.SetAttributes(attribute.Key("method").String(r.Method))
-	span.SetAttributes(attribute.Key("requestURL").String(requestURL))
+	span.SetAttributes(attribute.Key("requestUrl").String(requestUrl))
 
-	d.kubeClient.Proxy(user, groups, requestURL, w, r)
+	d.kubeClient.Proxy(user, groups, requestUrl, w, r)
 }
