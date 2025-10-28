@@ -19,7 +19,9 @@ import (
 	"github.com/grafana/grafana-openapi-client-go/client/users"
 	"github.com/grafana/grafana-openapi-client-go/models"
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
+	"github.com/grafana/grafana-plugin-sdk-go/backend/tracing"
 	"github.com/hashicorp/golang-lru/v2/expirable"
+	"go.opentelemetry.io/otel/codes"
 )
 
 const (
@@ -27,7 +29,7 @@ const (
 )
 
 type Client interface {
-	GetURL() *url.URL
+	GetUrl() *url.URL
 	GetImpersonateUser(ctx context.Context, headers http.Header) (string, error)
 	GetImpersonateGroups(ctx context.Context, headers http.Header) ([]string, error)
 	CreateUserToken(ctx context.Context, user string, tokenTTL int64) (string, error)
@@ -36,7 +38,7 @@ type Client interface {
 type client struct {
 	impersonateUser      bool
 	impersonateGroups    bool
-	appURL               *url.URL
+	appUrl               *url.URL
 	client               *goapi.GrafanaHTTPAPI
 	usersCache           *expirable.LRU[int64, string]
 	serviceAccountsCache *expirable.LRU[int64, string]
@@ -46,12 +48,12 @@ type client struct {
 func NewClient(ctx context.Context, impersonateUser, impersonateGroups bool, username, password string) (Client, error) {
 	pCtx := backend.PluginConfigFromContext(ctx)
 
-	grafanaAppURL, err := pCtx.GrafanaConfig.AppURL()
+	grafanaAppUrl, err := pCtx.GrafanaConfig.AppURL()
 	if err != nil {
 		return nil, err
 	}
 
-	parsedGrafanaAppURL, err := url.Parse(grafanaAppURL)
+	parsedGrafanaAppUrl, err := url.Parse(grafanaAppUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -78,11 +80,11 @@ func NewClient(ctx context.Context, impersonateUser, impersonateGroups bool, use
 	return &client{
 		impersonateUser:   impersonateUser,
 		impersonateGroups: impersonateGroups,
-		appURL:            parsedGrafanaAppURL,
+		appUrl:            parsedGrafanaAppUrl,
 		client: goapi.NewHTTPClientWithConfig(strfmt.Default, &goapi.TransportConfig{
-			Host:      parsedGrafanaAppURL.Host,
-			BasePath:  strings.TrimLeft(parsedGrafanaAppURL.Path+"/api", "/"),
-			Schemes:   []string{parsedGrafanaAppURL.Scheme},
+			Host:      parsedGrafanaAppUrl.Host,
+			BasePath:  strings.TrimLeft(parsedGrafanaAppUrl.Path+"/api", "/"),
+			Schemes:   []string{parsedGrafanaAppUrl.Scheme},
 			BasicAuth: url.UserPassword(username, password),
 			OrgID:     pCtx.OrgID,
 		}),
@@ -92,8 +94,8 @@ func NewClient(ctx context.Context, impersonateUser, impersonateGroups bool, use
 	}, nil
 }
 
-func (c *client) GetURL() *url.URL {
-	return c.appURL
+func (c *client) GetUrl() *url.URL {
+	return c.appUrl
 }
 
 // GetImpersonateUser returns the user name when the impersonate user feature or
@@ -104,6 +106,9 @@ func (c *client) GetURL() *url.URL {
 // feature is enabled, because otherwise the user would have the access rights
 // of the Kubeconfig used for the data source, when the user is not in a group.
 func (c *client) GetImpersonateUser(ctx context.Context, headers http.Header) (string, error) {
+	ctx, span := tracing.DefaultTracer().Start(ctx, "GetImpersonateUser")
+	defer span.End()
+
 	if !c.impersonateUser && !c.impersonateGroups {
 		return "", nil
 	}
@@ -121,40 +126,57 @@ func (c *client) GetImpersonateUser(ctx context.Context, headers http.Header) (s
 // a service account, the id of the service account can be extracted from the
 // subject claim by removing the "service-account:" prefix.
 func (c *client) getUser(ctx context.Context, headers http.Header) (string, error) {
+	ctx, span := tracing.DefaultTracer().Start(ctx, "getUser")
+	defer span.End()
+
 	var claims jwt.MapClaims
 
 	_, _, err := jwt.NewParser().ParseUnverified(headers.Get(backend.GrafanaUserSignInTokenHeaderName), &claims)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return "", err
 	}
 
 	tokenSubject, err := claims.GetSubject()
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return "", err
 	}
 
 	tokenType, okTokenType := claims["type"].(string)
 	if !okTokenType {
-		return "", fmt.Errorf("failed to get token type")
+		err := fmt.Errorf("failed to get token type")
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return "", err
 	}
 
 	switch tokenType {
 	case "user":
 		userId, err := strconv.ParseInt(strings.TrimPrefix(tokenSubject, "user:"), 10, 64)
 		if err != nil {
-			return "", nil
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
+			return "", err
 		}
 
 		return c.getUserByUserId(ctx, userId)
 	case "service-account":
 		userId, err := strconv.ParseInt(strings.TrimPrefix(tokenSubject, "service-account:"), 10, 64)
 		if err != nil {
-			return "", nil
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
+			return "", err
 		}
 
 		return c.getUserByServiceAccountId(ctx, userId)
 	default:
-		return "", fmt.Errorf("invalid token type")
+		err := fmt.Errorf("invalid token type")
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return "", err
 	}
 }
 
@@ -162,6 +184,9 @@ func (c *client) getUser(ctx context.Context, headers http.Header) (string, erro
 // users cache contains the provided id, the user is returned from the cache,
 // otherwise the Grafana API is used to get the user name.
 func (c *client) getUserByUserId(ctx context.Context, id int64) (string, error) {
+	ctx, span := tracing.DefaultTracer().Start(ctx, "getUserByUserId")
+	defer span.End()
+
 	if value, ok := c.usersCache.Get(id); ok {
 		return value, nil
 	}
@@ -171,11 +196,16 @@ func (c *client) getUserByUserId(ctx context.Context, id int64) (string, error) 
 		Context: ctx,
 	})
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return "", err
 	}
 
 	if !res.IsSuccess() {
-		return "", fmt.Errorf("failed to get user: %s", res.Error())
+		err := fmt.Errorf("failed to get user: %s", res.Error())
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return "", err
 	}
 
 	user := res.Payload.Login
@@ -189,6 +219,9 @@ func (c *client) getUserByUserId(ctx context.Context, id int64) (string, error) 
 // from the Grafana API. The user name is then the service account name without
 // the service account prefix.
 func (c *client) getUserByServiceAccountId(ctx context.Context, id int64) (string, error) {
+	ctx, span := tracing.DefaultTracer().Start(ctx, "getUserByServiceAccountId")
+	defer span.End()
+
 	if value, ok := c.serviceAccountsCache.Get(id); ok {
 		return value, nil
 	}
@@ -198,11 +231,16 @@ func (c *client) getUserByServiceAccountId(ctx context.Context, id int64) (strin
 		Context:          ctx,
 	})
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return "", err
 	}
 
 	if !res.IsSuccess() {
-		return "", fmt.Errorf("failed to get service account: %s", res.Error())
+		err := fmt.Errorf("failed to get service account: %s", res.Error())
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return "", err
 	}
 
 	user := strings.TrimPrefix(res.Payload.Name, serviceAccountPrefix)
@@ -216,12 +254,17 @@ func (c *client) getUserByServiceAccountId(ctx context.Context, id int64) (strin
 // Grafana API and create the groups slice. If the groups cache already contains
 // an entry for the user name, the groups are returned from the cache.
 func (c *client) GetImpersonateGroups(ctx context.Context, headers http.Header) ([]string, error) {
+	ctx, span := tracing.DefaultTracer().Start(ctx, "GetImpersonateGroups")
+	defer span.End()
+
 	if !c.impersonateGroups {
 		return nil, nil
 	}
 
 	user, err := c.getUser(ctx, headers)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 
@@ -234,11 +277,16 @@ func (c *client) GetImpersonateGroups(ctx context.Context, headers http.Header) 
 		Context:      ctx,
 	})
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 
 	if !getUserRes.IsSuccess() {
-		return nil, fmt.Errorf("failed to get user: %s", getUserRes.Error())
+		err := fmt.Errorf("failed to get user: %s", getUserRes.Error())
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return nil, err
 	}
 
 	getTeamsRes, err := c.client.Users.GetUserTeamsWithParams(&users.GetUserTeamsParams{
@@ -246,11 +294,16 @@ func (c *client) GetImpersonateGroups(ctx context.Context, headers http.Header) 
 		Context: ctx,
 	})
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 
 	if !getTeamsRes.IsSuccess() {
-		return nil, fmt.Errorf("failed to get teams: %s", getTeamsRes.Error())
+		err := fmt.Errorf("failed to get teams: %s", getTeamsRes.Error())
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return nil, err
 	}
 
 	var groups []string
@@ -268,15 +321,23 @@ func (c *client) GetImpersonateGroups(ctx context.Context, headers http.Header) 
 // is the service account prefix + the user name. If no service account with
 // this name exists a new service account is created.
 func (c *client) CreateUserToken(ctx context.Context, user string, tokenTTL int64) (string, error) {
+	ctx, span := tracing.DefaultTracer().Start(ctx, "GetImpersonateGroups")
+	defer span.End()
+
 	serviceAccount, err := c.getServiceAccount(ctx, serviceAccountPrefix+user)
 	if err != nil {
-		return "", nil
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return "", err
 	}
 
 	return c.createToken(ctx, tokenTTL, serviceAccount)
 }
 
 func (c *client) getServiceAccount(ctx context.Context, user string) (*models.ServiceAccountDTO, error) {
+	ctx, span := tracing.DefaultTracer().Start(ctx, "GetImpersonateGroups")
+	defer span.End()
+
 	getRes, err := c.client.ServiceAccounts.SearchOrgServiceAccountsWithPaging(&service_accounts.SearchOrgServiceAccountsWithPagingParams{
 		Page:    int64Ptr(1),
 		Perpage: int64Ptr(100),
@@ -284,11 +345,16 @@ func (c *client) getServiceAccount(ctx context.Context, user string) (*models.Se
 		Context: ctx,
 	})
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 
 	if !getRes.IsSuccess() {
-		return nil, fmt.Errorf("failed to get service accounts: %s", getRes.Error())
+		err := fmt.Errorf("failed to get service accounts: %s", getRes.Error())
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return nil, err
 	}
 
 	for _, sa := range getRes.Payload.ServiceAccounts {
@@ -306,19 +372,29 @@ func (c *client) getServiceAccount(ctx context.Context, user string) (*models.Se
 		Context: ctx,
 	})
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 
 	if !createRes.IsSuccess() {
-		return nil, fmt.Errorf("failed to create service account: %s", createRes.Error())
+		err := fmt.Errorf("failed to create service account: %s", createRes.Error())
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return nil, err
 	}
 
 	return createRes.Payload, nil
 }
 
 func (c *client) createToken(ctx context.Context, tokenTTL int64, sa *models.ServiceAccountDTO) (string, error) {
+	ctx, span := tracing.DefaultTracer().Start(ctx, "GetImpersonateGroups")
+	defer span.End()
+
 	name, err := uuid.NewV7()
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return "", err
 	}
 
@@ -331,11 +407,16 @@ func (c *client) createToken(ctx context.Context, tokenTTL int64, sa *models.Ser
 		Context:          ctx,
 	})
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return "", err
 	}
 
 	if !res.IsSuccess() {
-		return "", fmt.Errorf("failed to create token: %s", res.Error())
+		err := fmt.Errorf("failed to create token: %s", res.Error())
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return "", err
 	}
 
 	return res.Payload.Key, nil
