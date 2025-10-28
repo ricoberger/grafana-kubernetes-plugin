@@ -333,7 +333,7 @@ func (d *Datasource) handleKubernetesKubeconfig(w http.ResponseWriter, r *http.R
 			Name: d.generateKubeconfigName,
 			Cluster: clientcmdapiv1.Cluster{
 				// Server: fmt.Sprintf("%sapi/datasources/uid/%s/resources/kubernetes/proxy", d.grafanaClient.GetURL().String(), backend.PluginConfigFromContext(ctx).DataSourceInstanceSettings.UID),
-				Server: fmt.Sprintf("%sapi/datasources/proxy/uid/%s/proxy", d.grafanaClient.GetURL().String(), backend.PluginConfigFromContext(ctx).DataSourceInstanceSettings.UID),
+				Server: fmt.Sprintf("%sapi/datasources/proxy/uid/%s/proxy", d.grafanaClient.GetUrl().String(), backend.PluginConfigFromContext(ctx).DataSourceInstanceSettings.UID),
 			},
 		}},
 		Contexts: []clientcmdapiv1.NamedContext{{
@@ -358,7 +358,7 @@ if [ $http_code -ne "200" ]; then
   exit 1
 fi
 
-echo '%s'`, token, d.grafanaClient.GetURL().String(), backend.PluginConfigFromContext(ctx).DataSourceInstanceSettings.UID, string(execCredentialData))},
+echo '%s'`, token, d.grafanaClient.GetUrl().String(), backend.PluginConfigFromContext(ctx).DataSourceInstanceSettings.UID, string(execCredentialData))},
 					InteractiveMode: clientcmdapiv1.NeverExecInteractiveMode,
 				},
 			},

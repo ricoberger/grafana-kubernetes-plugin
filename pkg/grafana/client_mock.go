@@ -87,16 +87,16 @@ func (mr *MockClientMockRecorder) GetImpersonateUser(ctx, headers any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetImpersonateUser", reflect.TypeOf((*MockClient)(nil).GetImpersonateUser), ctx, headers)
 }
 
-// GetURL mocks base method.
-func (m *MockClient) GetURL() *url.URL {
+// GetUrl mocks base method.
+func (m *MockClient) GetUrl() *url.URL {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetURL")
+	ret := m.ctrl.Call(m, "GetUrl")
 	ret0, _ := ret[0].(*url.URL)
 	return ret0
 }
 
-// GetURL indicates an expected call of GetURL.
-func (mr *MockClientMockRecorder) GetURL() *gomock.Call {
+// GetUrl indicates an expected call of GetUrl.
+func (mr *MockClientMockRecorder) GetUrl() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetURL", reflect.TypeOf((*MockClient)(nil).GetURL))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUrl", reflect.TypeOf((*MockClient)(nil).GetUrl))
 }

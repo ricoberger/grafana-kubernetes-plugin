@@ -10,6 +10,7 @@
 package helm
 
 import (
+	context "context"
 	reflect "reflect"
 
 	data "github.com/grafana/grafana-plugin-sdk-go/data"
@@ -42,75 +43,75 @@ func (m *MockClient) EXPECT() *MockClientMockRecorder {
 }
 
 // GetRelease mocks base method.
-func (m *MockClient) GetRelease(name string, version int64) (*release.Release, error) {
+func (m *MockClient) GetRelease(ctx context.Context, name string, version int64) (*release.Release, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetRelease", name, version)
+	ret := m.ctrl.Call(m, "GetRelease", ctx, name, version)
 	ret0, _ := ret[0].(*release.Release)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetRelease indicates an expected call of GetRelease.
-func (mr *MockClientMockRecorder) GetRelease(name, version any) *gomock.Call {
+func (mr *MockClientMockRecorder) GetRelease(ctx, name, version any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRelease", reflect.TypeOf((*MockClient)(nil).GetRelease), name, version)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRelease", reflect.TypeOf((*MockClient)(nil).GetRelease), ctx, name, version)
 }
 
 // ListReleaseHistory mocks base method.
-func (m *MockClient) ListReleaseHistory(name string) (*data.Frame, error) {
+func (m *MockClient) ListReleaseHistory(ctx context.Context, name string) (*data.Frame, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListReleaseHistory", name)
+	ret := m.ctrl.Call(m, "ListReleaseHistory", ctx, name)
 	ret0, _ := ret[0].(*data.Frame)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListReleaseHistory indicates an expected call of ListReleaseHistory.
-func (mr *MockClientMockRecorder) ListReleaseHistory(name any) *gomock.Call {
+func (mr *MockClientMockRecorder) ListReleaseHistory(ctx, name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListReleaseHistory", reflect.TypeOf((*MockClient)(nil).ListReleaseHistory), name)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListReleaseHistory", reflect.TypeOf((*MockClient)(nil).ListReleaseHistory), ctx, name)
 }
 
 // ListReleases mocks base method.
-func (m *MockClient) ListReleases() (*data.Frame, error) {
+func (m *MockClient) ListReleases(ctx context.Context) (*data.Frame, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListReleases")
+	ret := m.ctrl.Call(m, "ListReleases", ctx)
 	ret0, _ := ret[0].(*data.Frame)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListReleases indicates an expected call of ListReleases.
-func (mr *MockClientMockRecorder) ListReleases() *gomock.Call {
+func (mr *MockClientMockRecorder) ListReleases(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListReleases", reflect.TypeOf((*MockClient)(nil).ListReleases))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListReleases", reflect.TypeOf((*MockClient)(nil).ListReleases), ctx)
 }
 
 // RollbackRelease mocks base method.
-func (m *MockClient) RollbackRelease(name string, version int64, options RollbackOptions) error {
+func (m *MockClient) RollbackRelease(ctx context.Context, name string, version int64, options RollbackOptions) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RollbackRelease", name, version, options)
+	ret := m.ctrl.Call(m, "RollbackRelease", ctx, name, version, options)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RollbackRelease indicates an expected call of RollbackRelease.
-func (mr *MockClientMockRecorder) RollbackRelease(name, version, options any) *gomock.Call {
+func (mr *MockClientMockRecorder) RollbackRelease(ctx, name, version, options any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RollbackRelease", reflect.TypeOf((*MockClient)(nil).RollbackRelease), name, version, options)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RollbackRelease", reflect.TypeOf((*MockClient)(nil).RollbackRelease), ctx, name, version, options)
 }
 
 // UninstallRelease mocks base method.
-func (m *MockClient) UninstallRelease(name string, options UninstallOptions) (string, error) {
+func (m *MockClient) UninstallRelease(ctx context.Context, name string, options UninstallOptions) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UninstallRelease", name, options)
+	ret := m.ctrl.Call(m, "UninstallRelease", ctx, name, options)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UninstallRelease indicates an expected call of UninstallRelease.
-func (mr *MockClientMockRecorder) UninstallRelease(name, options any) *gomock.Call {
+func (mr *MockClientMockRecorder) UninstallRelease(ctx, name, options any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UninstallRelease", reflect.TypeOf((*MockClient)(nil).UninstallRelease), name, options)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UninstallRelease", reflect.TypeOf((*MockClient)(nil).UninstallRelease), ctx, name, options)
 }
