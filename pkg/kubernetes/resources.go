@@ -6,13 +6,18 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/grafana/grafana-plugin-sdk-go/backend/tracing"
 	"github.com/grafana/grafana-plugin-sdk-go/data"
+	"go.opentelemetry.io/otel/codes"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/version"
 )
 
 func (c *client) getResources(ctx context.Context) (map[string]Resource, error) {
+	ctx, span := tracing.DefaultTracer().Start(ctx, "getResources")
+	defer span.End()
+
 	// Create a new resources map and initialize the map with all default
 	// resources of the Kubernetes cluster.
 	resources := make(map[string]Resource)
@@ -52,6 +57,8 @@ func (c *client) getResources(ctx context.Context) (map[string]Resource, error) 
 	// should be unique accross all CRDs.
 	res, err := c.clientset.CoreV1().RESTClient().Get().AbsPath("apis/apiextensions.k8s.io/v1/customresourcedefinitions").DoRaw(ctx)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 
@@ -59,6 +66,8 @@ func (c *client) getResources(ctx context.Context) (map[string]Resource, error) 
 
 	err = json.Unmarshal(res, &crdList)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 

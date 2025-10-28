@@ -20,9 +20,12 @@ import (
 
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/log"
+	"github.com/grafana/grafana-plugin-sdk-go/backend/tracing"
 	"github.com/grafana/grafana-plugin-sdk-go/data"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/propagation"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -54,8 +57,13 @@ type client struct {
 // refreshCache refreshed the cache if it is not valid anymore by calling
 // the "getResources" function and setting all returned resources in the cache.
 func (c *client) refreshCache(ctx context.Context) {
+	ctx, span := tracing.DefaultTracer().Start(ctx, "refreshCache")
+	defer span.End()
+
 	if !c.cache.IsValid() {
 		if resources, err := c.getResources(ctx); err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
 			c.logger.Error("Failed to refresh cache", "error", err.Error())
 		} else {
 			c.logger.Debug("Cache refreshed", "resources", len(resources))
@@ -79,8 +87,13 @@ func (c *client) RestConfig() rest.Config {
 // endpoint. If the call is successful we return nil, otherwise we return an
 // error.
 func (c *client) CheckHealth(ctx context.Context) error {
+	ctx, span := tracing.DefaultTracer().Start(ctx, "CheckHealth")
+	defer span.End()
+
 	_, err := c.clientset.CoreV1().RESTClient().Get().AbsPath("/api").DoRaw(ctx)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return err
 	}
 
@@ -90,6 +103,9 @@ func (c *client) CheckHealth(ctx context.Context) error {
 // GetResourceIds returns a list of all resource ids in the Kubernetes cluster
 // as data frame.
 func (c *client) GetResourceIds(ctx context.Context) (*data.Frame, error) {
+	ctx, span := tracing.DefaultTracer().Start(ctx, "GetResourceIds")
+	defer span.End()
+
 	c.refreshCache(ctx)
 
 	// Get a list of all resource ids, which are all the keys in the cache.
@@ -112,8 +128,13 @@ func (c *client) GetResourceIds(ctx context.Context) (*data.Frame, error) {
 // GetNamespaces return a list of all namespace names in the Kubernetes cluster
 // as data frame.
 func (c *client) GetNamespaces(ctx context.Context) (*data.Frame, error) {
+	ctx, span := tracing.DefaultTracer().Start(ctx, "GetNamespaces")
+	defer span.End()
+
 	namespaces, err := c.clientset.CoreV1().Namespaces().List(ctx, metav1.ListOptions{})
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 
@@ -143,11 +164,24 @@ func (c *client) GetNamespaces(ctx context.Context) (*data.Frame, error) {
 // "*" for all namespaces. The namespace field is the splitted and the requests
 // are run in parallel.
 func (c *client) GetResources(ctx context.Context, user string, groups []string, resourceId, namespace, parameterName, parameterValue string, wide bool) (*data.Frame, error) {
+	ctx, span := tracing.DefaultTracer().Start(ctx, "GetResources")
+	defer span.End()
+	span.SetAttributes(attribute.Key("user").String(user))
+	span.SetAttributes(attribute.Key("groups").StringSlice(groups))
+	span.SetAttributes(attribute.Key("resourceId").String(resourceId))
+	span.SetAttributes(attribute.Key("namespace").String(namespace))
+	span.SetAttributes(attribute.Key("parameterName").String(parameterName))
+	span.SetAttributes(attribute.Key("parameterValue").String(parameterValue))
+	span.SetAttributes(attribute.Key("wide").Bool(wide))
+
 	c.refreshCache(ctx)
 
 	resource, ok := c.cache.Get(resourceId)
 	if !ok {
-		return nil, fmt.Errorf("resource %s not found", resourceId)
+		err := fmt.Errorf("resource %s not found", resourceId)
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return nil, err
 	}
 
 	if namespace == "*" || resource.Scope == "Cluster" {
@@ -172,6 +206,9 @@ func (c *client) GetResources(ctx context.Context, user string, groups []string,
 			result, err := c.clientset.CoreV1().RESTClient().Get().AbsPath(resource.Path).Namespace(namespace).Resource(resource.Resource).Param(parameterName, parameterValue).SetHeader("Accept", "application/json;as=Table;v=v1;g=meta.k8s.io,application/json;as=Table;v=v1beta1;g=meta.k8s.io,application/json").SetHeader("Impersonate-User", user).SetHeader("Impersonate-Group", groups...).DoRaw(ctx)
 			if err != nil {
 				c.logger.Error("Failed to get resources", "error", err.Error())
+				span.RecordError(err)
+				span.SetStatus(codes.Error, err.Error())
+
 				errorsMutex.Lock()
 				errors = append(errors, err)
 				errorsMutex.Unlock()
@@ -197,8 +234,18 @@ func (c *client) GetResources(ctx context.Context, user string, groups []string,
 // ("daemonsets", "deployments", "jobs", "pods" or "statefulsets") as data
 // frame.
 func (c *client) GetContainers(ctx context.Context, user string, groups []string, resourceId, namespace, name string) (*data.Frame, error) {
+	ctx, span := tracing.DefaultTracer().Start(ctx, "GetContainers")
+	defer span.End()
+	span.SetAttributes(attribute.Key("user").String(user))
+	span.SetAttributes(attribute.Key("groups").StringSlice(groups))
+	span.SetAttributes(attribute.Key("resourceId").String(resourceId))
+	span.SetAttributes(attribute.Key("namespace").String(namespace))
+	span.SetAttributes(attribute.Key("name").String(name))
+
 	_, containers, err := c.getPodsAndContainers(ctx, user, groups, resourceId, namespace, name)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 
@@ -224,22 +271,37 @@ func (c *client) GetContainers(ctx context.Context, user string, groups []string
 // statefulset, the function returns the names of all pods belonging to the
 // resource and all containers in the first pod (if there are any pods).
 func (c *client) getPodsAndContainers(ctx context.Context, user string, groups []string, resourceId, namespace, name string) ([]string, []string, error) {
+	ctx, span := tracing.DefaultTracer().Start(ctx, "getPodsAndContainers")
+	defer span.End()
+	span.SetAttributes(attribute.Key("user").String(user))
+	span.SetAttributes(attribute.Key("groups").StringSlice(groups))
+	span.SetAttributes(attribute.Key("resourceId").String(resourceId))
+	span.SetAttributes(attribute.Key("namespace").String(namespace))
+	span.SetAttributes(attribute.Key("name").String(name))
+
 	c.refreshCache(ctx)
 
 	switch resourceId {
 	case "pods":
 		resource, ok := c.cache.Get(resourceId)
 		if !ok {
-			return nil, nil, fmt.Errorf("resource %s not found", resourceId)
+			err := fmt.Errorf("resource %s not found", resourceId)
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
+			return nil, nil, err
 		}
 
 		result, err := c.clientset.CoreV1().RESTClient().Get().AbsPath(resource.Path).Namespace(namespace).Resource(resource.Resource).Name(name).SetHeader("Impersonate-User", user).SetHeader("Impersonate-Group", groups...).DoRaw(ctx)
 		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
 			return nil, nil, err
 		}
 
 		var pod corev1.Pod
 		if err := json.Unmarshal(result, &pod); err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
 			return nil, nil, err
 		}
 
@@ -256,16 +318,23 @@ func (c *client) getPodsAndContainers(ctx context.Context, user string, groups [
 	default:
 		resource, ok := c.cache.Get(resourceId)
 		if !ok {
-			return nil, nil, fmt.Errorf("resource %s not found", resourceId)
+			err := fmt.Errorf("resource %s not found", resourceId)
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
+			return nil, nil, err
 		}
 
 		result, err := c.clientset.CoreV1().RESTClient().Get().AbsPath(resource.Path).Namespace(namespace).Resource(resource.Resource).Name(name).SetHeader("Impersonate-User", user).SetHeader("Impersonate-Group", groups...).DoRaw(ctx)
 		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
 			return nil, nil, err
 		}
 
 		var app App
 		if err := json.Unmarshal(result, &app); err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
 			return nil, nil, err
 		}
 
@@ -273,6 +342,8 @@ func (c *client) getPodsAndContainers(ctx context.Context, user string, groups [
 			LabelSelector: metav1.FormatLabelSelector(app.Spec.Selector),
 		})
 		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
 			return nil, nil, err
 		}
 
@@ -319,9 +390,21 @@ func (c *client) getPodsAndContainers(ctx context.Context, user string, groups [
 // timestamp. Only log lines that are within the time range are included in the
 // data frame.
 func (c *client) GetLogs(ctx context.Context, user string, groups []string, resourceId, namespace, name, container, filter string, timeRange backend.TimeRange) (*data.Frame, error) {
+	ctx, span := tracing.DefaultTracer().Start(ctx, "GetLogs")
+	defer span.End()
+	span.SetAttributes(attribute.Key("user").String(user))
+	span.SetAttributes(attribute.Key("groups").StringSlice(groups))
+	span.SetAttributes(attribute.Key("resourceId").String(resourceId))
+	span.SetAttributes(attribute.Key("namespace").String(namespace))
+	span.SetAttributes(attribute.Key("name").String(name))
+	span.SetAttributes(attribute.Key("container").String(container))
+	span.SetAttributes(attribute.Key("filter").String(filter))
+
 	// Get the pods for the requested resource.
 	pods, _, err := c.getPodsAndContainers(ctx, user, groups, resourceId, namespace, name)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 
@@ -342,6 +425,8 @@ func (c *client) GetLogs(ctx context.Context, user string, groups []string, reso
 				SinceTime:  &metav1.Time{Time: timeRange.From},
 			}).Stream(ctx)
 			if err != nil {
+				span.RecordError(err)
+				span.SetStatus(codes.Error, err.Error())
 				c.logger.Error("Failed to get stream", "error", err.Error())
 				return
 			}
@@ -376,6 +461,8 @@ func (c *client) GetLogs(ctx context.Context, user string, groups []string, reso
 
 			timestamp, err := time.Parse(time.RFC3339Nano, parts[0])
 			if err != nil {
+				span.RecordError(err)
+				span.SetStatus(codes.Error, err.Error())
 				c.logger.Error("Failed to parse timestamp", "error", err.Error())
 				continue
 			}
@@ -393,6 +480,8 @@ func (c *client) GetLogs(ctx context.Context, user string, groups []string, reso
 		}
 
 		if err := scanner.Err(); err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
 			return nil, err
 		}
 	}
@@ -415,11 +504,18 @@ func (c *client) GetLogs(ctx context.Context, user string, groups []string, reso
 // GetResource returns the resource for the given resource ID from the cache. If
 // the resource is not found in the cache, an error is returned.
 func (c *client) GetResource(ctx context.Context, resourceId string) (*Resource, error) {
+	ctx, span := tracing.DefaultTracer().Start(ctx, "GetResource")
+	defer span.End()
+	span.SetAttributes(attribute.Key("resourceId").String(resourceId))
+
 	c.refreshCache(ctx)
 
 	resource, ok := c.cache.Get(resourceId)
 	if !ok {
-		return nil, fmt.Errorf("resource %s not found", resourceId)
+		err := fmt.Errorf("resource %s not found", resourceId)
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return nil, err
 	}
 
 	return &resource, nil
@@ -449,6 +545,14 @@ func (c *client) GetResource(ctx context.Context, resourceId string) (*Resource,
 //	  reverse_proxy localhost:15219
 //	}
 func (c *client) Proxy(user string, groups []string, requestUrl string, w http.ResponseWriter, r *http.Request) {
+	ctx, span := tracing.DefaultTracer().Start(r.Context(), "Proxy")
+	defer span.End()
+
+	span.SetAttributes(attribute.Key("user").String(user))
+	span.SetAttributes(attribute.Key("groups").StringSlice(groups))
+	span.SetAttributes(attribute.Key("method").String(r.Method))
+	span.SetAttributes(attribute.Key("requestUrl").String(requestUrl))
+
 	r.Header.Del("Authorization")
 
 	// Parse the URL of the request and create a new URL for the request against
@@ -456,16 +560,20 @@ func (c *client) Proxy(user string, groups []string, requestUrl string, w http.R
 	url, err := url.Parse(fmt.Sprintf("%s/%s", c.restConfig.Host, requestUrl))
 	if err != nil {
 		c.logger.Error("Failed to parse url", "error", err.Error())
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+
 		http.Error(w, "Failed to parse url", http.StatusBadGateway)
 		return
 	}
-
-	ctx := r.Context()
 
 	// Create round tripper for the request based on the Kubernetes rest config.
 	tlsConfig, err := rest.TLSConfigFor(c.restConfig)
 	if err != nil {
 		c.logger.Error("Failed to create tls config", "error", err.Error())
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+
 		http.Error(w, "Failed to create tls config", http.StatusBadGateway)
 		return
 	}
@@ -478,6 +586,9 @@ func (c *client) Proxy(user string, groups []string, requestUrl string, w http.R
 	restTransportConfig, err := c.restConfig.TransportConfig()
 	if err != nil {
 		c.logger.Error("Failed to create transporter config", "error", err.Error())
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+
 		http.Error(w, "Failed to create transporter config", http.StatusBadGateway)
 		return
 	}
@@ -485,6 +596,9 @@ func (c *client) Proxy(user string, groups []string, requestUrl string, w http.R
 	clientRoundTripper, err := transport.HTTPWrappersForConfig(restTransportConfig, tlsTransport)
 	if err != nil {
 		c.logger.Error("Failed to create round tripper", "error", err.Error())
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+
 		http.Error(w, "Failed to create round tripper", http.StatusBadGateway)
 		return
 	}
@@ -494,6 +608,11 @@ func (c *client) Proxy(user string, groups []string, requestUrl string, w http.R
 	proxy := httputil.NewSingleHostReverseProxy(url)
 	proxy.Transport = clientRoundTripper
 	proxy.FlushInterval = -1
+	proxy.ModifyResponse = func(resp *http.Response) error {
+		c.logger.Info("Proxy", "user", user, "groups", groups, "method", r.Method, "requestUrl", requestUrl, "responseCode", resp.StatusCode)
+		span.SetAttributes(attribute.Key("responseCode").Int(resp.StatusCode))
+		return nil
+	}
 
 	originalDirector := proxy.Director
 	proxy.Director = func(req *http.Request) {
@@ -528,6 +647,9 @@ func (c *client) Proxy(user string, groups []string, requestUrl string, w http.R
 
 	proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
 		c.logger.Error("Client request failed", "error", err.Error())
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+
 		http.Error(w, "Client request failed", http.StatusBadGateway)
 	}
 

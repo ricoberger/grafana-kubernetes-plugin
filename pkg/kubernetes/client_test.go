@@ -304,6 +304,7 @@ func TestProxy(t *testing.T) {
 		defer testServer.Close()
 
 		client := &client{
+			logger: log.DefaultLogger,
 			restConfig: &rest.Config{
 				Host: testServer.URL,
 			},
@@ -330,6 +331,7 @@ func TestProxy(t *testing.T) {
 		defer testServer.Close()
 
 		client := &client{
+			logger: log.DefaultLogger,
 			restConfig: &rest.Config{
 				Host: testServer.URL,
 			},
