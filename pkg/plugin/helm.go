@@ -58,7 +58,7 @@ func (d *Datasource) handleHelmReleases(ctx context.Context, query concurrent.Qu
 	span.SetAttributes(attribute.Key("namespace").String(qm.Namespace))
 
 	restConfig := d.kubeClient.RestConfig()
-	helmClient, err := helm.NewClient(user, groups, qm.Namespace, &restConfig, d.logger)
+	helmClient, err := helm.NewClient(ctx, user, groups, qm.Namespace, &restConfig, d.logger)
 	if err != nil {
 		d.logger.Error("Failed to create Helm client", "error", err.Error())
 		span.RecordError(err)
@@ -66,7 +66,7 @@ func (d *Datasource) handleHelmReleases(ctx context.Context, query concurrent.Qu
 		return backend.ErrorResponseWithErrorSource(err)
 	}
 
-	frame, err := helmClient.ListReleases()
+	frame, err := helmClient.ListReleases(ctx)
 	if err != nil {
 		d.logger.Error("Failed to get Helm releases", "error", err.Error())
 		span.RecordError(err)
@@ -123,7 +123,7 @@ func (d *Datasource) handleHelmReleaseHistory(ctx context.Context, query concurr
 	span.SetAttributes(attribute.Key("name").String(qm.Name))
 
 	restConfig := d.kubeClient.RestConfig()
-	helmClient, err := helm.NewClient(user, groups, qm.Namespace, &restConfig, d.logger)
+	helmClient, err := helm.NewClient(ctx, user, groups, qm.Namespace, &restConfig, d.logger)
 	if err != nil {
 		d.logger.Error("Failed to create Helm client", "error", err.Error())
 		span.RecordError(err)
@@ -131,7 +131,7 @@ func (d *Datasource) handleHelmReleaseHistory(ctx context.Context, query concurr
 		return backend.ErrorResponseWithErrorSource(err)
 	}
 
-	frame, err := helmClient.ListReleaseHistory(qm.Name)
+	frame, err := helmClient.ListReleaseHistory(ctx, qm.Name)
 	if err != nil {
 		d.logger.Error("Failed to get Helm release history", "error", err.Error())
 		span.RecordError(err)
@@ -190,7 +190,7 @@ func (d *Datasource) handleHelmGetRelease(w http.ResponseWriter, r *http.Request
 	span.SetAttributes(attribute.Key("version").Int64(version))
 
 	restConfig := d.kubeClient.RestConfig()
-	helmClient, err := helm.NewClient(user, groups, namespace, &restConfig, d.logger)
+	helmClient, err := helm.NewClient(ctx, user, groups, namespace, &restConfig, d.logger)
 	if err != nil {
 		d.logger.Error("Failed to create Helm client", "error", err.Error())
 		span.RecordError(err)
@@ -200,7 +200,7 @@ func (d *Datasource) handleHelmGetRelease(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	release, err := helmClient.GetRelease(name, version)
+	release, err := helmClient.GetRelease(ctx, name, version)
 	if err != nil {
 		d.logger.Error("Failed to get Helm release", "error", err.Error())
 		span.RecordError(err)
@@ -276,7 +276,7 @@ func (d *Datasource) handleHelmRollback(w http.ResponseWriter, r *http.Request) 
 	}
 
 	restConfig := d.kubeClient.RestConfig()
-	helmClient, err := helm.NewClient(user, groups, namespace, &restConfig, d.logger)
+	helmClient, err := helm.NewClient(ctx, user, groups, namespace, &restConfig, d.logger)
 	if err != nil {
 		d.logger.Error("Failed to create Helm client", "error", err.Error())
 		span.RecordError(err)
@@ -286,7 +286,7 @@ func (d *Datasource) handleHelmRollback(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	err = helmClient.RollbackRelease(name, version, options)
+	err = helmClient.RollbackRelease(ctx, name, version, options)
 	if err != nil {
 		d.logger.Error("Failed to rollback Helm release", "error", err.Error())
 		span.RecordError(err)
@@ -353,7 +353,7 @@ func (d *Datasource) handleHelmUninstall(w http.ResponseWriter, r *http.Request)
 	}
 
 	restConfig := d.kubeClient.RestConfig()
-	helmClient, err := helm.NewClient(user, groups, namespace, &restConfig, d.logger)
+	helmClient, err := helm.NewClient(ctx, user, groups, namespace, &restConfig, d.logger)
 	if err != nil {
 		d.logger.Error("Failed to create Helm client", "error", err.Error())
 		span.RecordError(err)
@@ -363,7 +363,7 @@ func (d *Datasource) handleHelmUninstall(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	info, err := helmClient.UninstallRelease(name, options)
+	info, err := helmClient.UninstallRelease(ctx, name, options)
 	if err != nil {
 		d.logger.Error("Failed to uninstall Helm release", "error", err.Error())
 		span.RecordError(err)

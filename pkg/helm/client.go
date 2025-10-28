@@ -3,13 +3,17 @@ package helm
 //go:generate go tool mockgen -source=client.go -destination=./client_mock.go -package=helm Client
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"sort"
 	"time"
 
 	"github.com/grafana/grafana-plugin-sdk-go/backend/log"
+	"github.com/grafana/grafana-plugin-sdk-go/backend/tracing"
 	"github.com/grafana/grafana-plugin-sdk-go/data"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/registry"
 	"helm.sh/helm/v3/pkg/release"
@@ -38,37 +42,58 @@ type UninstallOptions struct {
 }
 
 type Client interface {
-	ListReleases() (*data.Frame, error)
-	GetRelease(name string, version int64) (*release.Release, error)
-	ListReleaseHistory(name string) (*data.Frame, error)
-	RollbackRelease(name string, version int64, options RollbackOptions) error
-	UninstallRelease(name string, options UninstallOptions) (string, error)
+	ListReleases(ctx context.Context) (*data.Frame, error)
+	GetRelease(ctx context.Context, name string, version int64) (*release.Release, error)
+	ListReleaseHistory(ctx context.Context, name string) (*data.Frame, error)
+	RollbackRelease(ctx context.Context, name string, version int64, options RollbackOptions) error
+	UninstallRelease(ctx context.Context, name string, options UninstallOptions) (string, error)
 }
 
 type client struct {
 	ActionConfig *action.Configuration
 }
 
-func (c *client) ListReleases() (*data.Frame, error) {
+func (c *client) ListReleases(ctx context.Context) (*data.Frame, error) {
+	_, span := tracing.DefaultTracer().Start(ctx, "ListReleases")
+	defer span.End()
+
 	listClient := action.NewList(c.ActionConfig)
 	listClient.StateMask = action.ListDeployed
 
 	releases, err := listClient.Run()
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 
 	return createReleasesDataFrame(releases), nil
 }
 
-func (c *client) GetRelease(name string, version int64) (*release.Release, error) {
+func (c *client) GetRelease(ctx context.Context, name string, version int64) (*release.Release, error) {
+	_, span := tracing.DefaultTracer().Start(ctx, "GetRelease")
+	defer span.End()
+	span.SetAttributes(attribute.Key("name").String(name))
+	span.SetAttributes(attribute.Key("version").Int64(version))
+
 	getReleaseClient := action.NewGet(c.ActionConfig)
 	getReleaseClient.Version = int(version)
 
-	return getReleaseClient.Run(name)
+	release, err := getReleaseClient.Run(name)
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return nil, err
+	}
+
+	return release, nil
 }
 
-func (c *client) ListReleaseHistory(name string) (*data.Frame, error) {
+func (c *client) ListReleaseHistory(ctx context.Context, name string) (*data.Frame, error) {
+	_, span := tracing.DefaultTracer().Start(ctx, "ListReleaseHistory")
+	defer span.End()
+	span.SetAttributes(attribute.Key("name").String(name))
+
 	client := action.NewHistory(c.ActionConfig)
 	client.Max = 10
 
@@ -84,12 +109,19 @@ func (c *client) ListReleaseHistory(name string) (*data.Frame, error) {
 	return createReleasesDataFrame(releases), nil
 }
 
-func (c *client) RollbackRelease(name string, version int64, options RollbackOptions) error {
+func (c *client) RollbackRelease(ctx context.Context, name string, version int64, options RollbackOptions) error {
+	_, span := tracing.DefaultTracer().Start(ctx, "RollbackRelease")
+	defer span.End()
+	span.SetAttributes(attribute.Key("name").String(name))
+	span.SetAttributes(attribute.Key("version").Int64(version))
+
 	rollbackClient := action.NewRollback(c.ActionConfig)
 	rollbackClient.Version = int(version)
 
 	timeoutDuration, err := time.ParseDuration(options.Timeout)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return err
 	}
 
@@ -103,14 +135,27 @@ func (c *client) RollbackRelease(name string, version int64, options RollbackOpt
 	rollbackClient.Wait = options.Wait
 	rollbackClient.WaitForJobs = options.WaitForJobs
 
-	return rollbackClient.Run(name)
+	err = rollbackClient.Run(name)
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return err
+	}
+
+	return nil
 }
 
-func (c *client) UninstallRelease(name string, options UninstallOptions) (string, error) {
+func (c *client) UninstallRelease(ctx context.Context, name string, options UninstallOptions) (string, error) {
+	_, span := tracing.DefaultTracer().Start(ctx, "UninstallRelease")
+	defer span.End()
+	span.SetAttributes(attribute.Key("name").String(name))
+
 	uninstallClient := action.NewUninstall(c.ActionConfig)
 
 	timeoutDuration, err := time.ParseDuration(options.Timeout)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return "", err
 	}
 
@@ -123,13 +168,21 @@ func (c *client) UninstallRelease(name string, options UninstallOptions) (string
 
 	resp, err := uninstallClient.Run(name)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return "", err
 	}
 
 	return resp.Info, nil
 }
 
-func NewClient(user string, groups []string, namespace string, restConfig *rest.Config, logger log.Logger) (Client, error) {
+func NewClient(ctx context.Context, user string, groups []string, namespace string, restConfig *rest.Config, logger log.Logger) (Client, error) {
+	_, span := tracing.DefaultTracer().Start(ctx, "NewClient")
+	defer span.End()
+	span.SetAttributes(attribute.Key("user").String(user))
+	span.SetAttributes(attribute.Key("groups").StringSlice(groups))
+	span.SetAttributes(attribute.Key("namespace").String(namespace))
+
 	clientGetter := NewRESTClientGetter(user, groups, namespace, restConfig)
 
 	actionConfig := new(action.Configuration)
@@ -142,11 +195,15 @@ func NewClient(user string, groups []string, namespace string, restConfig *rest.
 		},
 	)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 
 	registryClient, err := registry.NewClient()
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 
