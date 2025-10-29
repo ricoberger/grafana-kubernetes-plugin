@@ -1,5 +1,16 @@
 # Changelog
 
+## [v0.2.2](https://github.com/ricoberger/grafana-kubernetes-plugin/tree/v0.2.2) (2025-10-29)
+
+[Full Changelog](https://github.com/ricoberger/grafana-kubernetes-plugin/compare/v0.2.1...v0.2.2)
+
+- Fix Namespace used for Pod Top Query [\#25](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/25) ([ricoberger](https://github.com/ricoberger))
+- Improve Tracing for Grafana Client [\#24](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/24) ([ricoberger](https://github.com/ricoberger))
+- Improve Tracing for Helm Client [\#23](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/23) ([ricoberger](https://github.com/ricoberger))
+- Improve Tracing for Kubernetes Client [\#22](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/22) ([ricoberger](https://github.com/ricoberger))
+- Add Tests for Impersonation Handling [\#21](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/21) ([ricoberger](https://github.com/ricoberger))
+- Fix Initialization of Slices [\#20](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/20) ([ricoberger](https://github.com/ricoberger))
+
 ## [v0.2.1](https://github.com/ricoberger/grafana-kubernetes-plugin/tree/v0.2.1) (2025-10-27)
 
 [Full Changelog](https://github.com/ricoberger/grafana-kubernetes-plugin/compare/v0.2.0...v0.2.1)
