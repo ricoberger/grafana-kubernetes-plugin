@@ -46,10 +46,9 @@ export function EditAction(props: Props) {
       try {
         setIsLoading(true);
 
-        const resource = await getResource(props.datasource, props.resource);
         const manifest = await getResourceManifest(
+          props.resource,
           props.datasource,
-          resource,
           props.namespace,
           props.name,
         );
