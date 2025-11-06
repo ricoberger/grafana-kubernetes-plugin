@@ -12,9 +12,9 @@ datasources:
     jsonData:
       clusterProvider: path
       clusterPath: /kubeconfig-grafana.yaml
-      clusterContext: stage-de1
+      clusterContext: default
       grafanaUsername: admin
-      impersonateUser: false
+      impersonateUser: true
       impersonateGroups: false
       generateKubeconfig: true
       generateKubeconfigName: grafana
