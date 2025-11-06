@@ -194,7 +194,15 @@ export function AIAction(props: Props) {
           {error}
         </Alert>
       ) : (
-        <div className={styles.container}>{JSON.stringify(aiResponses)}</div>
+        <div className={styles.container}>
+          <pre>
+            {JSON.stringify(
+              aiResponses.length === 1 ? aiResponses[0] : aiResponses,
+              null,
+              2,
+            )}
+          </pre>
+        </div>
       )}
     </Drawer>
   );
@@ -274,6 +282,10 @@ ${JSON.stringify(manifest)}
 \`\`\`json
 ${JSON.stringify(events)}
 \`\`\`
-${logs ? `\nPodLogs:\n\n\`\`\`json\n${logs}\n\`\`\`` : ''}
+
+\`\`\`json
+${JSON.stringify(logs)}
+\`\`\`
+
 `;
 };
