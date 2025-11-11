@@ -14,7 +14,7 @@ datasources:
       clusterPath: /kubeconfig-grafana.yaml
       clusterContext: default
       grafanaUsername: admin
-      impersonateUser: true
+      impersonateUser: false
       impersonateGroups: false
       generateKubeconfig: true
       generateKubeconfigName: grafana
