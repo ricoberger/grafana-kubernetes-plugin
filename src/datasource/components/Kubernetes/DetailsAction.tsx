@@ -49,10 +49,7 @@ import {
   V1StatefulSetCondition,
 } from '@kubernetes/client-node';
 
-import {
-  getResource,
-  getResourceManifest,
-} from '../../../utils/utils.resource';
+import { getResourceManifest } from '../../../utils/utils.resource';
 import datasourcePluginJson from '../../../datasource/plugin.json';
 import {
   DefinitionItem,
@@ -108,10 +105,9 @@ export function DetailsAction(props: Props) {
       try {
         setIsLoading(true);
 
-        const resource = await getResource(props.datasource, props.resource);
         const manifest = await getResourceManifest(
           props.datasource,
-          resource,
+          props.resource,
           props.namespace,
           props.name,
         );

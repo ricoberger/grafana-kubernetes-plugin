@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { IconButton, Menu, WithContextMenu } from '@grafana/ui';
 import { DataFrame } from '@grafana/data';
+import { llm } from '@grafana/llm';
 
 import { Query } from '../../types/query';
 import { DataSourceOptions } from '../../types/settings';
@@ -10,6 +11,7 @@ import { RestartAction } from './RestartAction';
 import { CreateJobAction } from './CreateJobAction';
 import { EditAction } from './EditAction';
 import { DetailsAction } from './DetailsAction';
+import { AIAction } from './AIAction';
 
 interface Props {
   query: Query;
@@ -24,6 +26,7 @@ interface Props {
  */
 export function Actions(props: Props) {
   const [open, setOpen] = useState('');
+  const [isAIEnabled, setIsAIEnabled] = useState(false);
 
   const datasource = props.query.datasource?.uid;
   const resource = props.query.resource;
@@ -32,6 +35,21 @@ export function Actions(props: Props) {
   const name = props.frame.fields.find((f) => f.name === 'Name')?.values[
     props.rowIndex
   ];
+
+  /**
+   * If the Grafana LLM plugin is enabled, we set the "isAIEnabled" state to
+   * "true" to render the AI action in the context menu.
+   */
+  useEffect(() => {
+    const checkIsAIEnabled = async () => {
+      try {
+        const enabled = await llm.enabled();
+        setIsAIEnabled(enabled);
+      } catch (_) { }
+    };
+
+    checkIsAIEnabled();
+  }, []);
 
   return (
     <>
@@ -70,6 +88,9 @@ export function Actions(props: Props) {
                   url={`/explore?left=${encodeURIComponent(JSON.stringify({ datasource: datasource, queries: [{ queryType: 'kubernetes-logs', namespace: namespace, resource: resource, refId: 'A', name: name, container: '' }] }))}`}
                 />
               )}
+            {isAIEnabled && (
+              <Menu.Item label="AI" onClick={() => setOpen('ai')} />
+            )}
             <Menu.Item label="Edit" onClick={() => setOpen('edit')} />
             <Menu.Item label="Delete" onClick={() => setOpen('delete')} />
           </Menu.Group>
@@ -117,6 +138,17 @@ export function Actions(props: Props) {
         isOpen={open === 'createjob'}
         onClose={() => setOpen('')}
       />
+
+      {open === 'ai' && (
+        <AIAction
+          settings={props.settings}
+          datasource={datasource}
+          resource={resource}
+          namespace={namespace}
+          name={name}
+          onClose={() => setOpen('')}
+        />
+      )}
 
       {open === 'edit' && (
         <EditAction

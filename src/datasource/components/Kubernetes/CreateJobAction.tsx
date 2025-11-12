@@ -10,10 +10,7 @@ import { getAppEvents } from '@grafana/runtime';
 import { css } from '@emotion/css';
 import { V1Job } from '@kubernetes/client-node';
 
-import {
-  getResource,
-  getResourceManifest,
-} from '../../../utils/utils.resource';
+import { getResourceManifest } from '../../../utils/utils.resource';
 
 interface Props {
   datasource?: string;
@@ -42,10 +39,9 @@ export function CreateJobAction(props: Props) {
     try {
       setIsLoading(true);
 
-      const resource = await getResource(props.datasource, props.resource);
       const manifest = await getResourceManifest(
         props.datasource,
-        resource,
+        props.resource,
         props.namespace,
         props.name,
       );

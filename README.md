@@ -39,8 +39,10 @@ Helm and Flux.
   authorize all Kubernetes requests.
 - Generate Kubeconfig files, so users can access the Kubernetes API using tools
   like `kubectl` for exec and port-forward actions.
+- Analyse and debug Kubernetes workloads using the
+  [Grafana LLM](https://grafana.com/grafana/plugins/grafana-llm-app/) plugin.
 - Integrations for metrics and traces:
-  - Metrics: View metrics for Kubenretes resources like Pods, Nodes,
+  - Metrics: View metrics for Kubernetes resources like Pods, Nodes,
     Deployments, etc. using a Prometheus datasource.
   - Traces: Link traces from Pod logs to a tracing datasource like Jaeger.
 - Integrations for other cloud-native tools like Helm and Flux:
