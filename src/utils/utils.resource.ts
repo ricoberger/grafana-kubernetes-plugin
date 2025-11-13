@@ -33,7 +33,7 @@ export const getResourceManifest = async (
   const resource = await getResource(datasource, resourceId);
 
   const response = await fetch(
-    `/api/datasources/uid/${datasource}/resources/kubernetes/proxy${resource.path}${resource.scope === 'Namespaced' ? `/namespaces/${namespace}` : ''}/${resource.resource}/${name}`,
+    `/api/datasources/uid/${datasource}/resources/kubernetes/proxy${resource.path}${resource.namespaced ? `/namespaces/${namespace}` : ''}/${resource.resource}/${name}`,
     {
       method: 'get',
       headers: {

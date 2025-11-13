@@ -46,7 +46,7 @@ export function DeleteAction(props: Props) {
       const resource = await getResource(props.datasource, props.resource);
 
       const response = await fetch(
-        `/api/datasources/uid/${props.datasource}/resources/kubernetes/proxy${resource.path}${resource.scope === 'Namespaced' ? `/namespaces/${props.namespace}` : ''}/${resource.resource}/${props.name}`,
+        `/api/datasources/uid/${props.datasource}/resources/kubernetes/proxy${resource.path}${resource.namespaced ? `/namespaces/${props.namespace}` : ''}/${resource.resource}/${props.name}`,
         {
           method: 'delete',
           headers: {

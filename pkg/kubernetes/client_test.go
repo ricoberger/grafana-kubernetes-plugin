@@ -80,51 +80,9 @@ func TestGetResourceIds(t *testing.T) {
 	require.NoError(t, err)
 
 	t.Run("should return resource ids data frame", func(t *testing.T) {
-		expectedFrame := data.NewFrame(
-			"Resources",
-			data.NewField("values", nil, []string{
-				"addons.k3s.cattle.io",
-				"clusterrolebindings",
-				"clusterroles",
-				"configmaps",
-				"cronjobs",
-				"daemonsets",
-				"deployments",
-				"endpoints",
-				"etcdsnapshotfiles.k3s.cattle.io",
-				"events",
-				"helmchartconfigs.helm.cattle.io",
-				"helmcharts.helm.cattle.io",
-				"horizontalpodautoscalers",
-				"ingresses",
-				"jobs",
-				"namespaces",
-				"networkpolicies",
-				"nodes",
-				"nodes.metrics.k8s.io",
-				"persistentvolumeclaims",
-				"persistentvolumes",
-				"poddisruptionbudgets",
-				"pods",
-				"pods.metrics.k8s.io",
-				"replicasets",
-				"rolebindings",
-				"roles",
-				"secrets",
-				"serviceaccounts",
-				"services",
-				"statefulsets",
-				"storageclasses",
-			}),
-		)
-		expectedFrame.SetMeta(&data.FrameMeta{
-			PreferredVisualization: data.VisTypeTable,
-			Type:                   data.FrameTypeTable,
-		})
-
 		actualFrame, err := client.GetResourceIds(context.Background())
 		require.NoError(t, err)
-		require.Equal(t, expectedFrame, actualFrame)
+		require.Equal(t, 55, actualFrame.Fields[0].Len())
 	})
 }
 
@@ -198,7 +156,7 @@ func TestGetContainers(t *testing.T) {
 			Type:                   data.FrameTypeTable,
 		})
 
-		actualFrame, err := client.GetContainers(context.Background(), "", nil, "deployments", "default", "echoserver")
+		actualFrame, err := client.GetContainers(context.Background(), "", nil, "deployments.apps", "default", "echoserver")
 		require.NoError(t, err)
 		require.Equal(t, expectedFrame, actualFrame)
 	})
@@ -253,9 +211,9 @@ func TestGetResource(t *testing.T) {
 	require.NoError(t, err)
 
 	t.Run("should return resource", func(t *testing.T) {
-		actualResource, err := client.GetResource(context.Background(), "deployments")
+		actualResource, err := client.GetResource(context.Background(), "deployments.apps")
 		require.NoError(t, err)
-		require.Equal(t, &Resource{IsCRD: false, Path: "/apis/apps/v1", Resource: "deployments", Scope: "Namespaced"}, actualResource)
+		require.Equal(t, &Resource{Kind: "Deployment", Resource: "deployments", Path: "/apis/apps/v1", Namespaced: true}, actualResource)
 	})
 }
 

@@ -5,18 +5,10 @@ import { KubernetesObject } from '@kubernetes/client-node';
  * fields to identify and work with this resource.
  */
 export interface Resource {
-  isCRD: boolean;
-  path: string;
+  kind: string;
   resource: string;
-  scope: 'Cluster' | 'Namespaced';
-  columns: ResourceColumn[] | null;
-}
-
-export interface ResourceColumn {
-  description: string;
-  jsonPath: string;
-  name: string;
-  type: string;
+  path: string;
+  namespaced: boolean;
 }
 
 export interface KubernetesManifest extends KubernetesObject {

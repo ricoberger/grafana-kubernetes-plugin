@@ -160,11 +160,11 @@ export function DetailsAction(props: Props) {
               }}
             />
             {[
-              'daemonsets',
-              'deployments',
-              'jobs',
+              'daemonsets.apps',
+              'deployments.apps',
+              'jobs.batch',
               'nodes',
-              'statefulsets',
+              'statefulsets.apps',
             ].includes(props.resource || '') && (
                 <Tab
                   label="Pods"
@@ -176,12 +176,12 @@ export function DetailsAction(props: Props) {
                 />
               )}
             {[
-              'daemonsets',
-              'deployments',
-              'jobs',
+              'daemonsets.apps',
+              'deployments.apps',
+              'jobs.batch',
               'nodes',
               'pods',
-              'statefulsets',
+              'statefulsets.apps',
             ].includes(props.resource || '') && (
                 <Tab
                   label="Top"
@@ -197,15 +197,15 @@ export function DetailsAction(props: Props) {
               props.settings.integrationsMetricsKubeStateMetricsJob &&
               props.settings.integrationsMetricsNodeExporterJob &&
               [
-                'daemonsets',
-                'deployments',
-                'cronjobs',
-                'horizontalpodautoscalers',
-                'jobs',
+                'daemonsets.apps',
+                'deployments.apps',
+                'cronjobs.batch',
+                'horizontalpodautoscalers.autoscaling',
+                'jobs.batch',
                 'nodes',
                 'persistentvolumeclaims',
                 'pods',
-                'statefulsets',
+                'statefulsets.apps',
                 'verticalpodautoscalers.autoscaling.k8s.io',
               ].includes(props.resource || '') && (
                 <Tab
@@ -246,23 +246,25 @@ export function DetailsAction(props: Props) {
 
           {activeTab === 'metrics' && (
             <>
-              {props.resource === 'daemonsets' && (
+              {props.resource === 'daemonsets.apps' && (
                 <MetricsDaemonSets {...props} />
               )}
-              {props.resource === 'deployments' && (
+              {props.resource === 'deployments.apps' && (
                 <MetricsDeployments {...props} />
               )}
-              {props.resource === 'cronjobs' && <MetricsCronJobs {...props} />}
-              {props.resource === 'horizontalpodautoscalers' && (
+              {props.resource === 'cronjobs.batch' && (
+                <MetricsCronJobs {...props} />
+              )}
+              {props.resource === 'horizontalpodautoscalers.autoscaling' && (
                 <MetricsHPAs {...props} />
               )}
-              {props.resource === 'jobs' && <MetricsJobs {...props} />}
+              {props.resource === 'jobs.batch' && <MetricsJobs {...props} />}
               {props.resource === 'nodes' && <MetricsNodes {...props} />}
               {props.resource === 'persistentvolumeclaims' && (
                 <MetricsPersistentVolumeClaims {...props} />
               )}
               {props.resource === 'pods' && <MetricsPods {...props} />}
-              {props.resource === 'statefulsets' && (
+              {props.resource === 'statefulsets.apps' && (
                 <MetricsStatefulSets {...props} />
               )}
               {props.resource ===

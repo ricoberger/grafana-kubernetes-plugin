@@ -40,7 +40,7 @@ export function RestartAction(props: Props) {
       const resource = await getResource(props.datasource, props.resource);
 
       const response = await fetch(
-        `/api/datasources/uid/${props.datasource}/resources/kubernetes/proxy${resource.path}${resource.scope === 'Namespaced' ? `/namespaces/${props.namespace}` : ''}/${resource.resource}/${props.name}?fieldManager=grafana-kubernetes-plugin`,
+        `/api/datasources/uid/${props.datasource}/resources/kubernetes/proxy${resource.path}${resource.namespaced ? `/namespaces/${props.namespace}` : ''}/${resource.resource}/${props.name}?fieldManager=grafana-kubernetes-plugin`,
         {
           method: 'patch',
           headers: {

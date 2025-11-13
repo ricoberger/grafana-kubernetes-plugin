@@ -11,18 +11,10 @@ import (
 // be able to fetch all resource dynamically from the Kubernetes API, based on
 // the "Path" and "Resource" fields.
 type Resource struct {
-	IsCRD    bool     `json:"isCRD"`
-	Path     string   `json:"path"`
-	Resource string   `json:"resource"`
-	Scope    string   `json:"scope"`
-	Columns  []Column `json:"columns"`
-}
-
-type Column struct {
-	Description string `json:"description"`
-	JSONPath    string `json:"jsonPath"`
-	Name        string `json:"name"`
-	Type        string `json:"type"`
+	Kind       string `json:"kind"`
+	Resource   string `json:"resource"`
+	Path       string `json:"path"`
+	Namespaced bool   `json:"namespaced"`
 }
 
 // Stream represents a logs stream for a single pod. It contains the "Pod" name

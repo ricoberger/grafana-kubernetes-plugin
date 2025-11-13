@@ -29,6 +29,7 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -48,10 +49,11 @@ type Client interface {
 }
 
 type client struct {
-	logger     log.Logger
-	restConfig *rest.Config
-	clientset  kubernetes.Interface
-	cache      Cache
+	logger          log.Logger
+	restConfig      *rest.Config
+	clientset       kubernetes.Interface
+	discoveryClient discovery.DiscoveryInterface
+	cache           Cache
 }
 
 // refreshCache refreshed the cache if it is not valid anymore by calling
@@ -62,9 +64,9 @@ func (c *client) refreshCache(ctx context.Context) {
 
 	if !c.cache.IsValid() {
 		if resources, err := c.getResources(ctx); err != nil {
+			c.logger.Error("Failed to refresh cache", "error", err.Error())
 			span.RecordError(err)
 			span.SetStatus(codes.Error, err.Error())
-			c.logger.Error("Failed to refresh cache", "error", err.Error())
 		} else {
 			c.logger.Debug("Cache refreshed", "resources", len(resources))
 			c.cache.SetAll(resources)
@@ -184,7 +186,7 @@ func (c *client) GetResources(ctx context.Context, user string, groups []string,
 		return nil, err
 	}
 
-	if namespace == "*" || resource.Scope == "Cluster" {
+	if namespace == "*" || !resource.Namespaced {
 		namespace = ""
 	}
 	namespaces := strings.Split(namespace, ",")
@@ -227,7 +229,7 @@ func (c *client) GetResources(ctx context.Context, user string, groups []string,
 		return nil, errors[0]
 	}
 
-	return createResourcesDataFrame(resources, resource.Scope == "Namespaced", wide)
+	return createResourcesDataFrame(resources, resource.Namespaced, wide)
 }
 
 // GetContainer returns a list of all containers for the requested resource
@@ -676,10 +678,16 @@ func NewClient(ctx context.Context, config *models.PluginSettings, logger log.Lo
 		return nil, err
 	}
 
+	discoveryClient, err := discovery.NewDiscoveryClientForConfig(restConfig)
+	if err != nil {
+		return nil, err
+	}
+
 	client := &client{
-		logger:     logger,
-		restConfig: restConfig,
-		clientset:  clientset,
+		logger:          logger,
+		restConfig:      restConfig,
+		clientset:       clientset,
+		discoveryClient: discoveryClient,
 	}
 
 	// Use the "client" to get a map of all resources in the cluster. The map
