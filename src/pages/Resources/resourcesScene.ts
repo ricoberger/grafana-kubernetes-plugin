@@ -14,6 +14,7 @@ import {
 import { VariableSort } from '@grafana/data';
 
 import datasourcePluginJson from '../../datasource/plugin.json';
+import { DEFAULT_QUERIES } from '../../datasource/types/query';
 
 export function resourcesScene() {
   const datasourceVariable = new DataSourceVariable({
@@ -34,6 +35,7 @@ export function resourcesScene() {
       queryType: 'kubernetes-resourceids',
     },
     sort: VariableSort.alphabeticalCaseInsensitiveAsc,
+    value: DEFAULT_QUERIES['kubernetes-resources'].resource,
   });
 
   const namespaceVariable = new QueryVariable({
@@ -48,6 +50,7 @@ export function resourcesScene() {
       queryType: 'kubernetes-namespaces',
     },
     sort: VariableSort.alphabeticalCaseInsensitiveAsc,
+    value: DEFAULT_QUERIES['kubernetes-resources'].namespace,
   });
 
   const queryRunner = new SceneQueryRunner({
