@@ -141,7 +141,6 @@ export function Actions(props: Props) {
 
       {open === 'ai' && (
         <AIAction
-          settings={props.settings}
           datasource={datasource}
           resource={resource}
           namespace={namespace}

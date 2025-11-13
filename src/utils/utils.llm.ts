@@ -10,7 +10,7 @@ export interface Message {
 export const getSystemMessage = (): Message => {
   return {
     hide: true,
-    role: 'assistant',
+    role: 'system',
     message: `
 You are a highly skilled Site Reliability Engineer (SRE) AI agent with a specialized focus on analyzing and optimizing Kubernetes resources. Your primary objective is to ensure the reliability, scalability, and cost-effectiveness of applications running on Kubernetes clusters. You are proactive, data-driven, and meticulous in your analysis.
 

@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { IconButton, Menu, WithContextMenu } from '@grafana/ui';
 import { DataFrame } from '@grafana/data';
+import { llm } from '@grafana/llm';
 
 import { Query } from '../../types/query';
 import { ReconcileAction } from './ReconcileAction';
 import { DetailsAction } from './DetailsAction';
 import { SuspendAction } from './SuspendAction';
 import { ResumeAction } from './ResumeAction';
+import { AIAction } from './AIAction';
 
 interface Props {
   query: Query;
@@ -20,6 +22,7 @@ interface Props {
  */
 export function Actions(props: Props) {
   const [open, setOpen] = useState('');
+  const [isAIEnabled, setIsAIEnabled] = useState(false);
 
   const datasource = props.query.datasource?.uid;
   const resource = props.query.resource;
@@ -29,12 +32,30 @@ export function Actions(props: Props) {
     props.rowIndex
   ];
 
+  /**
+   * If the Grafana LLM plugin is enabled, we set the "isAIEnabled" state to
+   * "true" to render the AI action in the context menu.
+   */
+  useEffect(() => {
+    const checkIsAIEnabled = async () => {
+      try {
+        const enabled = await llm.enabled();
+        setIsAIEnabled(enabled);
+      } catch (_) { }
+    };
+
+    checkIsAIEnabled();
+  }, []);
+
   return (
     <>
       <WithContextMenu
         renderMenuItems={() => (
           <Menu.Group>
             <Menu.Item label="Details" onClick={() => setOpen('details')} />
+            {isAIEnabled && (
+              <Menu.Item label="AI" onClick={() => setOpen('ai')} />
+            )}
             {resource &&
               [
                 'buckets.source.toolkit.fluxcd.io',
@@ -97,6 +118,16 @@ export function Actions(props: Props) {
 
       {open === 'details' && (
         <DetailsAction
+          datasource={datasource}
+          resource={resource}
+          namespace={namespace}
+          name={name}
+          onClose={() => setOpen('')}
+        />
+      )}
+
+      {open === 'ai' && (
+        <AIAction
           datasource={datasource}
           resource={resource}
           namespace={namespace}
