@@ -84,7 +84,7 @@ export function EditAction(props: Props) {
       const resource = await getResource(props.datasource, props.resource);
 
       const response = await fetch(
-        `/api/datasources/uid/${props.datasource}/resources/kubernetes/proxy${resource.path}/namespaces/${props.namespace}/${resource.resource}/${props.name}`,
+        `/api/datasources/uid/${props.datasource}/resources/kubernetes/proxy${resource.path}${resource.namespaced ? `/namespaces/${props.namespace}` : ''}/${resource.resource}/${props.name}`,
         {
           method: 'patch',
           headers: {

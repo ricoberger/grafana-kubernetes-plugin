@@ -59,16 +59,22 @@ export function Actions(props: Props) {
             <Menu.Item label="Details" onClick={() => setOpen('details')} />
 
             {resource &&
-              ['deployments', 'statefulsets', 'replicasets'].includes(
-                resource,
-              ) && <Menu.Item label="Scale" onClick={() => setOpen('scale')} />}
+              [
+                'deployments.apps',
+                'statefulsets.apps',
+                'replicasets.apps',
+              ].includes(resource) && (
+                <Menu.Item label="Scale" onClick={() => setOpen('scale')} />
+              )}
             {resource &&
-              ['daemonsets', 'deployments', 'statefulsets'].includes(
-                resource,
-              ) && (
+              [
+                'daemonsets.apps',
+                'deployments.apps',
+                'statefulsets.apps',
+              ].includes(resource) && (
                 <Menu.Item label="Restart" onClick={() => setOpen('restart')} />
               )}
-            {resource && ['cronjobs'].includes(resource) && (
+            {resource && ['cronjobs.batch'].includes(resource) && (
               <Menu.Item
                 label="Create job"
                 onClick={() => setOpen('createjob')}
@@ -76,11 +82,11 @@ export function Actions(props: Props) {
             )}
             {resource &&
               [
-                'daemonsets',
-                'deployments',
-                'jobs',
+                'daemonsets.apps',
+                'deployments.apps',
+                'jobs.batch',
                 'pods',
-                'statefulsets',
+                'statefulsets.apps',
               ].includes(resource) && (
                 <Menu.Item
                   label="Logs"
