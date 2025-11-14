@@ -12,6 +12,8 @@ import { CreateJobAction } from './CreateJobAction';
 import { EditAction } from './EditAction';
 import { DetailsAction } from './DetailsAction';
 import { AIAction } from './AIAction';
+import { CronJobSuspendAction } from './CronJobSuspendAction';
+import { CronJobResumeAction } from './CronJobResumeAction';
 
 interface Props {
   query: Query;
@@ -80,6 +82,18 @@ export function Actions(props: Props) {
                 onClick={() => setOpen('createjob')}
               />
             )}
+            {resource && ['cronjobs.batch'].includes(resource) && (
+              <Menu.Item
+                label="Suspend"
+                onClick={() => setOpen('cronjobsuspend')}
+              />
+            )}
+            {resource && ['cronjobs.batch'].includes(resource) && (
+              <Menu.Item
+                label="Resume"
+                onClick={() => setOpen('cronjobresume')}
+              />
+            )}
             {resource &&
               [
                 'daemonsets.apps',
@@ -142,6 +156,24 @@ export function Actions(props: Props) {
         namespace={namespace}
         name={name}
         isOpen={open === 'createjob'}
+        onClose={() => setOpen('')}
+      />
+
+      <CronJobSuspendAction
+        datasource={datasource}
+        resource={resource}
+        namespace={namespace}
+        name={name}
+        isOpen={open === 'cronjobsuspend'}
+        onClose={() => setOpen('')}
+      />
+
+      <CronJobResumeAction
+        datasource={datasource}
+        resource={resource}
+        namespace={namespace}
+        name={name}
+        isOpen={open === 'cronjobresume'}
         onClose={() => setOpen('')}
       />
 
