@@ -73,55 +73,55 @@ export function FluxResources({
             createCustomValue={true}
             options={[
               {
-                label: 'Buckets',
+                label: 'Bucket',
                 value: 'buckets.source.toolkit.fluxcd.io',
               },
               {
-                label: 'Git Repositories',
+                label: 'GitRepository',
                 value: 'gitrepositories.source.toolkit.fluxcd.io',
               },
               {
-                label: 'Helm Charts',
+                label: 'HelmChart',
                 value: 'helmcharts.source.toolkit.fluxcd.io',
               },
               {
-                label: 'Helm Repositories',
+                label: 'HelmRepository',
                 value: 'helmrepositories.source.toolkit.fluxcd.io',
               },
               {
-                label: 'OCI Repositories',
+                label: 'OCIRepository',
                 value: 'ocirepositories.source.toolkit.fluxcd.io',
               },
               {
-                label: 'Kustomizations',
+                label: 'Kustomization',
                 value: 'kustomizations.kustomize.toolkit.fluxcd.io',
               },
               {
-                label: 'Helm Releases',
+                label: 'HelmRelease',
                 value: 'helmreleases.helm.toolkit.fluxcd.io',
               },
               {
-                label: 'Image Policies',
+                label: 'ImagePolicy',
                 value: 'imagepolicies.image.toolkit.fluxcd.io',
               },
               {
-                label: 'Image Repositories',
+                label: 'ImageRepository',
                 value: 'imagerepositories.image.toolkit.fluxcd.io',
               },
               {
-                label: 'Image Update Automations',
+                label: 'ImageUpdateAutomation',
                 value: 'imageupdateautomations.image.toolkit.fluxcd.io',
               },
               {
-                label: 'Alerts',
+                label: 'Alert',
                 value: 'alerts.notification.toolkit.fluxcd.io',
               },
               {
-                label: 'Providers',
+                label: 'Provider',
                 value: 'providers.notification.toolkit.fluxcd.io',
               },
               {
-                label: 'Receivers',
+                label: 'Receiver',
                 value: 'receivers.notification.toolkit.fluxcd.io',
               },
             ]}

@@ -69,7 +69,7 @@ export class DataSource extends DataSourceWithBackend<
         return {
           ...dataQueryResponse,
           data: dataQueryResponse.data.flatMap((frame) => {
-            if (frame.refId.startsWith('metricsFindQuery-')) {
+            if (frame.refId.startsWith('metricsFindQuery')) {
               return frame;
             }
 
@@ -147,13 +147,27 @@ export class DataSource extends DataSourceWithBackend<
       return [];
     }
 
+    // If query type is "kubernetes-resourceids" we apply a special handling to
+    // get the variables values, because this query type returns both the
+    // resource id and the kind of the resource. The id is used as value, while
+    // the kind is used as text.
+    if (query.queryType === 'kubernetes-resourceids') {
+      return response
+        ? (response.data[0] as DataFrame).fields[0].values.map((_, index) => ({
+          value: _.toString(),
+          text: (response.data[0] as DataFrame).fields[1].values[
+            index
+          ].toString(),
+        }))
+        : [];
+    }
+
     /**
-     * If the query type is "kubernetes-resourceids", "kubernetes-namespaces" or
-     * "kubernetes-containers" we apply a special handling to get the variable
-     * values, because these query types can only be used for variables.
+     * If the query type is "kubernetes-namespaces" or "kubernetes-containers"
+     * we apply a special handling to get the variable values, because these
+     * query types can only be used for variables.
      */
     if (
-      query.queryType === 'kubernetes-resourceids' ||
       query.queryType === 'kubernetes-namespaces' ||
       query.queryType === 'kubernetes-containers'
     ) {

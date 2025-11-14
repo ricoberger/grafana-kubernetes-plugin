@@ -169,11 +169,11 @@ export function KubernetesLogs({
             value={query.resource}
             createCustomValue={true}
             options={[
-              { value: 'daemonsets' },
-              { value: 'deployments' },
-              { value: 'pods' },
-              { value: 'jobs' },
-              { value: 'statefulsets' },
+              { value: 'daemonsets.apps', label: 'DaemonSet' },
+              { value: 'deployments.apps', label: 'Deployment' },
+              { value: 'pods', label: 'Pod' },
+              { value: 'jobs.batch', label: 'Job' },
+              { value: 'statefulsets.apps', label: 'StatefulSet' },
             ]}
             onChange={onResourceChange}
           />

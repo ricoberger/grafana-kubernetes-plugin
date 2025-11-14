@@ -83,6 +83,7 @@ func TestGetResourceIds(t *testing.T) {
 		actualFrame, err := client.GetResourceIds(context.Background())
 		require.NoError(t, err)
 		require.Equal(t, 55, actualFrame.Fields[0].Len())
+		require.Equal(t, 55, actualFrame.Fields[1].Len())
 	})
 }
 
