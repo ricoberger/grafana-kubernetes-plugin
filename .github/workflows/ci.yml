@@ -227,34 +227,12 @@ jobs:
       - name: Stop Grafana Docker
         run: docker compose down
 
-      # Uncomment this step to upload the server log to Github artifacts.
-      # Remember Github artifacts are public on the Internet if the repository is public.
-      # - name: Upload Server Log
-      #   uses: actions/upload-artifact@v5
-      #   if: ${{ always() && steps.run-tests.outcome == 'failure' }}
-      #   with:
-      #     name: ${{ matrix.GRAFANA_IMAGE.NAME }}-v${{ matrix.GRAFANA_IMAGE.VERSION }}-${{github.run_id}}-server-log
-      #     path: grafana-server.log
-      #     retention-days: 5
-
-  publish-report:
-    name: Publish E2E Report
-    if: ${{ always() && !cancelled() }}
-    permissions:
-      contents: write
-      id-token: write
-      pull-requests: write
-    needs: [playwright-tests]
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
+      - name: Upload Server Log
+        uses: actions/upload-artifact@v5
+        if: ${{ always() && steps.run-tests.outcome == 'failure' }}
         with:
-          # required for playwright-gh-pages
-          persist-credentials: true
-
-      - name: Publish Report
-        uses: grafana/plugin-actions/playwright-gh-pages/deploy-report-pages@main
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          name:
+            ${{ matrix.GRAFANA_IMAGE.NAME }}-v${{ matrix.GRAFANA_IMAGE.VERSION
+            }}-${{github.run_id}}-server-log
+          path: grafana-server.log
+          retention-days: 5
