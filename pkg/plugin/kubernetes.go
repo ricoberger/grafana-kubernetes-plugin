@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/ricoberger/grafana-kubernetes-plugin/pkg/models"
 
@@ -14,8 +13,6 @@ import (
 	"github.com/grafana/grafana-plugin-sdk-go/experimental/concurrent"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	clientauthenticationv1 "k8s.io/client-go/pkg/apis/clientauthentication/v1"
 	clientcmdapiv1 "k8s.io/client-go/tools/clientcmd/api/v1"
 )
 
@@ -296,42 +293,22 @@ func (d *Datasource) handleKubernetesKubeconfig(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	// Create ExecCredential which is used in the kubeconfig "exec" section to
-	// return the generated token.
-	execCredential := clientauthenticationv1.ExecCredential{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: clientauthenticationv1.SchemeGroupVersion.String(),
-			Kind:       "ExecCredential",
-		},
-		Status: &clientauthenticationv1.ExecCredentialStatus{
-			ExpirationTimestamp: &metav1.Time{Time: time.Now().Add(time.Duration(d.generateKubeconfigTTL) * time.Second)},
-			Token:               token,
-		},
-	}
-
-	execCredentialData, err := json.Marshal(execCredential)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	// Create a kubeconfig and return it.
 	//
 	// The server in the kubeconfig is the Kubernetes server which is started by
-	// the data source.
-	//
-	// We do not directly set the token and use an "exec" plugin instead. The
-	// "exec" plugin is a simple bash script, which runs a cURL command against
-	// the health endpoint of the datasource and then returns the generated
-	// ExecCredential with the token. This is required, because the datasource
-	// is not automatically started when Grafana starts and this way we ensure
-	// that the data source including the proxy server is started.
+	// the data source. The server then proxies the requests to the Kubernetes
+	// API server. The token is the Grafana token which is used to authenticate
+	// the user in the proxy handler.
 	kubeconfig := clientcmdapiv1.Config{
 		APIVersion: "v1",
 		Kind:       "Config",
 		Clusters: []clientcmdapiv1.NamedCluster{{
 			Name: d.generateKubeconfigName,
 			Cluster: clientcmdapiv1.Cluster{
+				// Currently we can not use the CallResourceHandler endpoint and
+				// have to use our own server here, because Grafan removes some
+				// headers from the request, which are required for "exec" and
+				// "port-forward" commands to work.
 				// Server: fmt.Sprintf("%sapi/datasources/uid/%s/resources/kubernetes/proxy", d.grafanaClient.GetURL().String(), backend.PluginConfigFromContext(ctx).DataSourceInstanceSettings.UID),
 				Server: fmt.Sprintf("%sapi/datasources/proxy/uid/%s/proxy", d.grafanaClient.GetUrl().String(), backend.PluginConfigFromContext(ctx).DataSourceInstanceSettings.UID),
 			},
@@ -348,19 +325,7 @@ func (d *Datasource) handleKubernetesKubeconfig(w http.ResponseWriter, r *http.R
 		AuthInfos: []clientcmdapiv1.NamedAuthInfo{{
 			Name: fmt.Sprintf("%s-%s", d.generateKubeconfigName, user),
 			AuthInfo: clientcmdapiv1.AuthInfo{
-				// Token: token,
-				Exec: &clientcmdapiv1.ExecConfig{
-					APIVersion: clientauthenticationv1.SchemeGroupVersion.String(),
-					Command:    "bash",
-					Args: []string{"-c", fmt.Sprintf(`http_code=$(curl -X GET -H 'Authorization: Bearer %s' -Lw '%%{http_code}\n' -s -o /dev/null -I '%sapi/datasources/uid/%s/health')
-
-if [ $http_code -ne "200" ]; then
-  exit 1
-fi
-
-echo '%s'`, token, d.grafanaClient.GetUrl().String(), backend.PluginConfigFromContext(ctx).DataSourceInstanceSettings.UID, string(execCredentialData))},
-					InteractiveMode: clientcmdapiv1.NeverExecInteractiveMode,
-				},
+				Token: token,
 			},
 		}},
 	}
