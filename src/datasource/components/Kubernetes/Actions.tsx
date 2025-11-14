@@ -14,6 +14,8 @@ import { DetailsAction } from './DetailsAction';
 import { AIAction } from './AIAction';
 import { CronJobSuspendAction } from './CronJobSuspendAction';
 import { CronJobResumeAction } from './CronJobResumeAction';
+import { CSRApproveAction } from './CSRApproveAction';
+import { CSRDenyAction } from './CSRDenyAction';
 
 interface Props {
   query: Query;
@@ -95,6 +97,21 @@ export function Actions(props: Props) {
               />
             )}
             {resource &&
+              ['certificatesigningrequests.certificates.k8s.io'].includes(
+                resource,
+              ) && (
+                <Menu.Item
+                  label="Approve"
+                  onClick={() => setOpen('csrapprove')}
+                />
+              )}
+            {resource &&
+              ['certificatesigningrequests.certificates.k8s.io'].includes(
+                resource,
+              ) && (
+                <Menu.Item label="Deny" onClick={() => setOpen('csrdeny')} />
+              )}
+            {resource &&
               [
                 'daemonsets.apps',
                 'deployments.apps',
@@ -174,6 +191,24 @@ export function Actions(props: Props) {
         namespace={namespace}
         name={name}
         isOpen={open === 'cronjobresume'}
+        onClose={() => setOpen('')}
+      />
+
+      <CSRApproveAction
+        datasource={datasource}
+        resource={resource}
+        namespace={namespace}
+        name={name}
+        isOpen={open === 'csrapprove'}
+        onClose={() => setOpen('')}
+      />
+
+      <CSRDenyAction
+        datasource={datasource}
+        resource={resource}
+        namespace={namespace}
+        name={name}
+        isOpen={open === 'csrdeny'}
         onClose={() => setOpen('')}
       />
 
