@@ -10,6 +10,7 @@ import (
 	"github.com/grafana/grafana-plugin-sdk-go/backend/tracing"
 	"github.com/grafana/grafana-plugin-sdk-go/data"
 	"go.opentelemetry.io/otel/codes"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -56,7 +57,7 @@ func (c *client) getResources(ctx context.Context) (map[string]Resource, error) 
 // data. The resources JSON data is expected to be in the format of a Kubernetes
 // Table object. If the wide parameter is true, all columns are included in the
 // data frame, otherwise only the columns with priority 0 are included.
-func createResourcesDataFrame(resources [][]byte, namespaced, wide bool) (*data.Frame, error) {
+func createResourcesDataFrame(resourceId string, resources [][]byte, namespaced, wide bool) (*data.Frame, error) {
 	table := metav1.Table{}
 	frame := data.NewFrame("Resources")
 
@@ -99,11 +100,11 @@ func createResourcesDataFrame(resources [][]byte, namespaced, wide bool) (*data.
 
 		var values []string
 		for _, row := range table.Rows {
-			values = append(values, fmt.Sprintf("%v", row.Cells[columnIndex]))
+			values = append(values, formatValue(resourceId, column.Name, row.Cells[columnIndex]))
 		}
 
 		frame.Fields = append(frame.Fields,
-			data.NewField(column.Name, nil, values),
+			data.NewField(formatColumnName(resourceId, column.Name), nil, values),
 		)
 	}
 
@@ -113,4 +114,44 @@ func createResourcesDataFrame(resources [][]byte, namespaced, wide bool) (*data.
 	})
 
 	return frame, nil
+}
+
+func formatColumnName(resourceId, name string) string {
+	if resourceId == "pods.metrics.k8s.io" && name == "cpu" {
+		return "CPU"
+	}
+
+	if resourceId == "pods.metrics.k8s.io" && name == "memory" {
+		return "Memory"
+	}
+
+	if resourceId == "nodes.metrics.k8s.io" && name == "cpu" {
+		return "CPU"
+	}
+
+	if resourceId == "nodes.metrics.k8s.io" && name == "memory" {
+		return "Memory"
+	}
+
+	return name
+}
+
+func formatValue(resourceId, name string, value any) string {
+	if (resourceId == "pods.metrics.k8s.io" || resourceId == "nodes.metrics.k8s.io") && name == "cpu" {
+		quantity, err := resource.ParseQuantity(fmt.Sprintf("%v", value))
+		if err != nil {
+			return fmt.Sprintf("%v", value)
+		}
+		return fmt.Sprintf("%vm", quantity.MilliValue())
+	}
+
+	if (resourceId == "pods.metrics.k8s.io" || resourceId == "nodes.metrics.k8s.io") && name == "memory" {
+		quantity, err := resource.ParseQuantity(fmt.Sprintf("%v", value))
+		if err != nil {
+			return fmt.Sprintf("%v", value)
+		}
+		return fmt.Sprintf("%vMi", quantity.Value()/(1024*1024))
+	}
+
+	return fmt.Sprintf("%v", value)
 }
