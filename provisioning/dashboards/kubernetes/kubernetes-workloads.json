@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 3,
+  "id": 1,
   "links": [],
   "panels": [
     {
@@ -143,8 +143,8 @@
       {
         "allowCustomValue": false,
         "current": {
-          "text": "deployments",
-          "value": "deployments"
+          "text": "Deployment",
+          "value": "deployments.apps"
         },
         "description": "",
         "label": "Resource",
@@ -152,31 +152,31 @@
         "options": [
           {
             "selected": false,
-            "text": "DaemonSets",
-            "value": "daemonsets"
+            "text": "DaemonSet",
+            "value": "daemonsets.apps"
           },
           {
             "selected": true,
-            "text": "Deployments",
-            "value": "deployments"
+            "text": "Deployment",
+            "value": "deployments.apps"
           },
           {
             "selected": false,
-            "text": "Pods",
+            "text": "Pod",
             "value": "pods"
           },
           {
             "selected": false,
-            "text": "Jobs",
-            "value": "jobs"
+            "text": "Job",
+            "value": "jobs.batch"
           },
           {
             "selected": false,
-            "text": "StatefulSets",
-            "value": "statefulsets"
+            "text": "StatefulSet",
+            "value": "statefulsets.apps"
           }
         ],
-        "query": "DaemonSets : daemonsets, Deployments : deployments, Pods : pods, Jobs : jobs, StatefulSets : statefulsets",
+        "query": "DaemonSet : daemonsets.apps, Deployment : deployments.apps, Pod : pods, Job : jobs.batch, StatefulSet : statefulsets.apps",
         "type": "custom"
       },
       {

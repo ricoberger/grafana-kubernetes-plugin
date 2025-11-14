@@ -110,13 +110,14 @@ func (c *client) GetResourceIds(ctx context.Context) (*data.Frame, error) {
 
 	c.refreshCache(ctx)
 
-	// Get a list of all resource ids, which are all the keys in the cache.
-	keys := c.cache.GetKeys()
-	slices.Sort(keys)
+	// Get a list of all resource ids, which are all the keys in the cache and a
+	// list of all kinds.
+	keys, kinds := c.cache.GetKeysAndKinds()
 
 	frame := data.NewFrame(
 		"Resources",
 		data.NewField("values", nil, keys),
+		data.NewField("kinds", nil, kinds),
 	)
 
 	frame.SetMeta(&data.FrameMeta{

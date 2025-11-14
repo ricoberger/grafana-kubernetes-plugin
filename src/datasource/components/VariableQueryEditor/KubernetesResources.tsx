@@ -34,7 +34,7 @@ export function KubernetesResources(props: Props) {
 
       setResources(
         result.map((value) => {
-          return { value: value.text };
+          return { value: value.value as string, label: value.text };
         }),
       );
     };
