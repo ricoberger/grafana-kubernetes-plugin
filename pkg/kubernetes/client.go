@@ -110,14 +110,17 @@ func (c *client) GetResourceIds(ctx context.Context) (*data.Frame, error) {
 
 	c.refreshCache(ctx)
 
-	// Get a list of all resource ids, which are all the keys in the cache and a
-	// list of all kinds.
-	keys, kinds := c.cache.GetKeysAndKinds()
+	// Get the values for the data frame from the resource cache.
+	ids, kinds, apiVersions, names, paths, namespaced := c.cache.GetDataFrameValues()
 
 	frame := data.NewFrame(
 		"Resources",
-		data.NewField("values", nil, keys),
+		data.NewField("ids", nil, ids),
 		data.NewField("kinds", nil, kinds),
+		data.NewField("apiVersions", nil, apiVersions),
+		data.NewField("names", nil, names),
+		data.NewField("paths", nil, paths),
+		data.NewField("namespaced", nil, namespaced),
 	)
 
 	frame.SetMeta(&data.FrameMeta{
@@ -204,9 +207,9 @@ func (c *client) GetResources(ctx context.Context, user string, groups []string,
 	for _, namespace := range namespaces {
 		go func(namespace string) {
 			defer resourcesWG.Done()
-			c.logger.Debug("Getting resources", "resource", resource.Resource, "path", resource.Path, "namespace", namespace, "parameterName", parameterName, "parameterValue", parameterValue, "user", user)
+			c.logger.Debug("Getting resources", "name", resource.Name, "path", resource.Path, "namespace", namespace, "parameterName", parameterName, "parameterValue", parameterValue, "user", user)
 
-			result, err := c.clientset.CoreV1().RESTClient().Get().AbsPath(resource.Path).Namespace(namespace).Resource(resource.Resource).Param(parameterName, parameterValue).SetHeader("Accept", "application/json;as=Table;v=v1;g=meta.k8s.io,application/json;as=Table;v=v1beta1;g=meta.k8s.io,application/json").SetHeader("Impersonate-User", user).SetHeader("Impersonate-Group", groups...).DoRaw(ctx)
+			result, err := c.clientset.CoreV1().RESTClient().Get().AbsPath(resource.Path).Namespace(namespace).Resource(resource.Name).Param(parameterName, parameterValue).SetHeader("Accept", "application/json;as=Table;v=v1;g=meta.k8s.io,application/json;as=Table;v=v1beta1;g=meta.k8s.io,application/json").SetHeader("Impersonate-User", user).SetHeader("Impersonate-Group", groups...).DoRaw(ctx)
 			if err != nil {
 				c.logger.Error("Failed to get resources", "error", err.Error())
 				span.RecordError(err)
@@ -285,7 +288,7 @@ func (c *client) getPodsAndContainers(ctx context.Context, user string, groups [
 	c.refreshCache(ctx)
 
 	switch resourceId {
-	case "pods":
+	case "pod":
 		resource, ok := c.cache.Get(resourceId)
 		if !ok {
 			err := fmt.Errorf("resource %s not found", resourceId)
@@ -294,7 +297,7 @@ func (c *client) getPodsAndContainers(ctx context.Context, user string, groups [
 			return nil, nil, err
 		}
 
-		result, err := c.clientset.CoreV1().RESTClient().Get().AbsPath(resource.Path).Namespace(namespace).Resource(resource.Resource).Name(name).SetHeader("Impersonate-User", user).SetHeader("Impersonate-Group", groups...).DoRaw(ctx)
+		result, err := c.clientset.CoreV1().RESTClient().Get().AbsPath(resource.Path).Namespace(namespace).Resource(resource.Name).Name(name).SetHeader("Impersonate-User", user).SetHeader("Impersonate-Group", groups...).DoRaw(ctx)
 		if err != nil {
 			span.RecordError(err)
 			span.SetStatus(codes.Error, err.Error())
@@ -327,7 +330,7 @@ func (c *client) getPodsAndContainers(ctx context.Context, user string, groups [
 			return nil, nil, err
 		}
 
-		result, err := c.clientset.CoreV1().RESTClient().Get().AbsPath(resource.Path).Namespace(namespace).Resource(resource.Resource).Name(name).SetHeader("Impersonate-User", user).SetHeader("Impersonate-Group", groups...).DoRaw(ctx)
+		result, err := c.clientset.CoreV1().RESTClient().Get().AbsPath(resource.Path).Namespace(namespace).Resource(resource.Name).Name(name).SetHeader("Impersonate-User", user).SetHeader("Impersonate-Group", groups...).DoRaw(ctx)
 		if err != nil {
 			span.RecordError(err)
 			span.SetStatus(codes.Error, err.Error())

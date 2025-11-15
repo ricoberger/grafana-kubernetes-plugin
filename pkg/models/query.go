@@ -14,7 +14,7 @@ const (
 )
 
 type QueryModelKubernetesResources struct {
-	Resource       string `json:"resource"`
+	ResourceId     string `json:"resourceId"`
 	Namespace      string `json:"namespace"`
 	ParameterName  string `json:"parameterName"`
 	ParameterValue string `json:"parameterValue"`
@@ -22,17 +22,17 @@ type QueryModelKubernetesResources struct {
 }
 
 type QueryModelKubernetesContainers struct {
-	Resource  string `json:"resource"`
-	Namespace string `json:"namespace"`
-	Name      string `json:"name"`
+	ResourceId string `json:"resourceId"`
+	Namespace  string `json:"namespace"`
+	Name       string `json:"name"`
 }
 
 type QueryModelKubernetesLogs struct {
-	Resource  string `json:"resource"`
-	Namespace string `json:"namespace"`
-	Name      string `json:"name"`
-	Container string `json:"container"`
-	Filter    string `json:"filter"`
+	ResourceId string `json:"resourceId"`
+	Namespace  string `json:"namespace"`
+	Name       string `json:"name"`
+	Container  string `json:"container"`
+	Filter     string `json:"filter"`
 }
 
 type QueryModelHelmReleases struct {

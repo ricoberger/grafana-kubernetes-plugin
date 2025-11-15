@@ -108,16 +108,16 @@ func (d *Datasource) handleKubernetesResources(ctx context.Context, query concur
 		return backend.ErrorResponseWithErrorSource(err)
 	}
 
-	d.logger.Info("handleKubernetesResources query", "user", user, "groups", groups, "resource", qm.Resource, "namespace", qm.Namespace, "parameterName", qm.ParameterName, "parameterValue", qm.ParameterValue, "wide", qm.Wide)
+	d.logger.Info("handleKubernetesResources query", "user", user, "groups", groups, "resourceId", qm.ResourceId, "namespace", qm.Namespace, "parameterName", qm.ParameterName, "parameterValue", qm.ParameterValue, "wide", qm.Wide)
 	span.SetAttributes(attribute.Key("user").String(user))
 	span.SetAttributes(attribute.Key("groups").StringSlice(groups))
-	span.SetAttributes(attribute.Key("resource").String(qm.Resource))
+	span.SetAttributes(attribute.Key("resourceId").String(qm.ResourceId))
 	span.SetAttributes(attribute.Key("namespace").String(qm.Namespace))
 	span.SetAttributes(attribute.Key("parameterName").String(qm.ParameterName))
 	span.SetAttributes(attribute.Key("parameterValue").String(qm.ParameterValue))
 	span.SetAttributes(attribute.Key("wide").Bool(qm.Wide))
 
-	frame, err := d.kubeClient.GetResources(ctx, user, groups, qm.Resource, qm.Namespace, qm.ParameterName, qm.ParameterValue, qm.Wide)
+	frame, err := d.kubeClient.GetResources(ctx, user, groups, qm.ResourceId, qm.Namespace, qm.ParameterName, qm.ParameterValue, qm.Wide)
 	if err != nil {
 		d.logger.Error("Failed to get resources", "error", err.Error())
 		span.RecordError(err)
@@ -170,14 +170,14 @@ func (d *Datasource) handleKubernetesContainers(ctx context.Context, query concu
 		return backend.ErrorResponseWithErrorSource(err)
 	}
 
-	d.logger.Info("handleKubernetesContainers query", "user", user, "groups", groups, "resource", qm.Resource, "namespace", qm.Namespace, "name", qm.Name)
+	d.logger.Info("handleKubernetesContainers query", "user", user, "groups", groups, "resourceId", qm.ResourceId, "namespace", qm.Namespace, "name", qm.Name)
 	span.SetAttributes(attribute.Key("user").String(user))
 	span.SetAttributes(attribute.Key("groups").StringSlice(groups))
-	span.SetAttributes(attribute.Key("resource").String(qm.Resource))
+	span.SetAttributes(attribute.Key("resourceId").String(qm.ResourceId))
 	span.SetAttributes(attribute.Key("namespace").String(qm.Namespace))
 	span.SetAttributes(attribute.Key("name").String(qm.Name))
 
-	frame, err := d.kubeClient.GetContainers(ctx, user, groups, qm.Resource, qm.Namespace, qm.Name)
+	frame, err := d.kubeClient.GetContainers(ctx, user, groups, qm.ResourceId, qm.Namespace, qm.Name)
 	if err != nil {
 		d.logger.Error("Failed to get containers", "error", err.Error())
 		span.RecordError(err)
@@ -229,16 +229,16 @@ func (d *Datasource) handleKubernetesLogs(ctx context.Context, query concurrent.
 		return backend.ErrorResponseWithErrorSource(err)
 	}
 
-	d.logger.Info("handleKubernetesLogs query", "user", user, "groups", groups, "resource", qm.Resource, "namespace", qm.Namespace, "name", qm.Name, "container", qm.Container, "filter", qm.Filter)
+	d.logger.Info("handleKubernetesLogs query", "user", user, "groups", groups, "resourceId", qm.ResourceId, "namespace", qm.Namespace, "name", qm.Name, "container", qm.Container, "filter", qm.Filter)
 	span.SetAttributes(attribute.Key("user").String(user))
 	span.SetAttributes(attribute.Key("groups").StringSlice(groups))
-	span.SetAttributes(attribute.Key("resource").String(qm.Resource))
+	span.SetAttributes(attribute.Key("resourceId").String(qm.ResourceId))
 	span.SetAttributes(attribute.Key("namespace").String(qm.Namespace))
 	span.SetAttributes(attribute.Key("name").String(qm.Name))
 	span.SetAttributes(attribute.Key("container").String(qm.Container))
 	span.SetAttributes(attribute.Key("filter").String(qm.Filter))
 
-	frame, err := d.kubeClient.GetLogs(ctx, user, groups, qm.Resource, qm.Namespace, qm.Name, qm.Container, qm.Filter, query.DataQuery.TimeRange)
+	frame, err := d.kubeClient.GetLogs(ctx, user, groups, qm.ResourceId, qm.Namespace, qm.Name, qm.Container, qm.Filter, query.DataQuery.TimeRange)
 	if err != nil {
 		d.logger.Error("Failed to get logs", "error", err.Error())
 		span.RecordError(err)

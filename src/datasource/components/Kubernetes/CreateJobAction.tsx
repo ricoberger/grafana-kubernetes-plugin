@@ -14,7 +14,7 @@ import { getResourceManifest } from '../../../utils/utils.resource';
 
 interface Props {
   datasource?: string;
-  resource?: string;
+  resourceId?: string;
   namespace?: string;
   name?: string;
   isOpen: boolean;
@@ -41,7 +41,7 @@ export function CreateJobAction(props: Props) {
 
       const manifest = await getResourceManifest(
         props.datasource,
-        props.resource,
+        props.resourceId,
         props.namespace,
         props.name,
       );

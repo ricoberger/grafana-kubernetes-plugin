@@ -17,7 +17,7 @@ import { getResource } from '../../../utils/utils.resource';
 
 interface Props {
   datasource?: string;
-  resource?: string;
+  resourceId?: string;
   namespace?: string;
   name?: string;
   isOpen: boolean;
@@ -43,10 +43,10 @@ export function DeleteAction(props: Props) {
     try {
       setIsLoading(true);
 
-      const resource = await getResource(props.datasource, props.resource);
+      const resource = await getResource(props.datasource, props.resourceId);
 
       const response = await fetch(
-        `/api/datasources/uid/${props.datasource}/resources/kubernetes/proxy${resource.path}${resource.namespaced ? `/namespaces/${props.namespace}` : ''}/${resource.resource}/${props.name}`,
+        `/api/datasources/uid/${props.datasource}/resources/kubernetes/proxy${resource.path}${resource.namespaced ? `/namespaces/${props.namespace}` : ''}/${resource.name}/${props.name}`,
         {
           method: 'delete',
           headers: {

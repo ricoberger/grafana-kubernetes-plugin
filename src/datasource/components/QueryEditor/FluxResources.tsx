@@ -43,13 +43,13 @@ export function FluxResources({
   }, [datasource]);
 
   /**
-   * Handle "resource" field change.
+   * Handle "resourceId" field change.
    *
-   * When the namespace changes we also immediately run the query, so that the
+   * When the resource id changes we also immediately run the query, so that the
    * user gets instant feedback in the UI.
    */
   const onResourceChange = (option: ComboboxOption<string>) => {
-    onChange({ ...query, resource: option.value });
+    onChange({ ...query, resourceId: option.value });
     onRunQuery();
   };
 
@@ -69,60 +69,60 @@ export function FluxResources({
       <InlineFieldRow>
         <InlineField label="Resource">
           <Combobox<string>
-            value={query.resource}
+            value={query.resourceId}
             createCustomValue={true}
             options={[
               {
                 label: 'Bucket',
-                value: 'buckets.source.toolkit.fluxcd.io',
+                value: 'bucket.source.toolkit.fluxcd.io',
               },
               {
                 label: 'GitRepository',
-                value: 'gitrepositories.source.toolkit.fluxcd.io',
+                value: 'gitrepository.source.toolkit.fluxcd.io',
               },
               {
                 label: 'HelmChart',
-                value: 'helmcharts.source.toolkit.fluxcd.io',
+                value: 'helmchart.source.toolkit.fluxcd.io',
               },
               {
                 label: 'HelmRepository',
-                value: 'helmrepositories.source.toolkit.fluxcd.io',
+                value: 'helmrepository.source.toolkit.fluxcd.io',
               },
               {
                 label: 'OCIRepository',
-                value: 'ocirepositories.source.toolkit.fluxcd.io',
+                value: 'ocirepository.source.toolkit.fluxcd.io',
               },
               {
                 label: 'Kustomization',
-                value: 'kustomizations.kustomize.toolkit.fluxcd.io',
+                value: 'kustomization.kustomize.toolkit.fluxcd.io',
               },
               {
                 label: 'HelmRelease',
-                value: 'helmreleases.helm.toolkit.fluxcd.io',
+                value: 'helmrelease.helm.toolkit.fluxcd.io',
               },
               {
                 label: 'ImagePolicy',
-                value: 'imagepolicies.image.toolkit.fluxcd.io',
+                value: 'imagepolicy.image.toolkit.fluxcd.io',
               },
               {
                 label: 'ImageRepository',
-                value: 'imagerepositories.image.toolkit.fluxcd.io',
+                value: 'imagerepository.image.toolkit.fluxcd.io',
               },
               {
                 label: 'ImageUpdateAutomation',
-                value: 'imageupdateautomations.image.toolkit.fluxcd.io',
+                value: 'imageupdateautomation.image.toolkit.fluxcd.io',
               },
               {
                 label: 'Alert',
-                value: 'alerts.notification.toolkit.fluxcd.io',
+                value: 'alert.notification.toolkit.fluxcd.io',
               },
               {
                 label: 'Provider',
-                value: 'providers.notification.toolkit.fluxcd.io',
+                value: 'provider.notification.toolkit.fluxcd.io',
               },
               {
                 label: 'Receiver',
-                value: 'receivers.notification.toolkit.fluxcd.io',
+                value: 'receiver.notification.toolkit.fluxcd.io',
               },
             ]}
             onChange={onResourceChange}

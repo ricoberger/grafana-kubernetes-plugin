@@ -47,8 +47,8 @@ export function KubernetesLogs({
 
   /**
    * Fetch available names from the datasource, which can then be used as
-   * options in the "name" field. The names are only fetched a "namespace" is
-   * selected.
+   * options in the "name" field. The names are only fetched when a "namespace"
+   * is selected.
    */
   useEffect(() => {
     const fetchNames = async () => {
@@ -56,7 +56,7 @@ export function KubernetesLogs({
         refId: 'kubernetes-resources',
         queryType: 'kubernetes-resources',
         variableField: 'Name',
-        resource: query.resource,
+        resourceId: query.resourceId,
         namespace: query.namespace,
       });
 
@@ -70,11 +70,11 @@ export function KubernetesLogs({
     if (query.namespace) {
       fetchNames();
     }
-  }, [datasource, query.resource, query.namespace]);
+  }, [datasource, query.resourceId, query.namespace]);
 
   /**
    * Fetch available containers from the datasource, which can then be used as
-   * options in the "container" field. The containers are only fetched a
+   * options in the "container" field. The containers are only fetched when a
    * "namespace" or "name" is selected.
    */
   useEffect(() => {
@@ -82,7 +82,7 @@ export function KubernetesLogs({
       const result = await datasource.metricFindQuery({
         refId: 'kubernetes-containers',
         queryType: 'kubernetes-containers',
-        resource: query.resource,
+        resourceId: query.resourceId,
         namespace: query.namespace,
         name: query.name,
       });
@@ -102,18 +102,19 @@ export function KubernetesLogs({
       fetchContainers();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [datasource, query.resource, query.namespace, query.name]);
+  }, [datasource, query.resourceId, query.namespace, query.name]);
 
   /**
-   * Handle "resource" field change. If the "resource" changes we also clear the
-   * "name" and "container" fields, because the newly selected resource might
-   * not have the same names and containers as the previously selected one.
+   * Handle "resourceId" field change. If the "resourceId" changes we also clear
+   * the "name" and "container" fields, because the newly selected resource
+   * might not have the same names and containers as the previously selected
+   * one.
    *
-   * When the namespace changes we also immediately run the query, so that the
+   * When the resource id changes we also immediately run the query, so that the
    * user gets instant feedback in the UI.
    */
   const onResourceChange = (option: ComboboxOption<string>) => {
-    onChange({ ...query, resource: option.value, name: '', container: '' });
+    onChange({ ...query, resourceId: option.value, name: '', container: '' });
     onRunQuery();
   };
 
@@ -166,14 +167,14 @@ export function KubernetesLogs({
       <InlineFieldRow>
         <InlineField label="Resource">
           <Combobox<string>
-            value={query.resource}
+            value={query.resourceId}
             createCustomValue={true}
             options={[
-              { value: 'daemonsets.apps', label: 'DaemonSet' },
-              { value: 'deployments.apps', label: 'Deployment' },
-              { value: 'pods', label: 'Pod' },
-              { value: 'jobs.batch', label: 'Job' },
-              { value: 'statefulsets.apps', label: 'StatefulSet' },
+              { value: 'daemonset.apps', label: 'DaemonSet' },
+              { value: 'deployment.apps', label: 'Deployment' },
+              { value: 'pod', label: 'Pod' },
+              { value: 'job.batch', label: 'Job' },
+              { value: 'statefulset.apps', label: 'StatefulSet' },
             ]}
             onChange={onResourceChange}
           />

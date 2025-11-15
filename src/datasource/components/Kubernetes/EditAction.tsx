@@ -20,7 +20,7 @@ import { KubernetesManifest } from '../../types/kubernetes';
 
 interface Props {
   datasource?: string;
-  resource?: string;
+  resourceId?: string;
   namespace?: string;
   name?: string;
   onClose: () => void;
@@ -47,7 +47,7 @@ export function EditAction(props: Props) {
         setIsLoading(true);
 
         const manifest = await getResourceManifest(
-          props.resource,
+          props.resourceId,
           props.datasource,
           props.namespace,
           props.name,
@@ -66,7 +66,7 @@ export function EditAction(props: Props) {
     };
 
     fetchManifest();
-  }, [props.datasource, props.resource, props.namespace, props.name]);
+  }, [props.datasource, props.resourceId, props.namespace, props.name]);
 
   /**
    * onSave handles the saving of the edited resource. It creates a JSON patch
@@ -81,10 +81,10 @@ export function EditAction(props: Props) {
       const parsedValue = YAML.parse(value);
       const diff = compare(manifest!, parsedValue);
 
-      const resource = await getResource(props.datasource, props.resource);
+      const resource = await getResource(props.datasource, props.resourceId);
 
       const response = await fetch(
-        `/api/datasources/uid/${props.datasource}/resources/kubernetes/proxy${resource.path}${resource.namespaced ? `/namespaces/${props.namespace}` : ''}/${resource.resource}/${props.name}`,
+        `/api/datasources/uid/${props.datasource}/resources/kubernetes/proxy${resource.path}${resource.namespaced ? `/namespaces/${props.namespace}` : ''}/${resource.name}/${props.name}`,
         {
           method: 'patch',
           headers: {

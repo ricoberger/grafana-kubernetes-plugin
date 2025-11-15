@@ -23,8 +23,8 @@ export function resourcesScene() {
     pluginId: datasourcePluginJson.id,
   });
 
-  const resourceVariable = new QueryVariable({
-    name: 'resource',
+  const resourceIdVariable = new QueryVariable({
+    name: 'resourceId',
     label: 'Resource',
     datasource: {
       type: datasourcePluginJson.id,
@@ -35,7 +35,7 @@ export function resourcesScene() {
       queryType: 'kubernetes-resourceids',
     },
     sort: VariableSort.alphabeticalCaseInsensitiveAsc,
-    value: DEFAULT_QUERIES['kubernetes-resources'].resource,
+    value: DEFAULT_QUERIES['kubernetes-resources'].resourceId,
   });
 
   const namespaceVariable = new QueryVariable({
@@ -62,7 +62,7 @@ export function resourcesScene() {
       {
         refId: 'A',
         queryType: 'kubernetes-resources',
-        resource: '${resource}',
+        resourceId: '${resourceId}',
         namespace: '${namespace}',
       },
     ],
@@ -70,7 +70,7 @@ export function resourcesScene() {
 
   return new EmbeddedScene({
     $variables: new SceneVariableSet({
-      variables: [datasourceVariable, resourceVariable, namespaceVariable],
+      variables: [datasourceVariable, resourceIdVariable, namespaceVariable],
     }),
     $data: queryRunner,
     body: new SceneFlexLayout({

@@ -25,7 +25,7 @@ export function Actions(props: Props) {
   const [isAIEnabled, setIsAIEnabled] = useState(false);
 
   const datasource = props.query.datasource?.uid;
-  const resource = props.query.resource;
+  const resourceId = props.query.resourceId;
   const namespace = props.frame.fields.find((f) => f.name === 'Namespace')
     ?.values[props.rowIndex];
   const name = props.frame.fields.find((f) => f.name === 'Name')?.values[
@@ -56,56 +56,56 @@ export function Actions(props: Props) {
             {isAIEnabled && (
               <Menu.Item label="AI" onClick={() => setOpen('ai')} />
             )}
-            {resource &&
+            {resourceId &&
               [
-                'buckets.source.toolkit.fluxcd.io',
-                'gitrepositories.source.toolkit.fluxcd.io',
-                'helmcharts.source.toolkit.fluxcd.io',
-                'helmrepositories.source.toolkit.fluxcd.io',
-                'ocirepositories.source.toolkit.fluxcd.io',
-                'kustomizations.kustomize.toolkit.fluxcd.io',
-                'helmreleases.helm.toolkit.fluxcd.io',
-                'imagerepositories.image.toolkit.fluxcd.io',
-                'imageupdateautomations.image.toolkit.fluxcd.io',
-                'receivers.notification.toolkit.fluxcd.io',
-              ].includes(resource) && (
+                'bucket.source.toolkit.fluxcd.io',
+                'gitrepositorie.source.toolkit.fluxcd.io',
+                'helmchart.source.toolkit.fluxcd.io',
+                'helmrepository.source.toolkit.fluxcd.io',
+                'ocirepository.source.toolkit.fluxcd.io',
+                'kustomization.kustomize.toolkit.fluxcd.io',
+                'helmrelease.helm.toolkit.fluxcd.io',
+                'imagerepository.image.toolkit.fluxcd.io',
+                'imageupdateautomation.image.toolkit.fluxcd.io',
+                'receiver.notification.toolkit.fluxcd.io',
+              ].includes(resourceId) && (
                 <Menu.Item
                   label="Reconcile"
                   onClick={() => setOpen('reconcile')}
                 />
               )}
-            {resource &&
+            {resourceId &&
               [
-                'buckets.source.toolkit.fluxcd.io',
-                'gitrepositories.source.toolkit.fluxcd.io',
-                'helmcharts.source.toolkit.fluxcd.io',
-                'helmrepositories.source.toolkit.fluxcd.io',
-                'ocirepositories.source.toolkit.fluxcd.io',
-                'kustomizations.kustomize.toolkit.fluxcd.io',
-                'helmreleases.helm.toolkit.fluxcd.io',
-                'imagerepositories.image.toolkit.fluxcd.io',
-                'imageupdateautomations.image.toolkit.fluxcd.io',
-                'alerts.notification.toolkit.fluxcd.io',
-                'providers.notification.toolkit.fluxcd.io',
-                'receivers.notification.toolkit.fluxcd.io',
-              ].includes(resource) && (
+                'bucket.source.toolkit.fluxcd.io',
+                'gitrepository.source.toolkit.fluxcd.io',
+                'helmchart.source.toolkit.fluxcd.io',
+                'helmrepository.source.toolkit.fluxcd.io',
+                'ocirepository.source.toolkit.fluxcd.io',
+                'kustomization.kustomize.toolkit.fluxcd.io',
+                'helmrelease.helm.toolkit.fluxcd.io',
+                'imagerepository.image.toolkit.fluxcd.io',
+                'imageupdateautomation.image.toolkit.fluxcd.io',
+                'alert.notification.toolkit.fluxcd.io',
+                'provider.notification.toolkit.fluxcd.io',
+                'receiver.notification.toolkit.fluxcd.io',
+              ].includes(resourceId) && (
                 <Menu.Item label="Suspend" onClick={() => setOpen('suspend')} />
               )}
-            {resource &&
+            {resourceId &&
               [
-                'buckets.source.toolkit.fluxcd.io',
-                'gitrepositories.source.toolkit.fluxcd.io',
-                'helmcharts.source.toolkit.fluxcd.io',
-                'helmrepositories.source.toolkit.fluxcd.io',
-                'ocirepositories.source.toolkit.fluxcd.io',
-                'kustomizations.kustomize.toolkit.fluxcd.io',
-                'helmreleases.helm.toolkit.fluxcd.io',
-                'imagerepositories.image.toolkit.fluxcd.io',
-                'imageupdateautomations.image.toolkit.fluxcd.io',
-                'alerts.notification.toolkit.fluxcd.io',
-                'providers.notification.toolkit.fluxcd.io',
-                'receivers.notification.toolkit.fluxcd.io',
-              ].includes(resource) && (
+                'bucket.source.toolkit.fluxcd.io',
+                'gitrepository.source.toolkit.fluxcd.io',
+                'helmchart.source.toolkit.fluxcd.io',
+                'helmrepository.source.toolkit.fluxcd.io',
+                'ocirepository.source.toolkit.fluxcd.io',
+                'kustomization.kustomize.toolkit.fluxcd.io',
+                'helmrelease.helm.toolkit.fluxcd.io',
+                'imagerepository.image.toolkit.fluxcd.io',
+                'imageupdateautomation.image.toolkit.fluxcd.io',
+                'alert.notification.toolkit.fluxcd.io',
+                'provider.notification.toolkit.fluxcd.io',
+                'receiver.notification.toolkit.fluxcd.io',
+              ].includes(resourceId) && (
                 <Menu.Item label="Resume" onClick={() => setOpen('resume')} />
               )}
           </Menu.Group>
@@ -119,7 +119,7 @@ export function Actions(props: Props) {
       {open === 'details' && (
         <DetailsAction
           datasource={datasource}
-          resource={resource}
+          resourceId={resourceId}
           namespace={namespace}
           name={name}
           onClose={() => setOpen('')}
@@ -129,7 +129,7 @@ export function Actions(props: Props) {
       {open === 'ai' && (
         <AIAction
           datasource={datasource}
-          resource={resource}
+          resourceId={resourceId}
           namespace={namespace}
           name={name}
           onClose={() => setOpen('')}
@@ -138,7 +138,7 @@ export function Actions(props: Props) {
 
       <ReconcileAction
         datasource={datasource}
-        resource={resource}
+        resourceId={resourceId}
         namespace={namespace}
         name={name}
         isOpen={open === 'reconcile'}
@@ -147,7 +147,7 @@ export function Actions(props: Props) {
 
       <SuspendAction
         datasource={datasource}
-        resource={resource}
+        resourceId={resourceId}
         namespace={namespace}
         name={name}
         isOpen={open === 'suspend'}
@@ -156,7 +156,7 @@ export function Actions(props: Props) {
 
       <ResumeAction
         datasource={datasource}
-        resource={resource}
+        resourceId={resourceId}
         namespace={namespace}
         name={name}
         isOpen={open === 'resume'}

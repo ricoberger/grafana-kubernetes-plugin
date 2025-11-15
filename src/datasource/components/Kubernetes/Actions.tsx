@@ -36,7 +36,7 @@ export function Actions(props: Props) {
   const [isAIEnabled, setIsAIEnabled] = useState(false);
 
   const datasource = props.query.datasource?.uid;
-  const resource = props.query.resource;
+  const resourceId = props.query.resourceId;
   const namespace = props.frame.fields.find((f) => f.name === 'Namespace')
     ?.values[props.rowIndex];
   const name = props.frame.fields.find((f) => f.name === 'Name')?.values[
@@ -65,76 +65,76 @@ export function Actions(props: Props) {
           <Menu.Group>
             <Menu.Item label="Details" onClick={() => setOpen('details')} />
 
-            {resource &&
+            {resourceId &&
               [
-                'deployments.apps',
-                'statefulsets.apps',
-                'replicasets.apps',
-              ].includes(resource) && (
+                'deployment.apps',
+                'statefulset.apps',
+                'replicaset.apps',
+              ].includes(resourceId) && (
                 <Menu.Item label="Scale" onClick={() => setOpen('scale')} />
               )}
-            {resource &&
+            {resourceId &&
               [
-                'daemonsets.apps',
-                'deployments.apps',
-                'statefulsets.apps',
-              ].includes(resource) && (
+                'daemonset.apps',
+                'deployment.apps',
+                'statefulset.apps',
+              ].includes(resourceId) && (
                 <Menu.Item label="Restart" onClick={() => setOpen('restart')} />
               )}
-            {resource && ['cronjobs.batch'].includes(resource) && (
+            {resourceId && ['cronjob.batch'].includes(resourceId) && (
               <Menu.Item
                 label="Create job"
                 onClick={() => setOpen('createjob')}
               />
             )}
-            {resource && ['cronjobs.batch'].includes(resource) && (
+            {resourceId && ['cronjob.batch'].includes(resourceId) && (
               <Menu.Item
                 label="Suspend"
                 onClick={() => setOpen('cronjobsuspend')}
               />
             )}
-            {resource && ['cronjobs.batch'].includes(resource) && (
+            {resourceId && ['cronjob.batch'].includes(resourceId) && (
               <Menu.Item
                 label="Resume"
                 onClick={() => setOpen('cronjobresume')}
               />
             )}
-            {resource &&
-              ['certificatesigningrequests.certificates.k8s.io'].includes(
-                resource,
+            {resourceId &&
+              ['certificatesigningrequest.certificates.k8s.io'].includes(
+                resourceId,
               ) && (
                 <Menu.Item
                   label="Approve"
                   onClick={() => setOpen('csrapprove')}
                 />
               )}
-            {resource &&
-              ['certificatesigningrequests.certificates.k8s.io'].includes(
-                resource,
+            {resourceId &&
+              ['certificatesigningrequest.certificates.k8s.io'].includes(
+                resourceId,
               ) && (
                 <Menu.Item label="Deny" onClick={() => setOpen('csrdeny')} />
               )}
-            {resource && ['pods'].includes(resource) && (
+            {resourceId && ['pod'].includes(resourceId) && (
               <Menu.Item label="Evict" onClick={() => setOpen('evict')} />
             )}
-            {resource && ['nodes'].includes(resource) && (
+            {resourceId && ['node'].includes(resourceId) && (
               <Menu.Item label="Cordon" onClick={() => setOpen('cordon')} />
             )}
-            {resource && ['nodes'].includes(resource) && (
+            {resourceId && ['node'].includes(resourceId) && (
               <Menu.Item label="Uncordon" onClick={() => setOpen('uncordon')} />
             )}
-            {resource &&
+            {resourceId &&
               [
-                'daemonsets.apps',
-                'deployments.apps',
-                'jobs.batch',
-                'pods',
-                'statefulsets.apps',
-              ].includes(resource) && (
+                'daemonset.apps',
+                'deployment.apps',
+                'job.batch',
+                'pod',
+                'statefulset.apps',
+              ].includes(resourceId) && (
                 <Menu.Item
                   label="Logs"
                   target="_blank"
-                  url={`/explore?left=${encodeURIComponent(JSON.stringify({ datasource: datasource, queries: [{ queryType: 'kubernetes-logs', namespace: namespace, resource: resource, refId: 'A', name: name, container: '' }] }))}`}
+                  url={`/explore?left=${encodeURIComponent(JSON.stringify({ datasource: datasource, queries: [{ queryType: 'kubernetes-logs', namespace: namespace, resourceId: resourceId, refId: 'A', name: name, container: '' }] }))}`}
                 />
               )}
             {isAIEnabled && (
@@ -154,7 +154,7 @@ export function Actions(props: Props) {
         <DetailsAction
           settings={props.settings}
           datasource={datasource}
-          resource={resource}
+          resourceId={resourceId}
           namespace={namespace}
           name={name}
           onClose={() => setOpen('')}
@@ -163,7 +163,7 @@ export function Actions(props: Props) {
 
       <ScaleAction
         datasource={datasource}
-        resource={resource}
+        resourceId={resourceId}
         namespace={namespace}
         name={name}
         isOpen={open === 'scale'}
@@ -172,7 +172,7 @@ export function Actions(props: Props) {
 
       <RestartAction
         datasource={datasource}
-        resource={resource}
+        resourceId={resourceId}
         namespace={namespace}
         name={name}
         isOpen={open === 'restart'}
@@ -181,7 +181,7 @@ export function Actions(props: Props) {
 
       <CreateJobAction
         datasource={datasource}
-        resource={resource}
+        resourceId={resourceId}
         namespace={namespace}
         name={name}
         isOpen={open === 'createjob'}
@@ -190,7 +190,7 @@ export function Actions(props: Props) {
 
       <CronJobSuspendAction
         datasource={datasource}
-        resource={resource}
+        resourceId={resourceId}
         namespace={namespace}
         name={name}
         isOpen={open === 'cronjobsuspend'}
@@ -199,7 +199,7 @@ export function Actions(props: Props) {
 
       <CronJobResumeAction
         datasource={datasource}
-        resource={resource}
+        resourceId={resourceId}
         namespace={namespace}
         name={name}
         isOpen={open === 'cronjobresume'}
@@ -208,7 +208,7 @@ export function Actions(props: Props) {
 
       <CSRApproveAction
         datasource={datasource}
-        resource={resource}
+        resourceId={resourceId}
         namespace={namespace}
         name={name}
         isOpen={open === 'csrapprove'}
@@ -217,7 +217,7 @@ export function Actions(props: Props) {
 
       <CSRDenyAction
         datasource={datasource}
-        resource={resource}
+        resourceId={resourceId}
         namespace={namespace}
         name={name}
         isOpen={open === 'csrdeny'}
@@ -226,7 +226,7 @@ export function Actions(props: Props) {
 
       <EvictPodAction
         datasource={datasource}
-        resource={resource}
+        resourceId={resourceId}
         namespace={namespace}
         name={name}
         isOpen={open === 'evict'}
@@ -235,7 +235,7 @@ export function Actions(props: Props) {
 
       <NodeCordonAction
         datasource={datasource}
-        resource={resource}
+        resourceId={resourceId}
         namespace={namespace}
         name={name}
         isOpen={open === 'cordon'}
@@ -244,7 +244,7 @@ export function Actions(props: Props) {
 
       <NodeUncordonAction
         datasource={datasource}
-        resource={resource}
+        resourceId={resourceId}
         namespace={namespace}
         name={name}
         isOpen={open === 'uncordon'}
@@ -254,7 +254,7 @@ export function Actions(props: Props) {
       {open === 'ai' && (
         <AIAction
           datasource={datasource}
-          resource={resource}
+          resourceId={resourceId}
           namespace={namespace}
           name={name}
           onClose={() => setOpen('')}
@@ -264,7 +264,7 @@ export function Actions(props: Props) {
       {open === 'edit' && (
         <EditAction
           datasource={datasource}
-          resource={resource}
+          resourceId={resourceId}
           namespace={namespace}
           name={name}
           onClose={() => setOpen('')}
@@ -273,7 +273,7 @@ export function Actions(props: Props) {
 
       <DeleteAction
         datasource={datasource}
-        resource={resource}
+        resourceId={resourceId}
         namespace={namespace}
         name={name}
         isOpen={open === 'delete'}

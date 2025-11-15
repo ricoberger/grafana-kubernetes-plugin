@@ -45,7 +45,7 @@ export class DataSource extends DataSourceWithBackend<
     return {
       ...query,
       variableField: getTemplateSrv().replace(query.variableField, scopedVars),
-      resource: getTemplateSrv().replace(query.resource, scopedVars),
+      resourceId: getTemplateSrv().replace(query.resourceId, scopedVars),
       namespace: getTemplateSrv().replace(query.namespace, scopedVars),
       parameterName: getTemplateSrv().replace(query.parameterName, scopedVars),
       parameterValue: getTemplateSrv().replace(
@@ -214,7 +214,7 @@ export class DataSource extends DataSourceWithBackend<
      */
     if (
       query.queryType === 'kubernetes-containers' &&
-      (!query.resource || !query.namespace || !query.name)
+      (!query.resourceId || !query.namespace || !query.name)
     ) {
       return false;
     }
@@ -225,7 +225,7 @@ export class DataSource extends DataSourceWithBackend<
      */
     if (
       query.queryType === 'kubernetes-resources' &&
-      (!query.resource || !query.namespace)
+      (!query.resourceId || !query.namespace)
     ) {
       return false;
     }
@@ -236,7 +236,7 @@ export class DataSource extends DataSourceWithBackend<
      */
     if (
       query.queryType === 'kubernetes-logs' &&
-      (!query.resource || !query.namespace || !query.name || !query.container)
+      (!query.resourceId || !query.namespace || !query.name || !query.container)
     ) {
       return false;
     }
@@ -266,7 +266,7 @@ export class DataSource extends DataSourceWithBackend<
      */
     if (
       query.queryType === 'flux-resources' &&
-      (!query.resource || !query.namespace)
+      (!query.resourceId || !query.namespace)
     ) {
       return false;
     }

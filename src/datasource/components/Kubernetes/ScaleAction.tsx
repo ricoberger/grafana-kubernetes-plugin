@@ -15,7 +15,7 @@ import { getResource } from '../../../utils/utils.resource';
 
 interface Props {
   datasource?: string;
-  resource?: string;
+  resourceId?: string;
   namespace?: string;
   name?: string;
   isOpen: boolean;
@@ -40,10 +40,10 @@ export function ScaleAction(props: Props) {
     try {
       setIsLoading(true);
 
-      const resource = await getResource(props.datasource, props.resource);
+      const resource = await getResource(props.datasource, props.resourceId);
 
       const response = await fetch(
-        `/api/datasources/uid/${props.datasource}/resources/kubernetes/proxy${resource.path}/namespaces/${props.namespace}/${resource.resource}/${props.name}/scale`,
+        `/api/datasources/uid/${props.datasource}/resources/kubernetes/proxy${resource.path}/namespaces/${props.namespace}/${resource.name}/${props.name}/scale`,
         {
           method: 'put',
           headers: {

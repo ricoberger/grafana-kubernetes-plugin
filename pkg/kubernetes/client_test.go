@@ -114,7 +114,7 @@ func TestGetResources(t *testing.T) {
 	require.NoError(t, err)
 
 	t.Run("should return resources nodes data frame", func(t *testing.T) {
-		actualFrame, err := client.GetResources(context.Background(), "", nil, "nodes", "*", "", "", true)
+		actualFrame, err := client.GetResources(context.Background(), "", nil, "node", "*", "", "", true)
 		require.NoError(t, err)
 		require.Equal(t, "Name", actualFrame.Fields[0].Name)
 		require.Equal(t, "Status", actualFrame.Fields[1].Name)
@@ -130,7 +130,7 @@ func TestGetResources(t *testing.T) {
 	})
 
 	t.Run("should return resources pods data frame", func(t *testing.T) {
-		actualFrame, err := client.GetResources(context.Background(), "", nil, "pods", "default", "", "", false)
+		actualFrame, err := client.GetResources(context.Background(), "", nil, "pod", "default", "", "", false)
 		require.NoError(t, err)
 		require.Equal(t, "Namespace", actualFrame.Fields[0].Name)
 		require.Equal(t, "Name", actualFrame.Fields[1].Name)
@@ -157,7 +157,7 @@ func TestGetContainers(t *testing.T) {
 			Type:                   data.FrameTypeTable,
 		})
 
-		actualFrame, err := client.GetContainers(context.Background(), "", nil, "deployments.apps", "default", "echoserver")
+		actualFrame, err := client.GetContainers(context.Background(), "", nil, "deployment.apps", "default", "echoserver")
 		require.NoError(t, err)
 		require.Equal(t, expectedFrame, actualFrame)
 	})
@@ -169,7 +169,7 @@ func TestGetLogs(t *testing.T) {
 	require.NoError(t, err)
 
 	t.Run("should return logs", func(t *testing.T) {
-		actualLogs, err := client.GetLogs(context.Background(), "", nil, "pods", "default", "echoserver", "echoserver", "", backend.TimeRange{From: time.Now().Add(-1 * time.Hour), To: time.Now().Add(1 * time.Hour)})
+		actualLogs, err := client.GetLogs(context.Background(), "", nil, "pod", "default", "echoserver", "echoserver", "", backend.TimeRange{From: time.Now().Add(-1 * time.Hour), To: time.Now().Add(1 * time.Hour)})
 		require.NoError(t, err)
 		require.Equal(t, "timestamp", actualLogs.Fields[0].Name)
 		require.Equal(t, "body", actualLogs.Fields[1].Name)
@@ -187,7 +187,7 @@ func TestGetLogs(t *testing.T) {
 	})
 
 	t.Run("should return filtered logs", func(t *testing.T) {
-		actualLogs, err := client.GetLogs(context.Background(), "", nil, "pods", "default", "echoserver", "echoserver", "build", backend.TimeRange{From: time.Now().Add(-1 * time.Hour), To: time.Now().Add(1 * time.Hour)})
+		actualLogs, err := client.GetLogs(context.Background(), "", nil, "pod", "default", "echoserver", "echoserver", "build", backend.TimeRange{From: time.Now().Add(-1 * time.Hour), To: time.Now().Add(1 * time.Hour)})
 		require.NoError(t, err)
 		require.Equal(t, "timestamp", actualLogs.Fields[0].Name)
 		require.Equal(t, "body", actualLogs.Fields[1].Name)
@@ -212,9 +212,9 @@ func TestGetResource(t *testing.T) {
 	require.NoError(t, err)
 
 	t.Run("should return resource", func(t *testing.T) {
-		actualResource, err := client.GetResource(context.Background(), "deployments.apps")
+		actualResource, err := client.GetResource(context.Background(), "deployment.apps")
 		require.NoError(t, err)
-		require.Equal(t, &Resource{Kind: "Deployment", Resource: "deployments", Path: "/apis/apps/v1", Namespaced: true}, actualResource)
+		require.Equal(t, &Resource{ID: "deployment.apps", Kind: "Deployment", APIVersion: "apps/v1", Name: "deployments", Path: "/apis/apps/v1", Namespaced: true}, actualResource)
 	})
 }
 

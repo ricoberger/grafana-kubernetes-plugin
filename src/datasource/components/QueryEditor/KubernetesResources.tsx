@@ -22,28 +22,28 @@ export function KubernetesResources({
   onChange,
   onRunQuery,
 }: Props) {
-  const [resources, setResources] = useState<ComboboxOption[]>([]);
+  const [resourceIds, setResourceIds] = useState<ComboboxOption[]>([]);
   const [namespaces, setNamespaces] = useState<ComboboxOption[]>([]);
 
   /**
-   * Fetch available resource kinds from the datasource, which can then be used
-   * as options in the "resource" field.
+   * Fetch available resource ids from the datasource, which can then be used
+   * as options in the "resourceId" field.
    */
   useEffect(() => {
-    const fetchResources = async () => {
+    const fetchResourceIds = async () => {
       const result = await datasource.metricFindQuery({
         refId: 'kubernetes-resourceids',
         queryType: 'kubernetes-resourceids',
       });
 
-      setResources(
+      setResourceIds(
         result.map((value) => {
           return { value: value.value as string, label: value.text };
         }),
       );
     };
 
-    fetchResources();
+    fetchResourceIds();
   }, [datasource]);
 
   /**
@@ -68,13 +68,13 @@ export function KubernetesResources({
   }, [datasource]);
 
   /**
-   * Handle "resource" field change.
+   * Handle "resourceId" field change.
    *
-   * When the namespace changes we also immediately run the query, so that the
+   * When the resource id changes we also immediately run the query, so that the
    * user gets instant feedback in the UI.
    */
-  const onResourceChange = (option: ComboboxOption<string>) => {
-    onChange({ ...query, resource: option.value });
+  const onResourceIdChange = (option: ComboboxOption<string>) => {
+    onChange({ ...query, resourceId: option.value });
     onRunQuery();
   };
 
@@ -128,10 +128,10 @@ export function KubernetesResources({
       <InlineFieldRow>
         <InlineField label="Resource">
           <Combobox<string>
-            value={query.resource}
+            value={query.resourceId}
             createCustomValue={true}
-            options={resources}
-            onChange={onResourceChange}
+            options={resourceIds}
+            onChange={onResourceIdChange}
           />
         </InlineField>
         <InlineField label="Namespace">
