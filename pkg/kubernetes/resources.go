@@ -38,14 +38,29 @@ func (c *client) getResources(ctx context.Context) (map[string]Resource, error) 
 				pathPrefix = "/api"
 			}
 
-			id := resource.Name
+			// Create a unique id for the resource based on its kind and group.
+			// If the resource has no group, we just use the kind as id. We do
+			// not include the version in the id, because the version can change
+			// and might break existing references in dashboards.
+			//
+			// The frontend implementation of generating the id, could be found
+			// in the "utils.resource.ts" file ("getResourceId" function).
+			id := resource.Kind
 			groupVersion := strings.Split(list.GroupVersion, "/")
 			if len(groupVersion) == 2 {
-				id = fmt.Sprintf("%s.%s", resource.Name, groupVersion[0])
+				id = fmt.Sprintf("%s.%s", resource.Kind, groupVersion[0])
 			}
+			id = strings.ToLower(id)
 
 			if slices.Contains(resource.Verbs, "list") {
-				resources[id] = Resource{Kind: resource.Kind, Resource: resource.Name, Path: fmt.Sprintf("%s/%s", pathPrefix, list.GroupVersion), Namespaced: resource.Namespaced}
+				resources[id] = Resource{
+					ID:         id,
+					Kind:       resource.Kind,
+					APIVersion: list.GroupVersion,
+					Name:       resource.Name,
+					Path:       fmt.Sprintf("%s/%s", pathPrefix, list.GroupVersion),
+					Namespaced: resource.Namespaced,
+				}
 			}
 		}
 	}
@@ -117,19 +132,11 @@ func createResourcesDataFrame(resourceId string, resources [][]byte, namespaced,
 }
 
 func formatColumnName(resourceId, name string) string {
-	if resourceId == "pods.metrics.k8s.io" && name == "cpu" {
+	if (resourceId == "podmetrics.metrics.k8s.io" || resourceId == "nodemetrics.metrics.k8s.io") && name == "cpu" {
 		return "CPU"
 	}
 
-	if resourceId == "pods.metrics.k8s.io" && name == "memory" {
-		return "Memory"
-	}
-
-	if resourceId == "nodes.metrics.k8s.io" && name == "cpu" {
-		return "CPU"
-	}
-
-	if resourceId == "nodes.metrics.k8s.io" && name == "memory" {
+	if (resourceId == "podmetrics.metrics.k8s.io" || resourceId == "nodemetrics.metrics.k8s.io") && name == "memory" {
 		return "Memory"
 	}
 
@@ -137,7 +144,7 @@ func formatColumnName(resourceId, name string) string {
 }
 
 func formatValue(resourceId, name string, value any) string {
-	if (resourceId == "pods.metrics.k8s.io" || resourceId == "nodes.metrics.k8s.io") && name == "cpu" {
+	if (resourceId == "podmetrics.metrics.k8s.io" || resourceId == "nodemetrics.metrics.k8s.io") && name == "cpu" {
 		quantity, err := resource.ParseQuantity(fmt.Sprintf("%v", value))
 		if err != nil {
 			return fmt.Sprintf("%v", value)
@@ -145,7 +152,7 @@ func formatValue(resourceId, name string, value any) string {
 		return fmt.Sprintf("%vm", quantity.MilliValue())
 	}
 
-	if (resourceId == "pods.metrics.k8s.io" || resourceId == "nodes.metrics.k8s.io") && name == "memory" {
+	if (resourceId == "podmetrics.metrics.k8s.io" || resourceId == "nodemetrics.metrics.k8s.io") && name == "memory" {
 		quantity, err := resource.ParseQuantity(fmt.Sprintf("%v", value))
 		if err != nil {
 			return fmt.Sprintf("%v", value)

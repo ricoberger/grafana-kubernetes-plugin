@@ -13,7 +13,7 @@ import { getResource } from '../../../utils/utils.resource';
 
 interface Props {
   datasource?: string;
-  resource?: string;
+  resourceId?: string;
   namespace?: string;
   name?: string;
   isOpen: boolean;
@@ -28,10 +28,10 @@ export function CronJobSuspendAction(props: Props) {
     try {
       setIsLoading(true);
 
-      const resource = await getResource(props.datasource, props.resource);
+      const resource = await getResource(props.datasource, props.resourceId);
 
       const response = await fetch(
-        `/api/datasources/uid/${props.datasource}/resources/kubernetes/proxy${resource.path}/namespaces/${props.namespace}/${resource.resource}/${props.name}?fieldManager=grafana-kubernetes-plugin`,
+        `/api/datasources/uid/${props.datasource}/resources/kubernetes/proxy${resource.path}/namespaces/${props.namespace}/${resource.name}/${props.name}?fieldManager=grafana-kubernetes-plugin`,
         {
           method: 'patch',
           headers: {

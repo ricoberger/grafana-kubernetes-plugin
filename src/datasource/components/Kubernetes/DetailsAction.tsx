@@ -10,7 +10,6 @@ import {
   Stack,
   Tab,
   TabsBar,
-  Text,
   TextLink,
 } from '@grafana/ui';
 import YAML from 'yaml';
@@ -49,7 +48,10 @@ import {
   V1StatefulSetCondition,
 } from '@kubernetes/client-node';
 
-import { getResourceManifest } from '../../../utils/utils.resource';
+import {
+  getResourceId,
+  getResourceManifest,
+} from '../../../utils/utils.resource';
 import datasourcePluginJson from '../../../datasource/plugin.json';
 import {
   DefinitionItem,
@@ -79,7 +81,7 @@ initPluginTranslations('ricoberger-kubernetes-app');
 interface Props {
   settings: DataSourceOptions;
   datasource?: string;
-  resource?: string;
+  resourceId?: string;
   namespace?: string;
   name?: string;
   onClose: () => void;
@@ -107,7 +109,7 @@ export function DetailsAction(props: Props) {
 
         const manifest = await getResourceManifest(
           props.datasource,
-          props.resource,
+          props.resourceId,
           props.namespace,
           props.name,
         );
@@ -124,7 +126,7 @@ export function DetailsAction(props: Props) {
     };
 
     fetchManifest();
-  }, [props.datasource, props.resource, props.namespace, props.name]);
+  }, [props.datasource, props.resourceId, props.namespace, props.name]);
 
   return (
     <Drawer
@@ -160,12 +162,12 @@ export function DetailsAction(props: Props) {
               }}
             />
             {[
-              'daemonsets.apps',
-              'deployments.apps',
-              'jobs.batch',
-              'nodes',
-              'statefulsets.apps',
-            ].includes(props.resource || '') && (
+              'daemonset.apps',
+              'deployment.apps',
+              'job.batch',
+              'node',
+              'statefulset.apps',
+            ].includes(props.resourceId || '') && (
                 <Tab
                   label="Pods"
                   active={activeTab === 'pods'}
@@ -176,13 +178,13 @@ export function DetailsAction(props: Props) {
                 />
               )}
             {[
-              'daemonsets.apps',
-              'deployments.apps',
-              'jobs.batch',
-              'nodes',
-              'pods',
-              'statefulsets.apps',
-            ].includes(props.resource || '') && (
+              'daemonset.apps',
+              'deployment.apps',
+              'job.batch',
+              'node',
+              'pod',
+              'statefulset.apps',
+            ].includes(props.resourceId || '') && (
                 <Tab
                   label="Top"
                   active={activeTab === 'top'}
@@ -197,17 +199,17 @@ export function DetailsAction(props: Props) {
               props.settings.integrationsMetricsKubeStateMetricsJob &&
               props.settings.integrationsMetricsNodeExporterJob &&
               [
-                'daemonsets.apps',
-                'deployments.apps',
-                'cronjobs.batch',
-                'horizontalpodautoscalers.autoscaling',
-                'jobs.batch',
-                'nodes',
-                'persistentvolumeclaims',
-                'pods',
-                'statefulsets.apps',
-                'verticalpodautoscalers.autoscaling.k8s.io',
-              ].includes(props.resource || '') && (
+                'daemonset.apps',
+                'deployment.apps',
+                'cronjob.batch',
+                'horizontalpodautoscaler.autoscaling',
+                'job.batch',
+                'node',
+                'persistentvolumeclaim',
+                'pod',
+                'statefulset.apps',
+                'verticalpodautoscaler.autoscaling.k8s.io',
+              ].includes(props.resourceId || '') && (
                 <Tab
                   label="Metrics"
                   active={activeTab === 'metrics'}
@@ -246,29 +248,29 @@ export function DetailsAction(props: Props) {
 
           {activeTab === 'metrics' && (
             <>
-              {props.resource === 'daemonsets.apps' && (
+              {props.resourceId === 'daemonset.apps' && (
                 <MetricsDaemonSets {...props} />
               )}
-              {props.resource === 'deployments.apps' && (
+              {props.resourceId === 'deployment.apps' && (
                 <MetricsDeployments {...props} />
               )}
-              {props.resource === 'cronjobs.batch' && (
+              {props.resourceId === 'cronjob.batch' && (
                 <MetricsCronJobs {...props} />
               )}
-              {props.resource === 'horizontalpodautoscalers.autoscaling' && (
+              {props.resourceId === 'horizontalpodautoscaler.autoscaling' && (
                 <MetricsHPAs {...props} />
               )}
-              {props.resource === 'jobs.batch' && <MetricsJobs {...props} />}
-              {props.resource === 'nodes' && <MetricsNodes {...props} />}
-              {props.resource === 'persistentvolumeclaims' && (
+              {props.resourceId === 'job.batch' && <MetricsJobs {...props} />}
+              {props.resourceId === 'node' && <MetricsNodes {...props} />}
+              {props.resourceId === 'persistentvolumeclaim' && (
                 <MetricsPersistentVolumeClaims {...props} />
               )}
-              {props.resource === 'pods' && <MetricsPods {...props} />}
-              {props.resource === 'statefulsets.apps' && (
+              {props.resourceId === 'pod' && <MetricsPods {...props} />}
+              {props.resourceId === 'statefulset.apps' && (
                 <MetricsStatefulSets {...props} />
               )}
-              {props.resource ===
-                'verticalpodautoscalers.autoscaling.k8s.io' && (
+              {props.resourceId ===
+                'verticalpodautoscaler.autoscaling.k8s.io' && (
                   <MetricsVPAs {...props} />
                 )}
             </>
@@ -319,7 +321,7 @@ function DetailsActionEvents(props: Props) {
       {
         refId: 'A',
         queryType: 'kubernetes-resources',
-        resource: 'events',
+        resourceId: 'event',
         namespace: props.namespace || '*',
         parameterName: 'fieldSelector',
         parameterValue: `involvedObject.name=${props.name}`,
@@ -373,7 +375,7 @@ function DetailsActionPods(props: DetailsActionPodsProps) {
       {
         refId: 'A',
         queryType: 'kubernetes-resources',
-        resource: 'pods',
+        resourceId: 'pod',
         namespace: selector ? props.namespace : '*',
         parameterName: selector ? 'labelSelector' : 'fieldSelector',
         parameterValue: selector
@@ -424,11 +426,11 @@ function DetailsActionTop(props: DetailsActionTopProps) {
       {
         refId: 'A',
         queryType: 'kubernetes-resources',
-        resource:
-          props.resource === 'nodes'
-            ? 'nodes.metrics.k8s.io'
-            : 'pods.metrics.k8s.io',
-        namespace: props.resource === 'nodes' ? '*' : props.namespace,
+        resourceId:
+          props.resourceId === 'node'
+            ? 'nodemetrics.metrics.k8s.io'
+            : 'podmetrics.metrics.k8s.io',
+        namespace: props.resourceId === 'node' ? '*' : props.namespace,
         parameterName: selector ? 'labelSelector' : 'fieldSelector',
         parameterValue: selector
           ? selector
@@ -513,12 +515,22 @@ function DetailsActionOverview(props: DetailsActionOverviewProps) {
             </DefinitionItem>
           )}
           {props.manifest.metadata?.ownerReferences && (
-            <DefinitionItem label="Owner">
+            <DefinitionItem label="Owners">
               {props.manifest.metadata?.ownerReferences.map(
                 (owner: V1OwnerReference, index: number) => (
-                  <Text key={index} element="span">
-                    {owner.kind} ({owner.name})
-                  </Text>
+                  <Badge
+                    key={index}
+                    color="darkgrey"
+                    text={
+                      <TextLink
+                        href={`/explore?left=${encodeURIComponent(JSON.stringify({ datasource: props.datasource, queries: [{ queryType: 'kubernetes-resources', namespace: props.namespace, resourceId: getResourceId(owner.kind, owner.apiVersion), parameterName: 'fieldSelector', parameterValue: `metadata.name=${owner.name}`, wide: false, refId: 'A' }] }))}`}
+                        color="secondary"
+                        variant="bodySmall"
+                      >
+                        {owner.kind}: {owner.name}
+                      </TextLink>
+                    }
+                  />
                 ),
               )}
             </DefinitionItem>
@@ -533,22 +545,22 @@ function DetailsActionOverview(props: DetailsActionOverviewProps) {
         <Conditions conditions={props.manifest.status.conditions} />
       ) : null}
 
-      {props.manifest && props.resource === 'cronjobs' && (
+      {props.manifest && props.resourceId === 'cronjob.batch' && (
         <CronJob {...props} manifest={props.manifest as V1CronJob} />
       )}
-      {props.manifest && props.resource === 'daemonsets' && (
+      {props.manifest && props.resourceId === 'daemonset.apps' && (
         <DaemonSet {...props} manifest={props.manifest as V1DaemonSet} />
       )}
-      {props.manifest && props.resource === 'deployments' && (
+      {props.manifest && props.resourceId === 'deployment.apps' && (
         <Deployment {...props} manifest={props.manifest as V1Deployment} />
       )}
-      {props.manifest && props.resource === 'jobs' && (
+      {props.manifest && props.resourceId === 'job.batch' && (
         <Job {...props} manifest={props.manifest as V1Job} />
       )}
-      {props.manifest && props.resource === 'pods' && (
+      {props.manifest && props.resourceId === 'pod' && (
         <Pod {...props} manifest={props.manifest as V1Pod} />
       )}
-      {props.manifest && props.resource === 'statefulsets' && (
+      {props.manifest && props.resourceId === 'statefulset.apps' && (
         <StatefulSet {...props} manifest={props.manifest as V1StatefulSet} />
       )}
     </DefinitionLists>
@@ -627,7 +639,7 @@ function Selector(props: {
             color="darkgrey"
             text={
               <TextLink
-                href={`/explore?left=${encodeURIComponent(JSON.stringify({ datasource: props.datasource, queries: [{ queryType: 'kubernetes-resources', namespace: props.namespace, resource: 'pods', parameterName: 'labelSelector', parameterValue: `${key}=${props.selector.matchLabels ? props.selector.matchLabels[key] : ''}`, wide: false, refId: 'A' }] }))}`}
+                href={`/explore?left=${encodeURIComponent(JSON.stringify({ datasource: props.datasource, queries: [{ queryType: 'kubernetes-resources', namespace: props.namespace, resourceId: 'pod', parameterName: 'labelSelector', parameterValue: `${key}=${props.selector.matchLabels ? props.selector.matchLabels[key] : ''}`, wide: false, refId: 'A' }] }))}`}
                 color="secondary"
                 variant="bodySmall"
               >
@@ -929,7 +941,7 @@ function Pod(props: PodProps) {
         <DefinitionItem label="Node">
           {props.manifest.spec?.nodeName ? (
             <TextLink
-              href={`/explore?left=${encodeURIComponent(JSON.stringify({ datasource: props.datasource, queries: [{ queryType: 'kubernetes-resources', namespace: props.namespace, resource: 'nodes', parameterName: 'fieldSelector', parameterValue: `metadata.name=${props.manifest.spec.nodeName}`, wide: false, refId: 'A' }] }))}`}
+              href={`/explore?left=${encodeURIComponent(JSON.stringify({ datasource: props.datasource, queries: [{ queryType: 'kubernetes-resources', namespace: props.namespace, resourceId: 'node', parameterName: 'fieldSelector', parameterValue: `metadata.name=${props.manifest.spec.nodeName}`, wide: false, refId: 'A' }] }))}`}
               color="secondary"
               variant="body"
             >

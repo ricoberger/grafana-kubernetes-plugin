@@ -5,8 +5,10 @@ import { KubernetesObject } from '@kubernetes/client-node';
  * fields to identify and work with this resource.
  */
 export interface Resource {
+  id: string;
   kind: string;
-  resource: string;
+  apiVersion: string;
+  name: string;
   path: string;
   namespaced: boolean;
 }

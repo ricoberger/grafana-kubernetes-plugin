@@ -16,30 +16,30 @@ interface Props
   extends QueryEditorProps<DataSource, any, DataSourceOptions, Query> { }
 
 export function KubernetesContainers(props: Props) {
-  const [resources, setResources] = useState<ComboboxOption[]>([]);
+  const [resourceIds, setResourceIds] = useState<ComboboxOption[]>([]);
   const [namespaces, setNamespaces] = useState<ComboboxOption[]>([]);
   const [names, setNames] = useState<ComboboxOption[]>([]);
   const { datasource, query, onChange } = props;
 
   /**
-   * Fetch available resource kinds from the datasource, which can then be used
-   * as options in the "resource" field.
+   * Fetch available resource ids from the datasource, which can then be used
+   * as options in the "resourceId" field.
    */
   useEffect(() => {
-    const fetchResources = async () => {
+    const fetchResourceIds = async () => {
       const result = await datasource.metricFindQuery({
         refId: 'kubernetes-resourceids',
         queryType: 'kubernetes-resourceids',
       });
 
-      setResources(
+      setResourceIds(
         result.map((value) => {
           return { value: value.value as string, label: value.text };
         }),
       );
     };
 
-    fetchResources();
+    fetchResourceIds();
   }, [datasource]);
 
   /**
@@ -73,7 +73,7 @@ export function KubernetesContainers(props: Props) {
         refId: 'kubernetes-resources',
         queryType: 'kubernetes-resources',
         variableField: 'Name',
-        resource: query.resource,
+        resourceId: query.resourceId,
         namespace: query.namespace,
       });
 
@@ -85,13 +85,13 @@ export function KubernetesContainers(props: Props) {
     };
 
     fetchNames();
-  }, [datasource, query.resource, query.namespace]);
+  }, [datasource, query.resourceId, query.namespace]);
 
   /**
-   * Handle "resource" field change.
+   * Handle "resourceId" field change.
    */
   const onResourceChange = (option: ComboboxOption<string>) => {
-    onChange({ ...query, resource: option.value });
+    onChange({ ...query, resourceId: option.value });
   };
 
   /**
@@ -113,9 +113,9 @@ export function KubernetesContainers(props: Props) {
       <InlineFieldRow>
         <InlineField label="Resource">
           <Combobox<string>
-            value={query.resource}
+            value={query.resourceId}
             createCustomValue={true}
-            options={resources}
+            options={resourceIds}
             onChange={onResourceChange}
           />
         </InlineField>

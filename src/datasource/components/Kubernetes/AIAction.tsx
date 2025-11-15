@@ -13,7 +13,7 @@ import { AI } from '../AI/AI';
 
 interface Props {
   datasource?: string;
-  resource?: string;
+  resourceId?: string;
   namespace?: string;
   name?: string;
   onClose: () => void;
@@ -23,7 +23,7 @@ export function AIAction(props: Props) {
   const getInitialMessages = async (): Promise<Message[]> => {
     const manifest = await getResourceManifest(
       props.datasource,
-      props.resource,
+      props.resourceId,
       props.namespace,
       props.name,
     );
@@ -35,7 +35,7 @@ export function AIAction(props: Props) {
 
     let logs: Logs[] = [];
     try {
-      if (props.resource === 'pods') {
+      if (props.resourceId === 'pod') {
         logs = await getLogs(
           props.datasource,
           props.namespace,

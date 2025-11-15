@@ -11,8 +11,10 @@ import (
 // be able to fetch all resource dynamically from the Kubernetes API, based on
 // the "Path" and "Resource" fields.
 type Resource struct {
+	ID         string `json:"id"`
 	Kind       string `json:"kind"`
-	Resource   string `json:"resource"`
+	APIVersion string `json:"apiVersion"`
+	Name       string `json:"name"`
 	Path       string `json:"path"`
 	Namespaced bool   `json:"namespaced"`
 }

@@ -7,7 +7,7 @@ import { DataQuery } from '@grafana/schema';
  */
 export const DEFAULT_QUERY: Partial<Query> = {
   queryType: 'kubernetes-resources',
-  resource: 'pods',
+  resourceId: 'pod',
   namespace: 'default',
   wide: false,
 };
@@ -20,12 +20,12 @@ export const DEFAULT_QUERIES: Record<QueryType, Partial<Query>> = {
   'kubernetes-resourceids': {},
   'kubernetes-namespaces': {},
   'kubernetes-containers': {
-    resource: 'pods',
+    resourceId: 'pods',
     namespace: 'default',
     name: '',
   },
   'kubernetes-resources': {
-    resource: 'pods',
+    resourceId: 'pod',
     namespace: 'default',
     parameterName: '',
     parameterValue: '',
@@ -39,7 +39,7 @@ export const DEFAULT_QUERIES: Record<QueryType, Partial<Query>> = {
     variableField: 'Name',
   },
   'kubernetes-logs': {
-    resource: 'pods',
+    resourceId: 'pod',
     namespace: 'default',
     name: '',
     container: '',
@@ -53,7 +53,7 @@ export const DEFAULT_QUERIES: Record<QueryType, Partial<Query>> = {
     name: '',
   },
   'flux-resources': {
-    resource: 'kustomizations.kustomize.toolkit.fluxcd.io',
+    resourceId: 'kustomization.kustomize.toolkit.fluxcd.io',
     namespace: 'default',
   },
 };
@@ -97,7 +97,7 @@ export interface QueryModelVariable {
 }
 
 export interface QueryModelKubernetesResources {
-  resource?: string;
+  resourceId?: string;
   namespace?: string;
   parameterName?: string;
   parameterValue?: string;
@@ -105,13 +105,13 @@ export interface QueryModelKubernetesResources {
 }
 
 export interface QueryModelKubernetesContainers {
-  resource?: string;
+  resourceId?: string;
   namespace?: string;
   name?: string;
 }
 
 export interface QueryModelKubernetesLogs {
-  resource?: string;
+  resourceId?: string;
   namespace?: string;
   name?: string;
   container?: string;
@@ -128,6 +128,6 @@ export interface QueryModelHelmReleaseHistory {
 }
 
 export interface QueryModelFluxResources {
-  resource?: string;
+  resourceId?: string;
   namespace?: string;
 }

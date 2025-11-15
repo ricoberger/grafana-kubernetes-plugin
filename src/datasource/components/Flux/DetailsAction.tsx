@@ -37,7 +37,7 @@ initPluginTranslations('ricoberger-kubernetes-app');
 
 interface Props {
   datasource?: string;
-  resource?: string;
+  resourceId?: string;
   namespace?: string;
   name?: string;
   onClose: () => void;
@@ -65,7 +65,7 @@ export function DetailsAction(props: Props) {
 
         const manifest = await getResourceManifest(
           props.datasource,
-          props.resource,
+          props.resourceId,
           props.namespace,
           props.name,
         );
@@ -82,7 +82,7 @@ export function DetailsAction(props: Props) {
     };
 
     fetchManifest();
-  }, [props.datasource, props.resource, props.namespace, props.name]);
+  }, [props.datasource, props.resourceId, props.namespace, props.name]);
 
   return (
     <Drawer

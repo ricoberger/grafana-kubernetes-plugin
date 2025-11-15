@@ -144,7 +144,7 @@
         "allowCustomValue": false,
         "current": {
           "text": "Deployment",
-          "value": "deployments.apps"
+          "value": "deployment.apps"
         },
         "description": "",
         "label": "Resource",
@@ -153,30 +153,30 @@
           {
             "selected": false,
             "text": "DaemonSet",
-            "value": "daemonsets.apps"
+            "value": "daemonset.apps"
           },
           {
             "selected": true,
             "text": "Deployment",
-            "value": "deployments.apps"
+            "value": "deployment.apps"
           },
           {
             "selected": false,
             "text": "Pod",
-            "value": "pods"
+            "value": "pod"
           },
           {
             "selected": false,
             "text": "Job",
-            "value": "jobs.batch"
+            "value": "job.batch"
           },
           {
             "selected": false,
             "text": "StatefulSet",
-            "value": "statefulsets.apps"
+            "value": "statefulset.apps"
           }
         ],
-        "query": "DaemonSet : daemonsets.apps, Deployment : deployments.apps, Pod : pods, Job : jobs.batch, StatefulSet : statefulsets.apps",
+        "query": "DaemonSet : daemonset.apps, Deployment : deployment.apps, Pod : pod, Job : job.batch, StatefulSet : statefulset.apps",
         "type": "custom"
       },
       {

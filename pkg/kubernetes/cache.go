@@ -10,7 +10,7 @@ import (
 // by its ID, and set all resources at once.
 type Cache interface {
 	IsValid() bool
-	GetKeysAndKinds() ([]string, []string)
+	GetDataFrameValues() ([]string, []string, []string, []string, []string, []string)
 	Get(id string) (Resource, bool)
 	SetAll(resources map[string]Resource)
 }
@@ -33,17 +33,30 @@ func (c *cache) IsValid() bool {
 	return true
 }
 
-func (c *cache) GetKeysAndKinds() ([]string, []string) {
+func (c *cache) GetDataFrameValues() ([]string, []string, []string, []string, []string, []string) {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
 
-	var keys []string
+	var ids []string
 	var kinds []string
-	for k, v := range c.resources {
-		keys = append(keys, k)
+	var names []string
+	var apiVersions []string
+	var paths []string
+	var namespaced []string
+
+	for _, v := range c.resources {
+		ids = append(ids, v.ID)
 		kinds = append(kinds, v.Kind)
+		names = append(names, v.Name)
+		apiVersions = append(apiVersions, v.APIVersion)
+		paths = append(paths, v.Path)
+		if v.Namespaced {
+			namespaced = append(namespaced, "true")
+		} else {
+			namespaced = append(namespaced, "false")
+		}
 	}
-	return keys, kinds
+	return ids, kinds, apiVersions, names, paths, namespaced
 }
 
 func (c *cache) Get(id string) (Resource, bool) {

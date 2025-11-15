@@ -24,12 +24,12 @@ export function fluxScene() {
     pluginId: datasourcePluginJson.id,
   });
 
-  const resourceVariable = new CustomVariable({
-    name: 'resource',
+  const resourceIdVariable = new CustomVariable({
+    name: 'resourceId',
     label: 'Resource',
     query:
-      'Bucket : buckets.source.toolkit.fluxcd.io, GitRepository : gitrepositories.source.toolkit.fluxcd.io, HelmChart : helmcharts.source.toolkit.fluxcd.io, HelmRepository : helmrepositories.source.toolkit.fluxcd.io, OCIRepository : ocirepositories.source.toolkit.fluxcd.io, Kustomization : kustomizations.kustomize.toolkit.fluxcd.io, HelmRelease : helmreleases.helm.toolkit.fluxcd.io, ImagePolicy : imagepolicies.image.toolkit.fluxcd.io, ImageRepository : imagerepositories.image.toolkit.fluxcd.io, ImageUpdateAutomation : imageupdateautomations.image.toolkit.fluxcd.io, Alert : alerts.notification.toolkit.fluxcd.io, Provider : providers.notification.toolkit.fluxcd.io, Receiver : receivers.notification.toolkit.fluxcd.io,',
-    value: DEFAULT_QUERIES['flux-resources'].resource,
+      'Bucket : bucket.source.toolkit.fluxcd.io, GitRepository : gitrepository.source.toolkit.fluxcd.io, HelmChart : helmchart.source.toolkit.fluxcd.io, HelmRepository : helmrepository.source.toolkit.fluxcd.io, OCIRepository : ocirepository.source.toolkit.fluxcd.io, Kustomization : kustomization.kustomize.toolkit.fluxcd.io, HelmRelease : helmrelease.helm.toolkit.fluxcd.io, ImagePolicy : imagepolicy.image.toolkit.fluxcd.io, ImageRepository : imagerepository.imagerepositories.image.toolkit.fluxcd.io, ImageUpdateAutomation : imageupdateautomation.image.toolkit.fluxcd.io, Alert : alert.notification.toolkit.fluxcd.io, Provider : provider.notification.toolkit.fluxcd.io, Receiver : receiver.notification.toolkit.fluxcd.io,',
+    value: DEFAULT_QUERIES['flux-resources'].resourceId,
   });
 
   const namespaceVariable = new QueryVariable({
@@ -56,7 +56,7 @@ export function fluxScene() {
       {
         refId: 'A',
         queryType: 'flux-resources',
-        resource: '${resource}',
+        resourceId: '${resourceId}',
         namespace: '${namespace}',
       },
     ],
@@ -64,7 +64,7 @@ export function fluxScene() {
 
   return new EmbeddedScene({
     $variables: new SceneVariableSet({
-      variables: [datasourceVariable, resourceVariable, namespaceVariable],
+      variables: [datasourceVariable, resourceIdVariable, namespaceVariable],
     }),
     $data: queryRunner,
     body: new SceneFlexLayout({
