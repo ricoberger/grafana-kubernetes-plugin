@@ -17,6 +17,8 @@ import { CronJobResumeAction } from './CronJobResumeAction';
 import { CSRApproveAction } from './CSRApproveAction';
 import { CSRDenyAction } from './CSRDenyAction';
 import { EvictPodAction } from './EvictPodAction';
+import { NodeUncordonAction } from './NodeUncordonAction';
+import { NodeCordonAction } from './NodeCordonAction';
 
 interface Props {
   query: Query;
@@ -114,6 +116,12 @@ export function Actions(props: Props) {
               )}
             {resource && ['pods'].includes(resource) && (
               <Menu.Item label="Evict" onClick={() => setOpen('evict')} />
+            )}
+            {resource && ['nodes'].includes(resource) && (
+              <Menu.Item label="Cordon" onClick={() => setOpen('cordon')} />
+            )}
+            {resource && ['nodes'].includes(resource) && (
+              <Menu.Item label="Uncordon" onClick={() => setOpen('uncordon')} />
             )}
             {resource &&
               [
@@ -222,6 +230,24 @@ export function Actions(props: Props) {
         namespace={namespace}
         name={name}
         isOpen={open === 'evict'}
+        onClose={() => setOpen('')}
+      />
+
+      <NodeCordonAction
+        datasource={datasource}
+        resource={resource}
+        namespace={namespace}
+        name={name}
+        isOpen={open === 'cordon'}
+        onClose={() => setOpen('')}
+      />
+
+      <NodeUncordonAction
+        datasource={datasource}
+        resource={resource}
+        namespace={namespace}
+        name={name}
+        isOpen={open === 'uncordon'}
         onClose={() => setOpen('')}
       />
 
