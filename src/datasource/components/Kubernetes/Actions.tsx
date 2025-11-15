@@ -16,6 +16,7 @@ import { CronJobSuspendAction } from './CronJobSuspendAction';
 import { CronJobResumeAction } from './CronJobResumeAction';
 import { CSRApproveAction } from './CSRApproveAction';
 import { CSRDenyAction } from './CSRDenyAction';
+import { EvictPodAction } from './EvictPodAction';
 
 interface Props {
   query: Query;
@@ -111,6 +112,9 @@ export function Actions(props: Props) {
               ) && (
                 <Menu.Item label="Deny" onClick={() => setOpen('csrdeny')} />
               )}
+            {resource && ['pods'].includes(resource) && (
+              <Menu.Item label="Evict" onClick={() => setOpen('evict')} />
+            )}
             {resource &&
               [
                 'daemonsets.apps',
@@ -209,6 +213,15 @@ export function Actions(props: Props) {
         namespace={namespace}
         name={name}
         isOpen={open === 'csrdeny'}
+        onClose={() => setOpen('')}
+      />
+
+      <EvictPodAction
+        datasource={datasource}
+        resource={resource}
+        namespace={namespace}
+        name={name}
+        isOpen={open === 'evict'}
         onClose={() => setOpen('')}
       />
 
