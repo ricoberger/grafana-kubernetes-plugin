@@ -25,7 +25,7 @@ export function Events({ datasource, namespace, name }: Props) {
       {
         refId: 'A',
         queryType: 'kubernetes-resources',
-        resourceId: 'events',
+        resourceId: 'event',
         namespace: namespace || '*',
         parameterName: 'fieldSelector',
         parameterValue: `involvedObject.name=${name}`,
