@@ -17,14 +17,14 @@ interface Props
     KubernetesSecureJsonData
   > { }
 
-export function ConfigEditor(props: Props) {
+export function ConfigEditor({ options, onOptionsChange }: Props) {
   return (
     <>
-      <Cluster {...props} />
-      <Grafana {...props} />
-      <Impersonate {...props} />
-      <GenerateKubeconfig {...props} />
-      <Integrations {...props} />
+      <Cluster options={options} onOptionsChange={onOptionsChange} />
+      <Grafana options={options} onOptionsChange={onOptionsChange} />
+      <Impersonate options={options} onOptionsChange={onOptionsChange} />
+      <GenerateKubeconfig options={options} onOptionsChange={onOptionsChange} />
+      <Integrations options={options} onOptionsChange={onOptionsChange} />
     </>
   );
 }

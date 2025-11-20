@@ -17,7 +17,7 @@ interface Props
     KubernetesSecureJsonData
   > { }
 
-export function Grafana({ onOptionsChange, options }: Props) {
+export function Grafana({ options, onOptionsChange }: Props) {
   const styles = useStyles2((theme: GrafanaTheme2) => {
     return {
       container: css({

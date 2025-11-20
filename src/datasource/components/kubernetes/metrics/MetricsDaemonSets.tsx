@@ -9,9 +9,7 @@ interface Props {
   namespace?: string;
   name?: string;
 }
-/**
- * The MetricsDaemonSets component displays the DaemonSet metrics.
- */
+
 export function MetricsDaemonSets({ settings, namespace, name }: Props) {
   const scene = new EmbeddedScene({
     body: new SceneFlexLayout({
