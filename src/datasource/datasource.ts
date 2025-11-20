@@ -17,9 +17,9 @@ import { VariableSupport } from './variablesupport';
 import {
   kubernetesResourcesTransformation,
   kubernetesLogsTransformation,
-} from './components/Kubernetes/Kubernetes';
-import { helmTransformation } from './components/Helm/Helm';
-import { fluxResourcesTransformation } from './components/Flux/Flux';
+} from './transformations/kubernetes';
+import { helmTransformation } from './transformations/helm';
+import { fluxResourcesTransformation } from './transformations/flux';
 
 export class DataSource extends DataSourceWithBackend<
   Query,

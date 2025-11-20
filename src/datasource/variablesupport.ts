@@ -8,7 +8,7 @@ import {
   TimeRange,
 } from '@grafana/data';
 
-import { VariableQueryEditor } from './components/VariableQueryEditor/VaraibleQueryEditor';
+import { VariableQueryEditor } from './components/variablequeryeditor/VariableQueryEditor';
 import { DataSource } from './datasource';
 import { Query } from './types/query';
 
