@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { V1LabelSelector } from '@kubernetes/client-node';
-import { Badge, TextLink } from '@grafana/ui';
+import { Badge } from '@grafana/ui';
 
 import { DefinitionItem } from '../../shared/definitionlist/DefinitionList';
+import { Resources } from './Resources';
 
 interface Props {
   datasource?: string;
@@ -11,24 +12,37 @@ interface Props {
 }
 
 export function Selector({ datasource, namespace, selector }: Props) {
+  const [selectedSelector, setSelectedSelector] = useState<string>('');
+
   return (
-    <DefinitionItem label="Selector">
-      {selector.matchLabels &&
-        Object.keys(selector.matchLabels).map((key) => (
-          <Badge
-            key={key}
-            color="darkgrey"
-            text={
-              <TextLink
-                href={`/explore?left=${encodeURIComponent(JSON.stringify({ datasource: datasource, queries: [{ queryType: 'kubernetes-resources', namespace: namespace, resourceId: 'pod', parameterName: 'labelSelector', parameterValue: `${key}=${selector.matchLabels ? selector.matchLabels[key] : ''}`, wide: false, refId: 'A' }] }))}`}
-                color="secondary"
-                variant="bodySmall"
-              >
-                {key}={selector.matchLabels ? selector.matchLabels[key] : ''}
-              </TextLink>
-            }
+    <>
+      <DefinitionItem label="Selector">
+        {selector.matchLabels &&
+          Object.keys(selector.matchLabels).map((key) => (
+            <Badge
+              key={key}
+              color="blue"
+              onClick={() =>
+                setSelectedSelector(
+                  `${key}=${selector.matchLabels ? selector.matchLabels[key] : ''}`,
+                )
+              }
+              text={`${key}=${selector.matchLabels ? selector.matchLabels[key] : ''}`}
+            />
+          ))}
+
+        {selectedSelector && (
+          <Resources
+            title="Pods"
+            datasource={datasource}
+            resourceId="pod"
+            namespace={namespace}
+            parameterName="labelSelector"
+            parameterValue={selectedSelector}
+            onClose={() => setSelectedSelector('')}
           />
-        ))}
-    </DefinitionItem>
+        )}
+      </DefinitionItem>
+    </>
   );
 }
