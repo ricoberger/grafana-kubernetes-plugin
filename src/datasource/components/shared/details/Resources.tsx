@@ -1,4 +1,5 @@
 import React from 'react';
+import { Drawer } from '@grafana/ui';
 import {
   EmbeddedScene,
   PanelBuilders,
@@ -10,12 +11,26 @@ import {
 import datasourcePluginJson from '../../../plugin.json';
 
 interface Props {
+  title: string;
   datasource?: string;
+  resourceId?: string;
   namespace?: string;
-  name?: string;
+  parameterName?: string;
+  parameterValue?: string;
+  onClose: () => void;
 }
 
-export function Events({ datasource, namespace, name }: Props) {
+export function Resources({
+  title,
+  datasource,
+  resourceId,
+  namespace,
+  parameterName,
+  parameterValue,
+  onClose,
+}: Props) {
+  console.log(datasource, resourceId, namespace, parameterName, parameterValue);
+
   const queryRunner = new SceneQueryRunner({
     datasource: {
       type: datasourcePluginJson.id,
@@ -25,10 +40,10 @@ export function Events({ datasource, namespace, name }: Props) {
       {
         refId: 'A',
         queryType: 'kubernetes-resources',
-        resourceId: 'events',
+        resourceId: resourceId,
         namespace: namespace || '*',
-        parameterName: 'fieldSelector',
-        parameterValue: `involvedObject.name=${name}`,
+        parameterName: parameterName || '',
+        parameterValue: parameterValue || '',
       },
     ],
   });
@@ -38,11 +53,15 @@ export function Events({ datasource, namespace, name }: Props) {
     body: new SceneFlexLayout({
       children: [
         new SceneFlexItem({
-          body: PanelBuilders.table().setTitle('Events').build(),
+          body: PanelBuilders.table().setTitle(title).build(),
         }),
       ],
     }),
   });
 
-  return <scene.Component model={scene} />;
+  return (
+    <Drawer title={title} scrollableContent={false} onClose={() => onClose()}>
+      <scene.Component model={scene} />
+    </Drawer>
+  );
 }

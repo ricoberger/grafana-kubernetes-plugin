@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useMemo, useState } from 'react';
 import {
   V1ContainerPort,
   V1ContainerState,
@@ -8,12 +8,13 @@ import {
   V1Pod,
   V1Probe,
 } from '@kubernetes/client-node';
-import { Badge, Box, InteractiveTable, Stack, TextLink } from '@grafana/ui';
+import { Badge, Box, InteractiveTable, Stack } from '@grafana/ui';
 
 import {
   DefinitionList,
   DefinitionItem,
 } from '../../shared/definitionlist/DefinitionList';
+import { Resources } from '../../shared/details/Resources';
 
 interface Props {
   datasource?: string;
@@ -22,40 +23,46 @@ interface Props {
 }
 
 export function Pod({ datasource, namespace, manifest }: Props) {
-  const phase =
-    manifest.status && manifest.status.phase
-      ? manifest.status.phase
-      : 'Unknown';
-  let reason =
-    manifest.status && manifest.status.reason ? manifest.status.reason : '';
-  let shouldReady = 0;
-  let isReady = 0;
-  let restarts = 0;
+  const [selectedNode, setSelectedNode] = useState<string>('');
 
-  if (manifest.status && manifest.status.containerStatuses) {
-    for (const container of manifest.status.containerStatuses) {
-      shouldReady = shouldReady + 1;
-      if (container.ready) {
-        isReady = isReady + 1;
-      }
+  const { phase, reason, isReady, shouldReady, restarts } = useMemo(() => {
+    const phase =
+      manifest.status && manifest.status.phase
+        ? manifest.status.phase
+        : 'Unknown';
+    let reason =
+      manifest.status && manifest.status.reason ? manifest.status.reason : '';
+    let shouldReady = 0;
+    let isReady = 0;
+    let restarts = 0;
 
-      restarts = restarts + container.restartCount;
+    if (manifest.status && manifest.status.containerStatuses) {
+      for (const container of manifest.status.containerStatuses) {
+        shouldReady = shouldReady + 1;
+        if (container.ready) {
+          isReady = isReady + 1;
+        }
 
-      if (container.state && container.state.waiting) {
-        reason = container.state.waiting.reason
-          ? container.state.waiting.reason
-          : '';
-        break;
-      }
+        restarts = restarts + container.restartCount;
 
-      if (container.state && container.state.terminated) {
-        reason = container.state.terminated.reason
-          ? container.state.terminated.reason
-          : '';
-        break;
+        if (container.state && container.state.waiting) {
+          reason = container.state.waiting.reason
+            ? container.state.waiting.reason
+            : '';
+          break;
+        }
+
+        if (container.state && container.state.terminated) {
+          reason = container.state.terminated.reason
+            ? container.state.terminated.reason
+            : '';
+          break;
+        }
       }
     }
-  }
+
+    return { phase, reason, isReady, shouldReady, restarts };
+  }, [manifest]);
 
   return (
     <>
@@ -79,17 +86,27 @@ export function Pod({ datasource, namespace, manifest }: Props) {
         </DefinitionItem>
         <DefinitionItem label="Node">
           {manifest.spec?.nodeName ? (
-            <TextLink
-              href={`/explore?left=${encodeURIComponent(JSON.stringify({ datasource: datasource, queries: [{ queryType: 'kubernetes-resources', namespace: namespace, resourceId: 'node', parameterName: 'fieldSelector', parameterValue: `metadata.name=${manifest.spec.nodeName}`, wide: false, refId: 'A' }] }))}`}
-              color="secondary"
-              variant="body"
-            >
-              {manifest.spec.nodeName}
-            </TextLink>
+            <Badge
+              color="blue"
+              onClick={() => setSelectedNode(manifest.spec!.nodeName!)}
+              text={manifest.spec.nodeName}
+            />
           ) : (
             '-'
           )}
         </DefinitionItem>
+
+        {selectedNode && (
+          <Resources
+            title="Node"
+            datasource={datasource}
+            resourceId="node"
+            namespace={namespace}
+            parameterName="fieldSelector"
+            parameterValue={`metadata.name=${selectedNode}`}
+            onClose={() => setSelectedNode('')}
+          />
+        )}
       </DefinitionList>
 
       <DefinitionList title="Containers">

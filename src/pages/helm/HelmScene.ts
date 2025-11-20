@@ -47,7 +47,6 @@ export function HelmScene() {
       {
         refId: 'A',
         queryType: 'helm-releases',
-        resource: '${resource}',
         namespace: '${namespace}',
       },
     ],
