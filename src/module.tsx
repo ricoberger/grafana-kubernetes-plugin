@@ -2,7 +2,7 @@ import React, { Suspense, lazy } from 'react';
 import { AppPlugin, type AppRootProps } from '@grafana/data';
 import { LoadingPlaceholder } from '@grafana/ui';
 
-const LazyApp = lazy(() => import('./components/App/App'));
+const LazyApp = lazy(() => import('./app/App'));
 
 const App = (props: AppRootProps) => (
   <Suspense fallback={<LoadingPlaceholder text="" />}>
