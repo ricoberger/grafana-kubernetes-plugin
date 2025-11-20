@@ -16,13 +16,18 @@ import { KubernetesContainers } from './KubernetesContainers';
 interface Props
   extends QueryEditorProps<DataSource, any, DataSourceOptions, Query> { }
 
-export function VariableQueryEditor(props: Props) {
+export function VariableQueryEditor({
+  datasource,
+  query,
+  onChange,
+  onRunQuery,
+}: Props) {
   return (
     <>
       <InlineFieldRow>
         <InlineField label="Type">
           <Combobox<QueryType>
-            value={props.query.queryType}
+            value={query.queryType}
             options={[
               {
                 label: 'Kubernetes: Resources IDs',
@@ -39,8 +44,8 @@ export function VariableQueryEditor(props: Props) {
               { label: 'Kubernetes: Resources', value: 'kubernetes-resources' },
             ]}
             onChange={(option: ComboboxOption<QueryType>) => {
-              props.onChange({
-                ...props.query,
+              onChange({
+                ...query,
                 ...DEFAULT_QUERIES[option.value],
                 queryType: option.value,
               });
@@ -49,12 +54,22 @@ export function VariableQueryEditor(props: Props) {
         </InlineField>
       </InlineFieldRow>
 
-      {props.query.queryType === 'kubernetes-containers' && (
-        <KubernetesContainers {...props} />
+      {query.queryType === 'kubernetes-containers' && (
+        <KubernetesContainers
+          datasource={datasource}
+          query={query}
+          onChange={onChange}
+          onRunQuery={onRunQuery}
+        />
       )}
 
-      {props.query.queryType === 'kubernetes-resources' && (
-        <KubernetesResources {...props} />
+      {query.queryType === 'kubernetes-resources' && (
+        <KubernetesResources
+          datasource={datasource}
+          query={query}
+          onChange={onChange}
+          onRunQuery={onRunQuery}
+        />
       )}
     </>
   );

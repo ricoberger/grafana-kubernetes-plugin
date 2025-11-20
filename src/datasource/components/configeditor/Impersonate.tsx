@@ -17,7 +17,7 @@ interface Props
     KubernetesSecureJsonData
   > { }
 
-export function Impersonate({ onOptionsChange, options }: Props) {
+export function Impersonate({ options, onOptionsChange }: Props) {
   const styles = useStyles2((theme: GrafanaTheme2) => {
     return {
       containerKubeconfigGeneration: css({
