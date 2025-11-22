@@ -118,6 +118,7 @@ func NewDatasource(ctx context.Context, pCtx backend.DataSourceInstanceSettings)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/kubernetes/kubeconfig", ds.handleKubernetesKubeconfig)
+	mux.HandleFunc("/kubernetes/kubeconfig/credentials", ds.handleKubernetesKubeconfigCredentials)
 	mux.HandleFunc("/kubernetes/resource/{id}", ds.handleKubernetesResource)
 	mux.HandleFunc("/kubernetes/proxy/{pathname...}", ds.handleKubernetesProxy)
 	mux.HandleFunc("/helm/{namespace}/{name}/{version}", ds.handleHelmGetRelease)
