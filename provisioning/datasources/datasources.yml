@@ -20,6 +20,8 @@ datasources:
       generateKubeconfigName: grafana
       generateKubeconfigTTL: 604800
       generateKubeconfigPort: 11716
+      generateKubeconfigRedirectUrls:
+        - http://localhost:11716
       integrationsMetricsDatasourceUid: prometheus
       integrationsMetricsKubeletJob: kubelet
       integrationsMetricsKubeStateMetricsJob: kube-state-metrics

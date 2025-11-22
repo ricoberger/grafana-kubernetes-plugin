@@ -10,6 +10,7 @@ import {
   DataSourceOptions,
   KubernetesSecureJsonData,
 } from '../../types/settings';
+import { GenerateKubeconfigRedirectUrls } from './GenerateKubeconfigRedirectUrls';
 
 interface Props
   extends DataSourcePluginOptionsEditorProps<
@@ -105,6 +106,18 @@ export function GenerateKubeconfig({ options, onOptionsChange }: Props) {
           width={65}
         />
       </InlineField>
+      <GenerateKubeconfigRedirectUrls
+        redirectUrls={options.jsonData.generateKubeconfigRedirectUrls || []}
+        onChange={(redirectUrls) => {
+          onOptionsChange({
+            ...options,
+            jsonData: {
+              ...options.jsonData,
+              generateKubeconfigRedirectUrls: redirectUrls,
+            },
+          });
+        }}
+      />
     </div>
   );
 }

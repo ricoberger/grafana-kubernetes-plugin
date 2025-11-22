@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
+	"slices"
+	"time"
 
 	"github.com/ricoberger/grafana-kubernetes-plugin/pkg/models"
 
@@ -13,6 +16,8 @@ import (
 	"github.com/grafana/grafana-plugin-sdk-go/experimental/concurrent"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	clientauthenticationv1 "k8s.io/client-go/pkg/apis/clientauthentication/v1"
 	clientcmdapiv1 "k8s.io/client-go/tools/clientcmd/api/v1"
 )
 
@@ -283,14 +288,31 @@ func (d *Datasource) handleKubernetesKubeconfig(w http.ResponseWriter, r *http.R
 	d.logger.Info("handleKubernetesKubeconfig request", "user", user)
 	span.SetAttributes(attribute.Key("user").String(user))
 
-	// Create a new token for the user. The token is then used in the kubeconfig
-	// to authenticate in the proxy handler against Grafana. When the
-	// impersonate feature is enabled the token is also used to get user and
-	// groups in the proxy handler / server.
-	token, err := d.grafanaClient.CreateUserToken(ctx, user, d.generateKubeconfigTTL)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	var authInfo clientcmdapiv1.AuthInfo
+	if r.URL.Query().Get("type") == "exec" {
+		authInfo.Exec = &clientcmdapiv1.ExecConfig{
+			APIVersion: "client.authentication.k8s.io/v1",
+			Command:    "kubectl",
+			Args: []string{
+				"grafana",
+				"token",
+				fmt.Sprintf("--name=%s", d.generateKubeconfigName),
+				fmt.Sprintf("--url=%s", d.grafanaClient.GetUrl().String()),
+				fmt.Sprintf("--datasource=%s", backend.PluginConfigFromContext(ctx).DataSourceInstanceSettings.UID),
+			},
+			InteractiveMode: clientcmdapiv1.NeverExecInteractiveMode,
+		}
+	} else {
+		// Create a new token for the user. The token is then used in the kubeconfig
+		// to authenticate in the proxy handler against Grafana. When the
+		// impersonate feature is enabled the token is also used to get user and
+		// groups in the proxy handler / server.
+		token, err := d.grafanaClient.CreateUserToken(ctx, user, d.generateKubeconfigTTL)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		authInfo.Token = token
 	}
 
 	// Create a kubeconfig and return it.
@@ -323,16 +345,95 @@ func (d *Datasource) handleKubernetesKubeconfig(w http.ResponseWriter, r *http.R
 		}},
 		CurrentContext: d.generateKubeconfigName,
 		AuthInfos: []clientcmdapiv1.NamedAuthInfo{{
-			Name: fmt.Sprintf("%s-%s", d.generateKubeconfigName, user),
-			AuthInfo: clientcmdapiv1.AuthInfo{
-				Token: token,
-			},
+			Name:     fmt.Sprintf("%s-%s", d.generateKubeconfigName, user),
+			AuthInfo: authInfo,
 		}},
 	}
 
 	data, err := json.Marshal(kubeconfig)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if r.URL.Query().Get("redirect") != "" {
+		if !slices.Contains(d.generateKubeconfigRedirectUrls, r.URL.Query().Get("redirect")) {
+			http.Error(w, "invalid redirect url", http.StatusForbidden)
+			return
+		}
+
+		http.Redirect(w, r, fmt.Sprintf("%s?kubeconfig=%s", r.URL.Query().Get("redirect"), url.QueryEscape(string(data))), http.StatusTemporaryRedirect)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(data)
+}
+
+func (d *Datasource) handleKubernetesKubeconfigCredentials(w http.ResponseWriter, r *http.Request) {
+	ctx, span := tracing.DefaultTracer().Start(r.Context(), "handleKubernetesKubeconfigCredentials")
+	defer span.End()
+
+	if !d.generateKubeconfig {
+		http.Error(w, "kubeconfig generation is disabled", http.StatusForbidden)
+		return
+	}
+
+	// Get the user which makes the request. The "GetImpersonateUser" function
+	// only returns a user when the impersonate user feature is enabled. So that
+	// we have to set a user name when an empty string is returned.
+	//
+	// This allows us to have the generate kubeconfig feature enabled, without
+	// the impersonate user feature.
+	user, err := d.grafanaClient.GetImpersonateUser(ctx, r.Header)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if user == "" {
+		user = "admin"
+	}
+
+	d.logger.Info("handleKubernetesKubeconfigCredentials request", "user", user)
+	span.SetAttributes(attribute.Key("user").String(user))
+
+	// Create a new token for the user. The token is then used in the kubeconfig
+	// to authenticate in the proxy handler against Grafana. When the
+	// impersonate feature is enabled the token is also used to get user and
+	// groups in the proxy handler / server.
+	token, err := d.grafanaClient.CreateUserToken(ctx, user, d.generateKubeconfigTTL)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Create ExecCredential which is used in the kubeconfig "exec" section to
+	// return the generated token.
+	execCredential := clientauthenticationv1.ExecCredential{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: clientauthenticationv1.SchemeGroupVersion.String(),
+			Kind:       "ExecCredential",
+		},
+		Status: &clientauthenticationv1.ExecCredentialStatus{
+			ExpirationTimestamp: &metav1.Time{Time: time.Now().Add(time.Duration(d.generateKubeconfigTTL) * time.Second).Add(-60 * time.Second)},
+			Token:               token,
+		},
+	}
+
+	data, err := json.Marshal(execCredential)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if r.URL.Query().Get("redirect") != "" {
+		if !slices.Contains(d.generateKubeconfigRedirectUrls, r.URL.Query().Get("redirect")) {
+			http.Error(w, "invalid redirect url", http.StatusForbidden)
+			return
+		}
+
+		http.Redirect(w, r, fmt.Sprintf("%s?credentials=%s", r.URL.Query().Get("redirect"), url.QueryEscape(string(data))), http.StatusTemporaryRedirect)
 		return
 	}
 
