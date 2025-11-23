@@ -1,5 +1,30 @@
 # Changelog
 
+## [v0.3.0](https://github.com/ricoberger/grafana-kubernetes-plugin/tree/v0.3.0) (2025-11-23)
+
+[Full Changelog](https://github.com/ricoberger/grafana-kubernetes-plugin/compare/v0.2.2...v0.3.0)
+
+- Add `kubectl-grafana` Plugin [\#53](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/53) ([ricoberger](https://github.com/ricoberger))
+- Replace Explore Links with Drawer [\#52](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/52) ([ricoberger](https://github.com/ricoberger))
+- Fix: Rework Frontend [\#51](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/51) ([ricoberger](https://github.com/ricoberger))
+- Rework Frontend [\#49](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/49) ([ricoberger](https://github.com/ricoberger))
+- Improve Resource Handling [\#46](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/46) ([ricoberger](https://github.com/ricoberger))
+- Add Action to Cordon and Uncordon Nodes [\#45](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/45) ([ricoberger](https://github.com/ricoberger))
+- Add Action to Evict Pods [\#44](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/44) ([ricoberger](https://github.com/ricoberger))
+- Format Metrics in Resources View [\#43](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/43) ([ricoberger](https://github.com/ricoberger))
+- Add Action to Approve and Deny CSR [\#42](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/42) ([ricoberger](https://github.com/ricoberger))
+- Do Not Publish E2E Report [\#41](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/41) ([ricoberger](https://github.com/ricoberger))
+- Add Action to Suspend and Resume CronJobs [\#40](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/40) ([ricoberger](https://github.com/ricoberger))
+- Change Generated Kubeconfig [\#39](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/39) ([ricoberger](https://github.com/ricoberger))
+- Add Label to Kubernetes Resources Queries [\#38](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/38) ([ricoberger](https://github.com/ricoberger))
+- Use DiscoveryClient to Get Resources [\#37](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/37) ([ricoberger](https://github.com/ricoberger))
+- Use Default Queries in Pages [\#36](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/36) ([ricoberger](https://github.com/ricoberger))
+- Add AI Action for Helm and Flux Integration [\#35](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/35) ([ricoberger](https://github.com/ricoberger))
+- Fix Datasource Configuration [\#34](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/34) ([ricoberger](https://github.com/ricoberger))
+- Remove Tracing Options [\#33](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/33) ([ricoberger](https://github.com/ricoberger))
+- Add Support for Grafana LLM Plugin [\#29](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/29) ([ricoberger](https://github.com/ricoberger))
+- chore: bump @grafana/create-plugin configuration to 6.1.5 [\#26](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/26) ([github-actions[bot]](https://github.com/apps/github-actions))
+
 ## [v0.2.2](https://github.com/ricoberger/grafana-kubernetes-plugin/tree/v0.2.2) (2025-10-29)
 
 [Full Changelog](https://github.com/ricoberger/grafana-kubernetes-plugin/compare/v0.2.1...v0.2.2)
