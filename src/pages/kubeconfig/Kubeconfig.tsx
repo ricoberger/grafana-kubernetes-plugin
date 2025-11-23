@@ -1,16 +1,17 @@
 import React from 'react';
 import {
   Alert,
-  Box,
   Button,
   CodeEditor,
   Drawer,
   LoadingPlaceholder,
   Stack,
+  useStyles2,
 } from '@grafana/ui';
 import YAML from 'yaml';
 import { useAsync } from 'react-use';
 import AutoSizer from 'react-virtualized-auto-sizer';
+import { css } from '@emotion/css';
 
 import { fileDownload } from '../../utils/utils.download';
 
@@ -46,6 +47,18 @@ interface Props {
 }
 
 export function Kubeconfig({ datasource, onClose }: Props) {
+  const styles = useStyles2(() => {
+    return {
+      editorWrapper: css({
+        flex: 1,
+      }),
+      editorContainer: css({
+        width: 'fit-content',
+        border: 'none',
+      }),
+    };
+  });
+
   const state = useAsync(async (): Promise<KubeconfigFile> => {
     const response = await fetch(
       `/api/datasources/uid/${datasource}/resources/kubernetes/kubeconfig`,
@@ -81,11 +94,12 @@ export function Kubeconfig({ datasource, onClose }: Props) {
             justifyContent="space-between"
             height="100%"
           >
-            <Box height="100%">
+            <div className={styles.editorWrapper}>
               <AutoSizer>
                 {({ width, height }) => {
                   return (
                     <CodeEditor
+                      containerStyles={styles.editorContainer}
                       width={width}
                       height={height}
                       language="yaml"
@@ -97,7 +111,7 @@ export function Kubeconfig({ datasource, onClose }: Props) {
                   );
                 }}
               </AutoSizer>
-            </Box>
+            </div>
 
             <div>
               <Button
