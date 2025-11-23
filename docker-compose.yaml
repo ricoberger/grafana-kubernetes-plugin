@@ -7,7 +7,7 @@ services:
       args:
         anonymous_auth_enabled: ${ANONYMOUS_AUTH_ENABLED:-false}
         grafana_image: ${GRAFANA_IMAGE:-grafana}
-        grafana_version: ${GRAFANA_VERSION:-12.2.0}
+        grafana_version: ${GRAFANA_VERSION:-12.3.0}
     environment:
       GF_LOG_FILTERS: plugin.ricoberger-kubernetes-datasource:debug
       GF_LOG_LEVEL: error

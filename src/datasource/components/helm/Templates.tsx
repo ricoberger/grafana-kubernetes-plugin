@@ -1,6 +1,13 @@
 import React, { useState } from 'react';
-import { Box, CodeEditor, Combobox, ComboboxOption, Stack } from '@grafana/ui';
+import {
+  CodeEditor,
+  Combobox,
+  ComboboxOption,
+  Stack,
+  useStyles2,
+} from '@grafana/ui';
 import AutoSizer from 'react-virtualized-auto-sizer';
+import { css } from '@emotion/css';
 
 import { Release } from '../../types/helm';
 
@@ -9,6 +16,18 @@ interface Props {
 }
 
 export function Templates({ release }: Props) {
+  const styles = useStyles2(() => {
+    return {
+      editorWrapper: css({
+        flex: 1,
+      }),
+      editorContainer: css({
+        width: 'fit-content',
+        border: 'none',
+      }),
+    };
+  });
+
   const [selectedTemplate, setSelectedTemplate] = useState(0);
 
   if (!release?.chart?.templates || release.chart.templates.length === 0) {
@@ -34,11 +53,12 @@ export function Templates({ release }: Props) {
         />
       </div>
 
-      <Box height="100%">
+      <div className={styles.editorWrapper}>
         <AutoSizer>
           {({ width, height }) => {
             return (
               <CodeEditor
+                containerStyles={styles.editorContainer}
                 width={width}
                 height={height}
                 language="yaml"
@@ -50,7 +70,7 @@ export function Templates({ release }: Props) {
             );
           }}
         </AutoSizer>
-      </Box>
+      </div>
     </Stack>
   );
 }
