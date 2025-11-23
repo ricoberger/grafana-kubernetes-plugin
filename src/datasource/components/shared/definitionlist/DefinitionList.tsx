@@ -32,6 +32,11 @@ export function DefinitionList({
 }) {
   const styles = useStyles2(() => {
     return {
+      container: css({
+        div: {
+          overflow: 'none',
+        },
+      }),
       content: css({
         width: '100%',
         maxWidth: '100%',
@@ -42,13 +47,15 @@ export function DefinitionList({
   });
 
   return (
-    <PanelChrome title={title}>
-      <div className={styles.content}>
-        <Stack direction="column" columnGap={6}>
-          {children}
-        </Stack>
-      </div>
-    </PanelChrome>
+    <div className={styles.container}>
+      <PanelChrome title={title}>
+        <div className={styles.content}>
+          <Stack direction="column" columnGap={6}>
+            {children}
+          </Stack>
+        </div>
+      </PanelChrome>
+    </div>
   );
 }
 
