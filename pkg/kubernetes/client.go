@@ -545,10 +545,10 @@ func (c *client) GetResource(ctx context.Context, resourceId string) (*Resource,
 //
 // Caddy (required for kubectl, because token is only send when https is used):
 //
-//	caddy run --config ./tmp/Caddyfile
+//	caddy run --config /tmp/Caddyfile
 //
 //	grafana.localhost {
-//	  reverse_proxy localhost:15219
+//	  reverse_proxy localhost:3000
 //	}
 func (c *client) Proxy(user string, groups []string, requestUrl string, w http.ResponseWriter, r *http.Request) {
 	ctx, span := tracing.DefaultTracer().Start(r.Context(), "Proxy")

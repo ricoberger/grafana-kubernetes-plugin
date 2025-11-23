@@ -96,13 +96,14 @@ func NewDatasource(ctx context.Context, pCtx backend.DataSourceInstanceSettings)
 	}
 
 	ds := &Datasource{
-		generateKubeconfig:     config.GenerateKubeconfig,
-		generateKubeconfigName: config.GenerateKubeconfigName,
-		generateKubeconfigTTL:  config.GenerateKubeconfigTTL,
-		grafanaClient:          grafanaClient,
-		kubeClient:             kubeClient,
-		kubeServer:             kubeServer,
-		logger:                 logger,
+		generateKubeconfig:             config.GenerateKubeconfig,
+		generateKubeconfigName:         config.GenerateKubeconfigName,
+		generateKubeconfigTTL:          config.GenerateKubeconfigTTL,
+		generateKubeconfigRedirectUrls: config.GenerateKubeconfigRedirectUrls,
+		grafanaClient:                  grafanaClient,
+		kubeClient:                     kubeClient,
+		kubeServer:                     kubeServer,
+		logger:                         logger,
 	}
 
 	queryTypeMux := datasource.NewQueryTypeMux()
@@ -118,6 +119,7 @@ func NewDatasource(ctx context.Context, pCtx backend.DataSourceInstanceSettings)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/kubernetes/kubeconfig", ds.handleKubernetesKubeconfig)
+	mux.HandleFunc("/kubernetes/kubeconfig/credentials", ds.handleKubernetesKubeconfigCredentials)
 	mux.HandleFunc("/kubernetes/resource/{id}", ds.handleKubernetesResource)
 	mux.HandleFunc("/kubernetes/proxy/{pathname...}", ds.handleKubernetesProxy)
 	mux.HandleFunc("/helm/{namespace}/{name}/{version}", ds.handleHelmGetRelease)
@@ -131,15 +133,16 @@ func NewDatasource(ctx context.Context, pCtx backend.DataSourceInstanceSettings)
 // Datasource is an example datasource which can respond to data queries,
 // reports its health and has streaming skills.
 type Datasource struct {
-	generateKubeconfig     bool
-	generateKubeconfigName string
-	generateKubeconfigTTL  int64
-	queryHandler           backend.QueryDataHandler
-	resourceHandler        backend.CallResourceHandler
-	grafanaClient          grafana.Client
-	kubeClient             kubernetes.Client
-	kubeServer             kubernetes.Server
-	logger                 log.Logger
+	generateKubeconfig             bool
+	generateKubeconfigName         string
+	generateKubeconfigTTL          int64
+	generateKubeconfigRedirectUrls []string
+	queryHandler                   backend.QueryDataHandler
+	resourceHandler                backend.CallResourceHandler
+	grafanaClient                  grafana.Client
+	kubeClient                     kubernetes.Client
+	kubeServer                     kubernetes.Server
+	logger                         log.Logger
 }
 
 // CheckHealth handles health checks sent from Grafana to the plugin. The main

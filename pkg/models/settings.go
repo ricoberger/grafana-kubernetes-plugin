@@ -24,6 +24,7 @@ type PluginSettings struct {
 	GenerateKubeconfigName                 string                `json:"generateKubeconfigName"`
 	GenerateKubeconfigTTL                  int64                 `json:"generateKubeconfigTTL"`
 	GenerateKubeconfigPort                 int64                 `json:"generateKubeconfigPort"`
+	GenerateKubeconfigRedirectUrls         []string              `json:"generateKubeconfigRedirectUrls"`
 	IntegrationsMetricsDatasourceUid       string                `json:"integrationsMetricsDatasourceUid"`
 	IntegrationsMetricsKubeletJob          string                `json:"integrationsMetricsKubeletJob"`
 	IntegrationsMetricsKubeStateMetricsJob string                `json:"integrationsMetricsKubeStateMetricsJob"`
