@@ -153,6 +153,25 @@ user and proxing the request to the Kubernetes API.
 
 ![Kubeconfig](https://raw.githubusercontent.com/ricoberger/grafana-kubernetes-plugin/refs/heads/main/src/img/screenshots/kubeconfig.png)
 
+To make it easier to download the generated Kubeconfig file, the
+`kubectl-grafana` kubectl plugin can be used. The plugin can be downloaded from
+the
+[releases page](https://github.com/ricoberger/grafana-kubernetes-plugin/releases)
+or by running the following command:
+
+```bash
+go install github.com/ricoberger/grafana-kubernetes-plugin/cmd/kubectl-grafana@latest
+```
+
+When the kubectl plugin is installed, the following command can be used to
+download the generated Kubeconfig. If the provided Kubeconfig file already
+contains a Kubeconfig it will be merged, with the downloaded Kubeconfig having a
+higher priority.
+
+```bash
+kubectl grafana kubeconfig --url <GRAFANA-INSTANCE-URL> --datasource <DATASOURCE-UID> --kubeconfig <PATH-TO-KUBECONFIG-FILE>
+```
+
 ### Integrations
 
 Integrations allow you to integrate the Kubernetes datasource with other
