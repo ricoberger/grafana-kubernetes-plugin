@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Badge } from '@grafana/ui';
+import { Badge, useStyles2 } from '@grafana/ui';
 import { V1OwnerReference } from '@kubernetes/client-node';
+import { css } from '@emotion/css';
 
 import {
   DefinitionItem,
@@ -19,6 +20,14 @@ interface Props {
 }
 
 export function Metadata({ datasource, namespace, name, manifest }: Props) {
+  const styles = useStyles2(() => {
+    return {
+      badge: css({
+        cursor: 'pointer',
+      }),
+    };
+  });
+
   const [selectedOwner, setSelectedOwner] = useState<
     V1OwnerReference | undefined
   >(undefined);
@@ -68,6 +77,7 @@ export function Metadata({ datasource, namespace, name, manifest }: Props) {
             {manifest.metadata.ownerReferences.map((owner, index) => (
               <Badge
                 key={index}
+                className={styles.badge}
                 color="blue"
                 onClick={() => setSelectedOwner(owner)}
                 text={`${owner.kind}: ${owner.name}`}

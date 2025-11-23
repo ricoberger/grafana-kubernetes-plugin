@@ -8,7 +8,8 @@ import {
   V1Pod,
   V1Probe,
 } from '@kubernetes/client-node';
-import { Badge, Box, InteractiveTable, Stack } from '@grafana/ui';
+import { Badge, Box, InteractiveTable, Stack, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 
 import {
   DefinitionList,
@@ -23,6 +24,14 @@ interface Props {
 }
 
 export function Pod({ datasource, namespace, manifest }: Props) {
+  const styles = useStyles2(() => {
+    return {
+      badge: css({
+        cursor: 'pointer',
+      }),
+    };
+  });
+
   const [selectedNode, setSelectedNode] = useState<string>('');
 
   const { phase, reason, isReady, shouldReady, restarts } = useMemo(() => {
@@ -87,6 +96,7 @@ export function Pod({ datasource, namespace, manifest }: Props) {
         <DefinitionItem label="Node">
           {manifest.spec?.nodeName ? (
             <Badge
+              className={styles.badge}
               color="blue"
               onClick={() => setSelectedNode(manifest.spec!.nodeName!)}
               text={manifest.spec.nodeName}
