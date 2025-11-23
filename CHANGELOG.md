@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.3.1](https://github.com/ricoberger/grafana-kubernetes-plugin/tree/v0.3.1) (2025-11-23)
+
+[Full Changelog](https://github.com/ricoberger/grafana-kubernetes-plugin/compare/v0.3.0...v0.3.1)
+
+- Change Cursor Style for Clickable Badges [\#56](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/56) ([ricoberger](https://github.com/ricoberger))
+- Fix UI for Grafana 12.3.0 [\#54](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/54) ([ricoberger](https://github.com/ricoberger))
+
 ## [v0.3.0](https://github.com/ricoberger/grafana-kubernetes-plugin/tree/v0.3.0) (2025-11-23)
 
 [Full Changelog](https://github.com/ricoberger/grafana-kubernetes-plugin/compare/v0.2.2...v0.3.0)
