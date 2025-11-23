@@ -1,5 +1,5 @@
 ---
-name: Continuous Delivery
+name: Binaries
 
 on:
   pull_request:
