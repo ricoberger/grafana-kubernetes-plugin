@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"time"
 
 	"github.com/ricoberger/grafana-kubernetes-plugin/cmd/kubectl-grafana/utils"
 
@@ -111,6 +112,12 @@ func (r *Cmd) Run() error {
 	// Open the url in the users default browser and wait until Grafana
 	// redirects the user to our local HTTP server.
 	utils.OpenUrl(kubeconfigUrl)
+
 	err := <-doneChannel
-	return err
+	if err != nil {
+		return err
+	}
+	time.Sleep(1 * time.Second)
+
+	return nil
 }
