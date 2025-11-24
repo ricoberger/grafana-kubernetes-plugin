@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"time"
 
 	"github.com/ricoberger/grafana-kubernetes-plugin/cmd/kubectl-grafana/utils"
 )
@@ -87,10 +88,12 @@ func (r *Cmd) Run() error {
 	// Open the url in the users default browser and wait until Grafana
 	// redirects the user to our local HTTP server.
 	utils.OpenUrl(credentialsUrl)
+
 	err = <-doneChannel
 	if err != nil {
 		return err
 	}
+	time.Sleep(1 * time.Second)
 
 	// Store the new credentials in the cache and print them to stdout.
 	if err := cache.Set(credentials); err != nil {
