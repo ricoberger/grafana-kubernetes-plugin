@@ -43,7 +43,7 @@ type Client interface {
 	GetNamespaces(ctx context.Context) (*data.Frame, error)
 	GetResources(ctx context.Context, user string, groups []string, resourceId, namespace, parameterName, parameterValue string, wide bool) (*data.Frame, error)
 	GetContainers(ctx context.Context, user string, groups []string, resourceId, namespace, name string) (*data.Frame, error)
-	GetLogs(ctx context.Context, user string, groups []string, resourceId, namespace, name, container, filter string, tail int64, timeRange backend.TimeRange) (*data.Frame, error)
+	GetLogs(ctx context.Context, user string, groups []string, resourceId, namespace, name, container, filter string, tail int64, previous bool, timeRange backend.TimeRange) (*data.Frame, error)
 	GetResource(ctx context.Context, resourceId string) (*Resource, error)
 	Proxy(user string, groups []string, requestUrl string, w http.ResponseWriter, r *http.Request)
 }
@@ -395,7 +395,7 @@ func (c *client) getPodsAndContainers(ctx context.Context, user string, groups [
 // The timeRange parameter is used to filter the log lines based on their
 // timestamp. Only log lines that are within the time range are included in the
 // data frame.
-func (c *client) GetLogs(ctx context.Context, user string, groups []string, resourceId, namespace, name, container, filter string, tail int64, timeRange backend.TimeRange) (*data.Frame, error) {
+func (c *client) GetLogs(ctx context.Context, user string, groups []string, resourceId, namespace, name, container, filter string, tail int64, previous bool, timeRange backend.TimeRange) (*data.Frame, error) {
 	ctx, span := tracing.DefaultTracer().Start(ctx, "GetLogs")
 	defer span.End()
 	span.SetAttributes(attribute.Key("user").String(user))
@@ -405,6 +405,8 @@ func (c *client) GetLogs(ctx context.Context, user string, groups []string, reso
 	span.SetAttributes(attribute.Key("name").String(name))
 	span.SetAttributes(attribute.Key("container").String(container))
 	span.SetAttributes(attribute.Key("filter").String(filter))
+	span.SetAttributes(attribute.Key("tail").Int64(tail))
+	span.SetAttributes(attribute.Key("previous").Bool(previous))
 
 	// Get the pods for the requested resource.
 	pods, _, err := c.getPodsAndContainers(ctx, user, groups, resourceId, namespace, name)
@@ -427,6 +429,7 @@ func (c *client) GetLogs(ctx context.Context, user string, groups []string, reso
 
 			options := &corev1.PodLogOptions{
 				Container:  container,
+				Previous:   previous,
 				Timestamps: true,
 				SinceTime:  &metav1.Time{Time: timeRange.From},
 			}

@@ -4,6 +4,7 @@ import {
   ComboboxOption,
   InlineField,
   InlineFieldRow,
+  InlineSwitch,
   Input,
 } from '@grafana/ui';
 import { QueryEditorProps } from '@grafana/data';
@@ -85,6 +86,14 @@ export function KubernetesLogs({
               onChange({ ...query, tail: parseInt(event.target.value, 10) });
             }}
             value={query.tail || 0}
+          />
+        </InlineField>
+        <InlineField label="Previous">
+          <InlineSwitch
+            value={query.previous || false}
+            onChange={(event: ChangeEvent<HTMLInputElement>) => {
+              onChange({ ...query, previous: event.target.checked });
+            }}
           />
         </InlineField>
         <InlineField label="Filter" grow={true}>

@@ -45,6 +45,7 @@ export const DEFAULT_QUERIES: Record<QueryType, Partial<Query>> = {
     container: '',
     filter: '',
     tail: 0,
+    previous: false,
   },
   'helm-releases': {
     namespace: 'default',
@@ -118,6 +119,7 @@ export interface QueryModelKubernetesLogs {
   container?: string;
   filter?: string;
   tail?: number;
+  previous?: boolean;
 }
 
 export interface QueryModelHelmReleases {
