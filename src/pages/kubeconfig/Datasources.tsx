@@ -25,7 +25,6 @@ function DatasourcesRenderer({ }: SceneComponentProps<Datasources>) {
         width: '100%',
       }),
       list: css({
-        padding: '20px',
         listStyle: 'none',
         display: 'grid',
         gap: theme.spacing(1),
