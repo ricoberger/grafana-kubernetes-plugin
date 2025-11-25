@@ -1,9 +1,11 @@
-package token
+package utils
 
 import (
 	"encoding/json"
+	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	clientauthenticationv1 "k8s.io/client-go/pkg/apis/clientauthentication/v1"
@@ -13,7 +15,7 @@ type Cache struct {
 	cacheFile string
 }
 
-func NewCache(name string) (*Cache, error) {
+func NewCache(grafanaUrl, grafanaDatasource string) (*Cache, error) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return nil, err
@@ -24,9 +26,23 @@ func NewCache(name string) (*Cache, error) {
 		return nil, err
 	}
 
+	fileName, err := getFileName(grafanaUrl, grafanaDatasource)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Cache{
-		cacheFile: filepath.Join(cacheDir, name),
+		cacheFile: filepath.Join(cacheDir, fileName),
 	}, nil
+}
+
+func getFileName(grafanaUrl, grafanaDatasource string) (string, error) {
+	parsedUrl, err := url.Parse(grafanaUrl)
+	if err != nil {
+		return "", err
+	}
+
+	return strings.ReplaceAll(parsedUrl.Host, ":", "_") + "_" + grafanaDatasource + ".json", nil
 }
 
 func (c *Cache) Get() (*clientauthenticationv1.ExecCredential, error) {

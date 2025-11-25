@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
 	"slices"
 	"time"
 
@@ -269,6 +268,13 @@ func (d *Datasource) handleKubernetesKubeconfig(w http.ResponseWriter, r *http.R
 		return
 	}
 
+	if r.URL.Query().Get("redirect") != "" {
+		if !slices.Contains(d.generateKubeconfigRedirectUrls, r.URL.Query().Get("redirect")) {
+			http.Error(w, "invalid redirect url", http.StatusForbidden)
+			return
+		}
+	}
+
 	// Get the user which makes the request. The "GetImpersonateUser" function
 	// only returns a user when the impersonate user feature is enabled. So that
 	// we have to set a user name when an empty string is returned.
@@ -295,10 +301,9 @@ func (d *Datasource) handleKubernetesKubeconfig(w http.ResponseWriter, r *http.R
 			Command:    "kubectl",
 			Args: []string{
 				"grafana",
-				"token",
-				fmt.Sprintf("--name=%s", d.generateKubeconfigName),
-				fmt.Sprintf("--url=%s", d.grafanaClient.GetUrl().String()),
-				fmt.Sprintf("--datasource=%s", backend.PluginConfigFromContext(ctx).DataSourceInstanceSettings.UID),
+				"credentials",
+				fmt.Sprintf("--grafana-url=%s", d.grafanaClient.GetUrl().String()),
+				fmt.Sprintf("--grafana-datasource=%s", backend.PluginConfigFromContext(ctx).DataSourceInstanceSettings.UID),
 			},
 			InteractiveMode: clientcmdapiv1.NeverExecInteractiveMode,
 		}
@@ -356,16 +361,6 @@ func (d *Datasource) handleKubernetesKubeconfig(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	if r.URL.Query().Get("redirect") != "" {
-		if !slices.Contains(d.generateKubeconfigRedirectUrls, r.URL.Query().Get("redirect")) {
-			http.Error(w, "invalid redirect url", http.StatusForbidden)
-			return
-		}
-
-		http.Redirect(w, r, fmt.Sprintf("%s?kubeconfig=%s", r.URL.Query().Get("redirect"), url.QueryEscape(string(data))), http.StatusTemporaryRedirect)
-		return
-	}
-
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(data)
 }
@@ -377,6 +372,13 @@ func (d *Datasource) handleKubernetesKubeconfigCredentials(w http.ResponseWriter
 	if !d.generateKubeconfig {
 		http.Error(w, "kubeconfig generation is disabled", http.StatusForbidden)
 		return
+	}
+
+	if r.URL.Query().Get("redirect") != "" {
+		if !slices.Contains(d.generateKubeconfigRedirectUrls, r.URL.Query().Get("redirect")) {
+			http.Error(w, "invalid redirect url", http.StatusForbidden)
+			return
+		}
 	}
 
 	// Get the user which makes the request. The "GetImpersonateUser" function
@@ -424,16 +426,6 @@ func (d *Datasource) handleKubernetesKubeconfigCredentials(w http.ResponseWriter
 	data, err := json.Marshal(execCredential)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	if r.URL.Query().Get("redirect") != "" {
-		if !slices.Contains(d.generateKubeconfigRedirectUrls, r.URL.Query().Get("redirect")) {
-			http.Error(w, "invalid redirect url", http.StatusForbidden)
-			return
-		}
-
-		http.Redirect(w, r, fmt.Sprintf("%s?credentials=%s", r.URL.Query().Get("redirect"), url.QueryEscape(string(data))), http.StatusTemporaryRedirect)
 		return
 	}
 

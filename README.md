@@ -169,7 +169,7 @@ contains a Kubeconfig it will be merged, with the downloaded Kubeconfig having a
 higher priority.
 
 ```bash
-kubectl grafana kubeconfig --url <GRAFANA-INSTANCE-URL> --datasource <DATASOURCE-UID> --kubeconfig <PATH-TO-KUBECONFIG-FILE>
+kubectl grafana kubeconfig --grafana-url <GRAFANA-INSTANCE-URL> --grafana-datasource <DATASOURCE-UID> --kubeconfig <PATH-TO-KUBECONFIG-FILE>
 ```
 
 ### Integrations
