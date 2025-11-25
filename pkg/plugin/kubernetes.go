@@ -233,7 +233,7 @@ func (d *Datasource) handleKubernetesLogs(ctx context.Context, query concurrent.
 		return backend.ErrorResponseWithErrorSource(err)
 	}
 
-	d.logger.Info("handleKubernetesLogs query", "user", user, "groups", groups, "resourceId", qm.ResourceId, "namespace", qm.Namespace, "name", qm.Name, "container", qm.Container, "filter", qm.Filter, "tail", qm.Tail)
+	d.logger.Info("handleKubernetesLogs query", "user", user, "groups", groups, "resourceId", qm.ResourceId, "namespace", qm.Namespace, "name", qm.Name, "container", qm.Container, "filter", qm.Filter, "tail", qm.Tail, "previous", qm.Previous)
 	span.SetAttributes(attribute.Key("user").String(user))
 	span.SetAttributes(attribute.Key("groups").StringSlice(groups))
 	span.SetAttributes(attribute.Key("resourceId").String(qm.ResourceId))
@@ -242,8 +242,9 @@ func (d *Datasource) handleKubernetesLogs(ctx context.Context, query concurrent.
 	span.SetAttributes(attribute.Key("container").String(qm.Container))
 	span.SetAttributes(attribute.Key("filter").String(qm.Filter))
 	span.SetAttributes(attribute.Key("tail").Int64(qm.Tail))
+	span.SetAttributes(attribute.Key("previous").Bool(qm.Previous))
 
-	frame, err := d.kubeClient.GetLogs(ctx, user, groups, qm.ResourceId, qm.Namespace, qm.Name, qm.Container, qm.Filter, qm.Tail, query.DataQuery.TimeRange)
+	frame, err := d.kubeClient.GetLogs(ctx, user, groups, qm.ResourceId, qm.Namespace, qm.Name, qm.Container, qm.Filter, qm.Tail, qm.Previous, query.DataQuery.TimeRange)
 	if err != nil {
 		d.logger.Error("Failed to get logs", "error", err.Error())
 		span.RecordError(err)

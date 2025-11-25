@@ -34,6 +34,7 @@ type QueryModelKubernetesLogs struct {
 	Container  string `json:"container"`
 	Filter     string `json:"filter"`
 	Tail       int64  `json:"tail"`
+	Previous   bool   `json:"previous"`
 }
 
 type QueryModelHelmReleases struct {
