@@ -79,6 +79,14 @@ export function KubernetesLogs({
         />
       </InlineFieldRow>
       <InlineFieldRow>
+        <InlineField label="Tail">
+          <Input
+            onChange={(event: ChangeEvent<HTMLInputElement>) => {
+              onChange({ ...query, tail: parseInt(event.target.value, 10) });
+            }}
+            value={query.tail || 0}
+          />
+        </InlineField>
         <InlineField label="Filter" grow={true}>
           <Input
             id="query-editor-filter"

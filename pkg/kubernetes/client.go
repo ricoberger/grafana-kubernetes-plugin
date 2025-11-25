@@ -43,7 +43,7 @@ type Client interface {
 	GetNamespaces(ctx context.Context) (*data.Frame, error)
 	GetResources(ctx context.Context, user string, groups []string, resourceId, namespace, parameterName, parameterValue string, wide bool) (*data.Frame, error)
 	GetContainers(ctx context.Context, user string, groups []string, resourceId, namespace, name string) (*data.Frame, error)
-	GetLogs(ctx context.Context, user string, groups []string, resourceId, namespace, name, container, filter string, timeRange backend.TimeRange) (*data.Frame, error)
+	GetLogs(ctx context.Context, user string, groups []string, resourceId, namespace, name, container, filter string, tail int64, timeRange backend.TimeRange) (*data.Frame, error)
 	GetResource(ctx context.Context, resourceId string) (*Resource, error)
 	Proxy(user string, groups []string, requestUrl string, w http.ResponseWriter, r *http.Request)
 }
@@ -395,7 +395,7 @@ func (c *client) getPodsAndContainers(ctx context.Context, user string, groups [
 // The timeRange parameter is used to filter the log lines based on their
 // timestamp. Only log lines that are within the time range are included in the
 // data frame.
-func (c *client) GetLogs(ctx context.Context, user string, groups []string, resourceId, namespace, name, container, filter string, timeRange backend.TimeRange) (*data.Frame, error) {
+func (c *client) GetLogs(ctx context.Context, user string, groups []string, resourceId, namespace, name, container, filter string, tail int64, timeRange backend.TimeRange) (*data.Frame, error) {
 	ctx, span := tracing.DefaultTracer().Start(ctx, "GetLogs")
 	defer span.End()
 	span.SetAttributes(attribute.Key("user").String(user))
@@ -425,11 +425,16 @@ func (c *client) GetLogs(ctx context.Context, user string, groups []string, reso
 		go func(pod string) {
 			defer streamsWG.Done()
 
-			stream, err := c.clientset.CoreV1().Pods(namespace).GetLogs(pod, &corev1.PodLogOptions{
+			options := &corev1.PodLogOptions{
 				Container:  container,
 				Timestamps: true,
 				SinceTime:  &metav1.Time{Time: timeRange.From},
-			}).Stream(ctx)
+			}
+			if tail > 0 {
+				options.TailLines = &tail
+			}
+
+			stream, err := c.clientset.CoreV1().Pods(namespace).GetLogs(pod, options).Stream(ctx)
 			if err != nil {
 				span.RecordError(err)
 				span.SetStatus(codes.Error, err.Error())

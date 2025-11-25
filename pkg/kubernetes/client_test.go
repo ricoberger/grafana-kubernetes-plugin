@@ -169,7 +169,7 @@ func TestGetLogs(t *testing.T) {
 	require.NoError(t, err)
 
 	t.Run("should return logs", func(t *testing.T) {
-		actualLogs, err := client.GetLogs(context.Background(), "", nil, "pod", "default", "echoserver", "echoserver", "", backend.TimeRange{From: time.Now().Add(-1 * time.Hour), To: time.Now().Add(1 * time.Hour)})
+		actualLogs, err := client.GetLogs(context.Background(), "", nil, "pod", "default", "echoserver", "echoserver", "", 0, backend.TimeRange{From: time.Now().Add(-1 * time.Hour), To: time.Now().Add(1 * time.Hour)})
 		require.NoError(t, err)
 		require.Equal(t, "timestamp", actualLogs.Fields[0].Name)
 		require.Equal(t, "body", actualLogs.Fields[1].Name)
@@ -187,7 +187,7 @@ func TestGetLogs(t *testing.T) {
 	})
 
 	t.Run("should return filtered logs", func(t *testing.T) {
-		actualLogs, err := client.GetLogs(context.Background(), "", nil, "pod", "default", "echoserver", "echoserver", "build", backend.TimeRange{From: time.Now().Add(-1 * time.Hour), To: time.Now().Add(1 * time.Hour)})
+		actualLogs, err := client.GetLogs(context.Background(), "", nil, "pod", "default", "echoserver", "echoserver", "build", 0, backend.TimeRange{From: time.Now().Add(-1 * time.Hour), To: time.Now().Add(1 * time.Hour)})
 		require.NoError(t, err)
 		require.Equal(t, "timestamp", actualLogs.Fields[0].Name)
 		require.Equal(t, "body", actualLogs.Fields[1].Name)

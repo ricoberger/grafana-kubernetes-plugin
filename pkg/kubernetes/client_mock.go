@@ -74,18 +74,18 @@ func (mr *MockClientMockRecorder) GetContainers(ctx, user, groups, resourceId, n
 }
 
 // GetLogs mocks base method.
-func (m *MockClient) GetLogs(ctx context.Context, user string, groups []string, resourceId, namespace, name, container, filter string, timeRange backend.TimeRange) (*data.Frame, error) {
+func (m *MockClient) GetLogs(ctx context.Context, user string, groups []string, resourceId, namespace, name, container, filter string, tail int64, timeRange backend.TimeRange) (*data.Frame, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetLogs", ctx, user, groups, resourceId, namespace, name, container, filter, timeRange)
+	ret := m.ctrl.Call(m, "GetLogs", ctx, user, groups, resourceId, namespace, name, container, filter, tail, timeRange)
 	ret0, _ := ret[0].(*data.Frame)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetLogs indicates an expected call of GetLogs.
-func (mr *MockClientMockRecorder) GetLogs(ctx, user, groups, resourceId, namespace, name, container, filter, timeRange any) *gomock.Call {
+func (mr *MockClientMockRecorder) GetLogs(ctx, user, groups, resourceId, namespace, name, container, filter, tail, timeRange any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLogs", reflect.TypeOf((*MockClient)(nil).GetLogs), ctx, user, groups, resourceId, namespace, name, container, filter, timeRange)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLogs", reflect.TypeOf((*MockClient)(nil).GetLogs), ctx, user, groups, resourceId, namespace, name, container, filter, tail, timeRange)
 }
 
 // GetNamespaces mocks base method.

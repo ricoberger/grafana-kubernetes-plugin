@@ -33,6 +33,7 @@ type QueryModelKubernetesLogs struct {
 	Name       string `json:"name"`
 	Container  string `json:"container"`
 	Filter     string `json:"filter"`
+	Tail       int64  `json:"tail"`
 }
 
 type QueryModelHelmReleases struct {
