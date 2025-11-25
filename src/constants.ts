@@ -8,4 +8,5 @@ export enum ROUTES {
   Helm = 'helm',
   Flux = 'flux',
   Kubeconfig = 'kubeconfig',
+  Kubectl = 'kubectl',
 }

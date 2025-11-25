@@ -16,29 +16,29 @@ import (
 )
 
 type Cmd struct {
-	Url        string `default:"" help:"Url of the Grafana instance, e.g. \"https://grafana.ricoberger.de/\"."`
-	Datasource string `default:"kubernetes" help:"Uid of the Kubernetes datasource."`
-	Kubeconfig string `default:"$HOME/.kube/config" help:"The file to which the Kubeconfig should be written."`
+	GrafanaUrl        string `default:"" help:"Url of the Grafana instance, e.g. \"https://play.grafana.org/\"."`
+	GrafanaDatasource string `default:"kubernetes" help:"Uid of the Kubernetes datasource."`
+	Kubeconfig        string `default:"$HOME/.kube/config" help:"Path to the Kubeconfig file."`
 }
 
 func (r *Cmd) Run() error {
 	// Validate that all required command-line flags are set. If a flag is
 	// missing return an error.
-	if r.Url == "" {
-		return fmt.Errorf("url is required")
+	if r.GrafanaUrl == "" {
+		return fmt.Errorf("grafana url is required")
 	}
-	if r.Datasource == "" {
-		return fmt.Errorf("datasource is required")
+	if r.GrafanaDatasource == "" {
+		return fmt.Errorf("grafana datasource is required")
 	}
 	if r.Kubeconfig == "" {
 		return fmt.Errorf("kubeconfig is required")
 	}
 
 	// Create the url, which can be used to download the Kubeconfig from the
-	// Grafana instance. It is important to set the "type=exec" and
+	// Grafana instance. It is important to set the
 	// "redirect=http://localhost:11716" query parameters, so that Grafana
 	// redirects the Kubeconfig to our local HTTP server.
-	kubeconfigUrl := fmt.Sprintf("%sapi/datasources/uid/%s/resources/kubernetes/kubeconfig?type=exec&redirect=%s", r.Url, r.Datasource, url.QueryEscape("http://localhost:11716"))
+	kubeconfigUrl := fmt.Sprintf("%sa/ricoberger-kubernetes-app/kubectl?type=kubeconfig&datasource=%s&redirect=%s", r.GrafanaUrl, r.GrafanaDatasource, url.QueryEscape("http://localhost:11716"))
 	kubeconfigFile := utils.ExpandEnv(r.Kubeconfig)
 	doneChannel := make(chan error)
 

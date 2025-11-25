@@ -1,4 +1,4 @@
-package token
+package credentials
 
 import (
 	"encoding/json"
@@ -12,27 +12,23 @@ import (
 )
 
 type Cmd struct {
-	Name       string `default:"grafana" help:"Name of the Kubernetes cluster, which used for the cache file."`
-	Url        string `default:"" help:"Url of the Grafana instance, e.g. \"https://grafana.ricoberger.de/\"."`
-	Datasource string `default:"kubernetes" help:"Uid of the Kubernetes datasource."`
+	GrafanaUrl        string `default:"" help:"Url of the Grafana instance, e.g. \"https://play.grafana.org/\"."`
+	GrafanaDatasource string `default:"kubernetes" help:"Uid of the Kubernetes datasource."`
 }
 
 func (r *Cmd) Run() error {
 	// Validate that all required command-line flags are set. If a flag is
 	// missing return an error.
-	if r.Url == "" {
-		return fmt.Errorf("url is required")
+	if r.GrafanaUrl == "" {
+		return fmt.Errorf("grafana url is required")
 	}
-	if r.Datasource == "" {
-		return fmt.Errorf("datasource is required")
-	}
-	if r.Name == "" {
-		return fmt.Errorf("name is required")
+	if r.GrafanaDatasource == "" {
+		return fmt.Errorf("grafana datasource is required")
 	}
 
 	// Initialize the cache and check if the cache contains valid credentials.
 	// If valid credentials are found, print them to stdout and return.
-	cache, err := NewCache(r.Name)
+	cache, err := utils.NewCache(r.GrafanaUrl, r.GrafanaDatasource)
 	if err != nil {
 		return err
 	}
@@ -54,7 +50,7 @@ func (r *Cmd) Run() error {
 	// Grafana instance. It is important to set the
 	// "redirect=http://localhost:11716" query parameter, so that Grafana
 	// redirects the credentials to our local HTTP server.
-	credentialsUrl := fmt.Sprintf("%sapi/datasources/uid/%s/resources/kubernetes/kubeconfig/credentials?redirect=%s", r.Url, r.Datasource, url.QueryEscape("http://localhost:11716"))
+	credentialsUrl := fmt.Sprintf("%sa/ricoberger-kubernetes-app/kubectl?type=credentials&datasource=%s&redirect=%s", r.GrafanaUrl, r.GrafanaDatasource, url.QueryEscape("http://localhost:11716"))
 	credentials := ""
 	doneChannel := make(chan error)
 

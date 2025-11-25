@@ -117,6 +117,13 @@
       "path": "/a/%PLUGIN_ID%/kubeconfig",
       "addToNav": true,
       "defaultNav": false
+    },
+    {
+      "type": "page",
+      "name": "kubectl",
+      "path": "/a/%PLUGIN_ID%/kubectl",
+      "addToNav": false,
+      "defaultNav": false
     }
   ],
   "dependencies": {

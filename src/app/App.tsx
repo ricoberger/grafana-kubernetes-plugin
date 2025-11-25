@@ -6,6 +6,7 @@ import { initPluginTranslations } from '@grafana/i18n';
 import { PluginPropsContext } from '../utils/utils.plugin';
 import { HomePage } from '../pages/home/HomePage';
 import { KubeconfigPage } from '../pages/kubeconfig/KubeconfigPage';
+import { KubectlPage } from '../pages/kubectl/KubectlPage';
 import { ResourcesPage } from '../pages/resources/ResourcesPage';
 import { HelmPage } from '../pages/helm/HelmPage';
 import { FluxPage } from '../pages/flux/FluxPage';
@@ -20,7 +21,14 @@ initPluginTranslations('ricoberger-kubernetes-app');
 
 function getSceneApp() {
   return new SceneApp({
-    pages: [HomePage, ResourcesPage, HelmPage, FluxPage, KubeconfigPage],
+    pages: [
+      HomePage,
+      ResourcesPage,
+      HelmPage,
+      FluxPage,
+      KubeconfigPage,
+      KubectlPage,
+    ],
     urlSyncOptions: {
       updateUrlOnInit: true,
       createBrowserHistorySteps: true,
