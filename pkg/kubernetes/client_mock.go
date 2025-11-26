@@ -173,3 +173,17 @@ func (mr *MockClientMockRecorder) RestConfig() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestConfig", reflect.TypeOf((*MockClient)(nil).RestConfig))
 }
+
+// StreamLogs mocks base method.
+func (m *MockClient) StreamLogs(ctx context.Context, user string, groups []string, resourceId, namespace, name, container, filter string, sender *backend.StreamSender) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StreamLogs", ctx, user, groups, resourceId, namespace, name, container, filter, sender)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// StreamLogs indicates an expected call of StreamLogs.
+func (mr *MockClientMockRecorder) StreamLogs(ctx, user, groups, resourceId, namespace, name, container, filter, sender any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StreamLogs", reflect.TypeOf((*MockClient)(nil).StreamLogs), ctx, user, groups, resourceId, namespace, name, container, filter, sender)
+}
