@@ -72,7 +72,7 @@
         "cellHeight": "sm",
         "showHeader": true
       },
-      "pluginVersion": "12.2.0",
+      "pluginVersion": "12.3.0",
       "targets": [
         {
           "datasource": {
@@ -84,7 +84,7 @@
           "parameterValue": "",
           "queryType": "kubernetes-resources",
           "refId": "A",
-          "resource": "${resource}",
+          "resourceId": "${resource}",
           "variableField": "Name",
           "wide": false
         }
@@ -114,12 +114,13 @@
         "enableLogDetails": true,
         "prettifyLogMessage": false,
         "showCommonLabels": false,
+        "showControls": false,
         "showLabels": false,
         "showTime": true,
         "sortOrder": "Descending",
         "wrapLogMessage": false
       },
-      "pluginVersion": "12.2.0",
+      "pluginVersion": "12.3.0",
       "targets": [
         {
           "container": "${container}",
@@ -128,7 +129,7 @@
           "namespace": "${namespace}",
           "queryType": "kubernetes-logs",
           "refId": "A",
-          "resource": "${resource}"
+          "resourceId": "${resource}"
         }
       ],
       "title": "Logs",
@@ -143,7 +144,7 @@
       {
         "allowCustomValue": false,
         "current": {
-          "text": "Deployment",
+          "text": "deployment.apps",
           "value": "deployment.apps"
         },
         "description": "",
@@ -212,7 +213,7 @@
           "parameterName": "",
           "parameterValue": "",
           "queryType": "kubernetes-resources",
-          "resource": "${resource}",
+          "resourceId": "${resource}",
           "variableField": "Name",
           "wide": false
         },
@@ -234,7 +235,7 @@
           "name": "${name}",
           "namespace": "${namespace}",
           "queryType": "kubernetes-containers",
-          "resource": "${resource}"
+          "resourceId": "${resource}"
         },
         "refresh": 1,
         "regex": "",

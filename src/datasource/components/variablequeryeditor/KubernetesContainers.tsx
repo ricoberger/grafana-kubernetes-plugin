@@ -25,9 +25,9 @@ export function KubernetesContainers({ datasource, query, onChange }: Props) {
         />
         <NamespaceField
           datasource={datasource}
-          namespace={query.resourceId}
+          namespace={query.namespace}
           onNamespaceChange={(value) => {
-            onChange({ ...query, resourceId: value });
+            onChange({ ...query, namespace: value });
           }}
         />
         <ResourceNameField
