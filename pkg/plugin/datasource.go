@@ -2,6 +2,7 @@ package plugin
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"time"
 
@@ -16,6 +17,7 @@ import (
 	"github.com/grafana/grafana-plugin-sdk-go/backend/log"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/resource/httpadapter"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/tracing"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 )
 
@@ -29,6 +31,7 @@ var (
 	_ backend.CheckHealthHandler    = (*Datasource)(nil)
 	_ backend.QueryDataHandler      = (*Datasource)(nil)
 	_ backend.CallResourceHandler   = (*Datasource)(nil)
+	_ backend.StreamHandler         = (*Datasource)(nil)
 	_ instancemgmt.InstanceDisposer = (*Datasource)(nil)
 )
 
@@ -192,6 +195,111 @@ func (d *Datasource) CallResource(ctx context.Context, req *backend.CallResource
 	defer span.End()
 
 	return d.resourceHandler.CallResource(ctx, req, sender)
+}
+
+// SubscribeStream is called when a client wants to connect to a stream. As soon
+// as first subscriber joins channel "RunStream" will be called.
+//
+// Before a user can subscribe to a stream, we verify that the user has access
+// to the stream / logs he wants to subscribe to.
+func (d *Datasource) SubscribeStream(ctx context.Context, req *backend.SubscribeStreamRequest) (*backend.SubscribeStreamResponse, error) {
+	_, span := tracing.DefaultTracer().Start(ctx, "SubscribeStream")
+	defer span.End()
+
+	d.logger.Debug("SubscribeStream", "path", req.Path)
+	span.SetAttributes(attribute.Key("path").String(req.Path))
+
+	user, err := d.grafanaClient.GetImpersonateUser(ctx, req.GetHTTPHeaders())
+	if err != nil {
+		d.logger.Error("Failed to get user", "error", err.Error())
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return nil, err
+	}
+
+	groups, err := d.grafanaClient.GetImpersonateGroups(ctx, req.GetHTTPHeaders())
+	if err != nil {
+		d.logger.Error("Failed to get groups", "error", err.Error())
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return nil, err
+	}
+
+	var qm models.QueryModelKubernetesLogs
+	err = json.Unmarshal(req.Data, &qm)
+	if err != nil {
+		d.logger.Error("Failed to unmarshal query model", "error", err.Error())
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return nil, err
+	}
+
+	d.logger.Info("SubscribeStream request", "user", user, "groups", groups, "resourceId", qm.ResourceId, "namespace", qm.Namespace, "name", qm.Name, "container", qm.Container, "filter", qm.Filter)
+	span.SetAttributes(attribute.Key("user").String(user))
+	span.SetAttributes(attribute.Key("groups").StringSlice(groups))
+	span.SetAttributes(attribute.Key("resourceId").String(qm.ResourceId))
+	span.SetAttributes(attribute.Key("namespace").String(qm.Namespace))
+	span.SetAttributes(attribute.Key("name").String(qm.Name))
+
+	_, err = d.kubeClient.GetContainers(ctx, user, groups, qm.ResourceId, qm.Namespace, qm.Name)
+	if err != nil {
+		return &backend.SubscribeStreamResponse{
+			Status: backend.SubscribeStreamStatusPermissionDenied,
+		}, nil
+	}
+
+	return &backend.SubscribeStreamResponse{
+		Status: backend.SubscribeStreamStatusOK,
+	}, nil
+}
+
+// RunStream is called once for any open channel. It handles all the streaming
+// logic for the channel and sends data to the sender as needed, via the
+// "StreamLogs" method of the Kubernetes client.
+//
+// We do not pass the user and groups to the "StreamLogs" method here, because
+// multiple we can have multiple subscribers on the same stream and each
+// subscriber might have a different user and groups. Therefore we extract the
+// user and groups inside the "StreamLogs" method for each HTTP request.
+func (d *Datasource) RunStream(ctx context.Context, req *backend.RunStreamRequest, sender *backend.StreamSender) error {
+	_, span := tracing.DefaultTracer().Start(ctx, "RunStream")
+	defer span.End()
+
+	d.logger.Debug("RunStream", "path", req.Path)
+	span.SetAttributes(attribute.Key("path").String(req.Path))
+
+	var qm models.QueryModelKubernetesLogs
+	err := json.Unmarshal(req.Data, &qm)
+	if err != nil {
+		d.logger.Error("Failed to unmarshal query model", "error", err.Error())
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return err
+	}
+
+	d.logger.Info("RunStream request", "resourceId", qm.ResourceId, "namespace", qm.Namespace, "name", qm.Name, "container", qm.Container, "filter", qm.Filter)
+	span.SetAttributes(attribute.Key("resourceId").String(qm.ResourceId))
+	span.SetAttributes(attribute.Key("namespace").String(qm.Namespace))
+	span.SetAttributes(attribute.Key("name").String(qm.Name))
+	span.SetAttributes(attribute.Key("container").String(qm.Container))
+	span.SetAttributes(attribute.Key("filter").String(qm.Filter))
+
+	return d.kubeClient.StreamLogs(ctx, "", nil, qm.ResourceId, qm.Namespace, qm.Name, qm.Container, qm.Filter, sender)
+}
+
+// PublishStream is called when a client sends a message to the stream. Since
+// this datasource does not support publishing to streams, we return permission
+// denied response.
+func (d *Datasource) PublishStream(ctx context.Context, req *backend.PublishStreamRequest) (*backend.PublishStreamResponse, error) {
+	_, span := tracing.DefaultTracer().Start(ctx, "PublishStream")
+	defer span.End()
+
+	d.logger.Debug("PublishStream", "path", req.Path)
+	span.SetAttributes(attribute.Key("path").String(req.Path))
+
+	return &backend.PublishStreamResponse{
+		Status: backend.PublishStreamStatusPermissionDenied,
+	}, nil
 }
 
 // Dispose here tells plugin SDK that plugin wants to clean up resources when a

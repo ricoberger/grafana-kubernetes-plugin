@@ -5,6 +5,7 @@
   "id": "ricoberger-kubernetes-datasource",
   "metrics": true,
   "logs": true,
+  "streaming": true,
   "backend": true,
   "executable": "gpx_kubernetes",
   "info": {

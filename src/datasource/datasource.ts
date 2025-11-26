@@ -7,9 +7,15 @@ import {
   ScopedVars,
   MetricFindValue,
   LegacyMetricFindQueryOptions,
+  LiveChannelScope,
+  LoadingState,
 } from '@grafana/data';
-import { DataSourceWithBackend, getTemplateSrv } from '@grafana/runtime';
-import { lastValueFrom, map, Observable } from 'rxjs';
+import {
+  DataSourceWithBackend,
+  getGrafanaLiveSrv,
+  getTemplateSrv,
+} from '@grafana/runtime';
+import { lastValueFrom, map, merge, Observable, of } from 'rxjs';
 
 import { Query, DEFAULT_QUERY } from './types/query';
 import { DataSourceOptions } from './types/settings';
@@ -20,6 +26,7 @@ import {
 } from './transformations/kubernetes';
 import { helmTransformation } from './transformations/helm';
 import { fluxResourcesTransformation } from './transformations/flux';
+import datasourcePluginJson from './plugin.json';
 
 export class DataSource extends DataSourceWithBackend<
   Query,
@@ -62,6 +69,60 @@ export class DataSource extends DataSourceWithBackend<
    * query runs the provided query and modifies the returned response.
    */
   query(request: DataQueryRequest<Query>): Observable<DataQueryResponse> {
+    /**
+     * If live streaming is enabled, we have to check that all provided queries
+     * are of type "kubernetes-logs", as this is the only query type that
+     * supports streaming. If this is not the case, we return an error.
+     *
+     * If all queries are of type "kubernetes-logs", we create a data stream
+     * for each query and merge them into a single observable which is then
+     * returned.
+     */
+    if (request.liveStreaming) {
+      if (
+        request.targets.filter((query) => query.queryType !== 'kubernetes-logs')
+          .length > 0
+      ) {
+        return of({
+          data: [],
+          error: {
+            message:
+              'Streaming requests are only supported for "Kubernetes: Logs" queries.',
+          },
+          state: LoadingState.Error,
+        });
+      }
+
+      const observables = request.targets.map((query) => {
+        return getGrafanaLiveSrv()
+          .getDataStream({
+            addr: {
+              scope: LiveChannelScope.DataSource,
+              namespace: this.uid,
+              path: `${query.resourceId}-${query.namespace}-${query.name}-${query.container}`,
+              data: {
+                ...query,
+              },
+            },
+          })
+          .pipe(
+            map((response) => {
+              return {
+                data: response.data || [],
+                key: `${datasourcePluginJson.id}-${query.resourceId}-${query.namespace}-${query.name}-${query.container}`,
+                state: LoadingState.Streaming,
+              };
+            }),
+          );
+      });
+
+      return merge(...observables);
+    }
+
+    /**
+     * For non-streaming requests, we call the super class's query method and
+     * modify the returned data frames based on the query type.
+     */
     let response = super.query(request);
 
     return response.pipe(

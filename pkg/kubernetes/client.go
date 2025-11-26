@@ -44,6 +44,7 @@ type Client interface {
 	GetResources(ctx context.Context, user string, groups []string, resourceId, namespace, parameterName, parameterValue string, wide bool) (*data.Frame, error)
 	GetContainers(ctx context.Context, user string, groups []string, resourceId, namespace, name string) (*data.Frame, error)
 	GetLogs(ctx context.Context, user string, groups []string, resourceId, namespace, name, container, filter string, tail int64, previous bool, timeRange backend.TimeRange) (*data.Frame, error)
+	StreamLogs(ctx context.Context, user string, groups []string, resourceId, namespace, name, container, filter string, sender *backend.StreamSender) error
 	GetResource(ctx context.Context, resourceId string) (*Resource, error)
 	Proxy(user string, groups []string, requestUrl string, w http.ResponseWriter, r *http.Request)
 }
@@ -466,12 +467,23 @@ func (c *client) GetLogs(ctx context.Context, user string, groups []string, reso
 	var bodys []string
 	var labels []json.RawMessage
 
-	r, _ := regexp.Compile(filter)
+	var r *regexp.Regexp
+	if filter != "" {
+		r, err = regexp.Compile(filter)
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
+			return nil, err
+		}
+	}
 
 	for _, stream := range streams {
 		scanner := bufio.NewScanner(stream.Stream)
 		for scanner.Scan() {
 			parts := strings.SplitN(scanner.Text(), " ", 2)
+			if len(parts) != 2 {
+				continue
+			}
 
 			timestamp, err := time.Parse(time.RFC3339Nano, parts[0])
 			if err != nil {
@@ -481,12 +493,16 @@ func (c *client) GetLogs(ctx context.Context, user string, groups []string, reso
 				continue
 			}
 
+			if r != nil && !r.MatchString(parts[1]) {
+				continue
+			}
+
 			var label json.RawMessage
 			if err := json.Unmarshal([]byte(strings.Replace(parts[1], "{", `{"pod": "`+stream.Pod+`", `, 1)), &label); err != nil {
 				label = json.RawMessage(fmt.Sprintf(`{"pod": "%s"}`, stream.Pod))
 			}
 
-			if timestamp.After(timeRange.From) && timestamp.Before(timeRange.To) && r.MatchString(parts[1]) {
+			if timestamp.After(timeRange.From) && timestamp.Before(timeRange.To) {
 				timestamps = append(timestamps, timestamp)
 				bodys = append(bodys, parts[1])
 				labels = append(labels, label)
@@ -513,6 +529,131 @@ func (c *client) GetLogs(ctx context.Context, user string, groups []string, reso
 	})
 
 	return frame, nil
+}
+
+// StreamLogs streams the logs for the requested resource as data frame. If the
+// resource is a pod the logs for the pod are streamed. If the resource is a
+// daemonset, deployment, job or statefulset, the logs for all pods belonging to
+// the resource are streamed.
+//
+// The logs are fetched in parallel for all pods and sent to the stream sender.
+// Each log line is prefixed with a timestamp in RFC3339Nano format and is split
+// into two fields: "timestamp" and "body". The "body" field contains the log
+// line itself.
+//
+// If the log line is a JSON object, the log line is parsed and stored in the
+// "labels" field as JSON object.
+//
+// The filter parameter is a regular expression that is used to filter the log
+// lines. Only log lines that match the regular expression are sent to the
+// stream sender.
+func (c *client) StreamLogs(ctx context.Context, user string, groups []string, resourceId, namespace, name, container, filter string, sender *backend.StreamSender) error {
+	ctx, span := tracing.DefaultTracer().Start(ctx, "StreamLogs")
+	defer span.End()
+	span.SetAttributes(attribute.Key("user").String(user))
+	span.SetAttributes(attribute.Key("groups").StringSlice(groups))
+	span.SetAttributes(attribute.Key("resourceId").String(resourceId))
+	span.SetAttributes(attribute.Key("namespace").String(namespace))
+	span.SetAttributes(attribute.Key("name").String(name))
+	span.SetAttributes(attribute.Key("container").String(container))
+	span.SetAttributes(attribute.Key("filter").String(filter))
+
+	// Get the pods for the requested resource.
+	pods, _, err := c.getPodsAndContainers(ctx, user, groups, resourceId, namespace, name)
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return err
+	}
+
+	var r *regexp.Regexp
+	if filter != "" {
+		r, err = regexp.Compile(filter)
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
+			return err
+		}
+	}
+
+	var streamsWG sync.WaitGroup
+	streamsWG.Add(len(pods))
+
+	for _, pod := range pods {
+		go func(pod string) {
+			defer streamsWG.Done()
+
+			options := &corev1.PodLogOptions{
+				Container:  container,
+				Timestamps: true,
+				Follow:     true,
+			}
+
+			stream, err := c.clientset.CoreV1().Pods(namespace).GetLogs(pod, options).Stream(ctx)
+			if err != nil {
+				span.RecordError(err)
+				span.SetStatus(codes.Error, err.Error())
+				c.logger.Error("Failed to get stream", "error", err.Error())
+				return
+			}
+			defer stream.Close()
+
+			scanner := bufio.NewScanner(stream)
+			for scanner.Scan() {
+				select {
+				case <-ctx.Done():
+					return
+				default:
+					parts := strings.SplitN(scanner.Text(), " ", 2)
+					if len(parts) != 2 {
+						continue
+					}
+
+					timestamp, err := time.Parse(time.RFC3339Nano, parts[0])
+					if err != nil {
+						span.RecordError(err)
+						span.SetStatus(codes.Error, err.Error())
+						c.logger.Error("Failed to parse timestamp", "error", err.Error())
+						continue
+					}
+
+					if r != nil && !r.MatchString(parts[1]) {
+						continue
+					}
+
+					var label json.RawMessage
+					if err := json.Unmarshal([]byte(strings.Replace(parts[1], "{", `{"pod": "`+pod+`", `, 1)), &label); err != nil {
+						label = json.RawMessage(fmt.Sprintf(`{"pod": "%s"}`, pod))
+					}
+
+					frame := data.NewFrame(
+						"Logs",
+						data.NewField("timestamp", nil, []time.Time{timestamp}),
+						data.NewField("body", nil, []string{parts[1]}),
+						data.NewField("labels", nil, []json.RawMessage{label}),
+					)
+
+					frame.SetMeta(&data.FrameMeta{
+						PreferredVisualization: data.VisTypeLogs,
+						Type:                   data.FrameTypeLogLines,
+					})
+
+					if err := sender.SendFrame(frame, data.IncludeAll); err != nil {
+						c.logger.Error("Failed to send frame", "error", err.Error())
+						return
+					}
+				}
+			}
+
+			if err := scanner.Err(); err != nil {
+				span.RecordError(err)
+				span.SetStatus(codes.Error, err.Error())
+			}
+		}(pod)
+	}
+
+	streamsWG.Wait()
+	return nil
 }
 
 // GetResource returns the resource for the given resource ID from the cache. If
