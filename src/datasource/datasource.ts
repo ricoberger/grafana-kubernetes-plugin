@@ -214,12 +214,53 @@ export class DataSource extends DataSourceWithBackend<
     // the kind is used as text.
     if (query.queryType === 'kubernetes-resourceids') {
       return response
-        ? (response.data[0] as DataFrame).fields[0].values.map((_, index) => ({
-          value: _.toString(),
-          text: (response.data[0] as DataFrame).fields[1].values[
+        ? (response.data[0] as DataFrame).fields[0].values.map((_, index) => {
+          const kind = (response.data[0] as DataFrame).fields[1].values[
             index
-          ].toString(),
-        }))
+          ].toString();
+
+          let apiVersion = '';
+          const parts = (response.data[0] as DataFrame).fields[2].values[
+            index
+          ]
+            .toString()
+            .split('/');
+          if (
+            parts.length === 2 &&
+            ![
+              'admissionregistration.k8s.io',
+              'apiextensions.k8s.io',
+              'apiregistration.k8s.io',
+              'apps',
+              'authentication.k8s.io',
+              'authorization.k8s.io',
+              'autoscaling',
+              'autoscaling.k8s.io',
+              'batch',
+              'certificates.k8s.io',
+              'coordination.k8s.io',
+              'discovery.k8s.io',
+              'flowcontrol.apiserver.k8s.io',
+              'gateway.networking.k8s.io',
+              'metrics.k8s.io',
+              'networking.k8s.io',
+              'node.k8s.io',
+              'policy',
+              'rbac.authorization.k8s.io',
+              'resource.k8s.io',
+              'scheduling.k8s.io',
+              'snapshot.storage.k8s.io',
+              'storage.k8s.io',
+            ].includes(parts[0])
+          ) {
+            apiVersion = parts[0];
+          }
+
+          return {
+            value: _.toString(),
+            text: `${kind}${apiVersion ? ` (${apiVersion})` : ''}`,
+          };
+        })
         : [];
     }
 
