@@ -1,5 +1,18 @@
 # Changelog
 
+## [v0.4.0](https://github.com/ricoberger/grafana-kubernetes-plugin/tree/v0.4.0) (2025-11-30)
+
+[Full Changelog](https://github.com/ricoberger/grafana-kubernetes-plugin/compare/v0.3.1...v0.4.0)
+
+- Fix Variable Query Editor for Containers [\#65](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/65) ([ricoberger](https://github.com/ricoberger))
+- Improve Labels for Resources [\#64](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/64) ([ricoberger](https://github.com/ricoberger))
+- Add Streaming Support for Kubernetes Logs [\#63](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/63) ([ricoberger](https://github.com/ricoberger))
+- Add Previous Option for Kubernetes Logs Queries [\#61](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/61) ([ricoberger](https://github.com/ricoberger))
+- Add Tail Option for Kubernetes Logs Query [\#60](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/60) ([ricoberger](https://github.com/ricoberger))
+- Improve List Style of Datasources [\#59](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/59) ([ricoberger](https://github.com/ricoberger))
+- Use Frontend for Redirect in `kubectl-grafana` [\#58](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/58) ([ricoberger](https://github.com/ricoberger))
+- Add Sleep to `kubectl` Commands [\#57](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/57) ([ricoberger](https://github.com/ricoberger))
+
 ## [v0.3.1](https://github.com/ricoberger/grafana-kubernetes-plugin/tree/v0.3.1) (2025-11-23)
 
 [Full Changelog](https://github.com/ricoberger/grafana-kubernetes-plugin/compare/v0.3.0...v0.3.1)
