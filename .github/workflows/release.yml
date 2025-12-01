@@ -29,7 +29,54 @@ jobs:
         uses: grafana/plugin-actions/build-plugin@main
         with:
           go-version: '1.24'
-          node-versio: '22'
+          node-version: '22'
           attestation: true
           use_changelog_generator: true
           token: ${{ secrets.GITHUB_TOKEN }}
+
+  kubectl-grafana:
+    name: kubectl-grafana
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    needs: release
+    strategy:
+      matrix:
+        platform:
+          [
+            { os: 'darwin', arch: 'amd64', build: 'buildKubectl:darwin' },
+            { os: 'darwin', arch: 'arm64', build: 'buildKubectl:darwinARM64' },
+            { os: 'linux', arch: 'amd64', build: 'buildKubectl:linux' },
+            { os: 'linux', arch: 'arm64', build: 'buildKubectl:linuxARM64' },
+            { os: 'windows', arch: 'amd64', build: 'buildKubectl:windows' },
+          ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+          cache-dependency-path: go.sum
+
+      - name: Install Dependencies
+        run: |
+          go mod download
+
+      - name: Build
+        run: |
+          go tool mage -v ${{ matrix.platform.build }}
+
+          cd ./dist/kubectl-grafana
+          mv kubectl-grafana-* kubectl-grafana
+          tar -czf kubectl-grafana-${{ matrix.platform.os }}-${{ matrix.platform.arch }}.tar.gz kubectl-grafana
+
+      - name: Upload Artifact
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload ${{ github.ref_name }} ./dist/kubectl-grafana/kubectl-grafana-${{ matrix.platform.os }}-${{ matrix.platform.arch }}.tar.gz
