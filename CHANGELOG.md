@@ -1,5 +1,13 @@
 # Changelog
 
+## [v0.4.1](https://github.com/ricoberger/grafana-kubernetes-plugin/tree/v0.4.1) (2025-12-02)
+
+[Full Changelog](https://github.com/ricoberger/grafana-kubernetes-plugin/compare/v0.4.0...v0.4.1)
+
+- Update Go Version to 1.25.4 [\#71](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/71) ([ricoberger](https://github.com/ricoberger))
+- Update Release of `kubectl-grafana` [\#69](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/69) ([ricoberger](https://github.com/ricoberger))
+- chore: bump @grafana/create-plugin configuration to 6.4.2 [\#66](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/66) ([ricoberger](https://github.com/ricoberger))
+
 ## [v0.4.0](https://github.com/ricoberger/grafana-kubernetes-plugin/tree/v0.4.0) (2025-11-30)
 
 [Full Changelog](https://github.com/ricoberger/grafana-kubernetes-plugin/compare/v0.3.1...v0.4.0)
