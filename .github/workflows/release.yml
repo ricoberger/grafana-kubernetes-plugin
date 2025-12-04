@@ -26,7 +26,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Plugin
-        uses: grafana/plugin-actions/build-plugin@main
+        uses: grafana/plugin-actions/build-plugin@build-plugin/v1.0.2
         with:
           go-version: '1.25.4'
           node-version: '22'
