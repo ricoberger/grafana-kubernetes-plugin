@@ -5,20 +5,11 @@ on:
   schedule:
     - cron: '0 0 1 * *'
 
-# To use the default github token with the following elevated permissions make
-# sure to check:
-#
-# **Allow GitHub Actions to create and approve pull requests** in
-# https://github.com/ricoberger/grafana-kubernetes-plugin/settings/actions.
-#
-#
-# Alternatively create a fine-grained personal access token for your repository
-# with `contents: read and write` and `pull requests: read and write` and pass
-# it to the action.
-
-permissions:
-  contents: write
-  pull-requests: write
+# To use this workflow please create a fine-grained personal access token for
+# your repository with:
+# - `contents: read and write`
+# - `pull requests: read and write`
+# - `workflows: read and write`
 
 jobs:
   release:
@@ -27,4 +18,8 @@ jobs:
 
     steps:
       - name: Update Plugin
-        uses: grafana/plugin-actions/create-plugin-update@main
+        uses: grafana/plugin-actions/create-plugin-update@create-plugin-update/v2.0.1
+        with:
+          # Make sure to save the token in your repository secrets as
+          # `GH_GRAFANA_PAT_TOKEN`
+          token: ${{ secrets.GH_GRAFANA_PAT_TOKEN }}

@@ -27,4 +27,4 @@ jobs:
           persist-credentials: false
 
       - name: Compare Bundle Size
-        uses: grafana/plugin-actions/bundle-size@main
+        uses: grafana/plugin-actions/bundle-size@bundle-size/v1.1.0
