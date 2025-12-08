@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/ricoberger/grafana-kubernetes-plugin/cmd/kubectl-grafana/utils"
@@ -21,6 +22,9 @@ func (r *Cmd) Run() error {
 	// missing return an error.
 	if r.GrafanaUrl == "" {
 		return fmt.Errorf("grafana url is required")
+	}
+	if !strings.HasSuffix(r.GrafanaUrl, "/") {
+		r.GrafanaUrl = r.GrafanaUrl + "/"
 	}
 	if r.GrafanaDatasource == "" {
 		return fmt.Errorf("grafana datasource is required")
