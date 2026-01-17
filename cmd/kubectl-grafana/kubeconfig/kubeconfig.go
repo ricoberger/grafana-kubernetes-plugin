@@ -28,9 +28,7 @@ func (r *Cmd) Run() error {
 	if r.GrafanaUrl == "" {
 		return fmt.Errorf("grafana url is required")
 	}
-	if !strings.HasSuffix(r.GrafanaUrl, "/") {
-		r.GrafanaUrl = r.GrafanaUrl + "/"
-	}
+	r.GrafanaUrl = strings.TrimSuffix(r.GrafanaUrl, "/")
 	if r.GrafanaDatasource == "" {
 		return fmt.Errorf("grafana datasource is required")
 	}
@@ -42,7 +40,7 @@ func (r *Cmd) Run() error {
 	// Grafana instance. It is important to set the
 	// "redirect=http://localhost:11716" query parameters, so that Grafana
 	// redirects the Kubeconfig to our local HTTP server.
-	kubeconfigUrl := fmt.Sprintf("%sa/ricoberger-kubernetes-app/kubectl?type=kubeconfig&datasource=%s&redirect=%s", r.GrafanaUrl, r.GrafanaDatasource, url.QueryEscape("http://localhost:11716"))
+	kubeconfigUrl := fmt.Sprintf("%s/a/ricoberger-kubernetes-app/kubectl?type=kubeconfig&datasource=%s&redirect=%s", r.GrafanaUrl, r.GrafanaDatasource, url.QueryEscape("http://localhost:11716"))
 	kubeconfigFile := utils.ExpandEnv(r.Kubeconfig)
 	doneChannel := make(chan error)
 
