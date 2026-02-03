@@ -72,9 +72,9 @@ func (c *client) getResources(ctx context.Context) (map[string]Resource, error) 
 // data. The resources JSON data is expected to be in the format of a Kubernetes
 // Table object. If the wide parameter is true, all columns are included in the
 // data frame, otherwise only the columns with priority 0 are included.
-func createResourcesDataFrame(resourceId string, resources [][]byte, namespaced, wide bool) (*data.Frame, error) {
+func createResourcesDataFrame(resource Resource, resources [][]byte, namespaced, wide bool) (*data.Frame, error) {
 	table := metav1.Table{}
-	frame := data.NewFrame("Resources")
+	frame := data.NewFrame(resource.Kind)
 
 	// Go through all resources responses and fill the global "table" with the
 	// column definition and rows from the responses.
@@ -115,11 +115,11 @@ func createResourcesDataFrame(resourceId string, resources [][]byte, namespaced,
 
 		var values []string
 		for _, row := range table.Rows {
-			values = append(values, formatValue(resourceId, column.Name, row.Cells[columnIndex]))
+			values = append(values, formatValue(resource.ID, column.Name, row.Cells[columnIndex]))
 		}
 
 		frame.Fields = append(frame.Fields,
-			data.NewField(formatColumnName(resourceId, column.Name), nil, values),
+			data.NewField(formatColumnName(resource.ID, column.Name), nil, values),
 		)
 	}
 
