@@ -237,7 +237,7 @@ func (c *client) GetResources(ctx context.Context, user string, groups []string,
 		return nil, errors[0]
 	}
 
-	return createResourcesDataFrame(resourceId, resources, resource.Namespaced, wide)
+	return createResourcesDataFrame(resource, resources, resource.Namespaced, wide)
 }
 
 // GetContainer returns a list of all containers for the requested resource
