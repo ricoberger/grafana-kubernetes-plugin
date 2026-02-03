@@ -73,7 +73,10 @@ export function KubernetesResources({
         <InlineField
           label="Value"
           grow={true}
-          disabled={query.parameterName === ''}
+          disabled={
+            query.parameterName !== 'labelSelector' &&
+            query.parameterName !== 'fieldSelector'
+          }
         >
           <Input
             onChange={(event: ChangeEvent<HTMLInputElement>) => {
