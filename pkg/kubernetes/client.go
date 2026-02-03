@@ -195,6 +195,7 @@ func (c *client) GetResources(ctx context.Context, user string, groups []string,
 		namespace = ""
 	}
 	namespaces := strings.Split(namespace, ",")
+	parameterValues := strings.Split(parameterValue, "||")
 
 	var errors []error
 	errorsMutex := &sync.Mutex{}
@@ -203,29 +204,31 @@ func (c *client) GetResources(ctx context.Context, user string, groups []string,
 	resourcesMutex := &sync.Mutex{}
 
 	var resourcesWG sync.WaitGroup
-	resourcesWG.Add(len(namespaces))
+	resourcesWG.Add(len(namespaces) * len(parameterValues))
 
 	for _, namespace := range namespaces {
-		go func(namespace string) {
-			defer resourcesWG.Done()
-			c.logger.Debug("Getting resources", "name", resource.Name, "path", resource.Path, "namespace", namespace, "parameterName", parameterName, "parameterValue", parameterValue, "user", user)
+		for _, parameterValue := range parameterValues {
+			go func(namespace, parameterValue string) {
+				defer resourcesWG.Done()
+				c.logger.Debug("Getting resources", "name", resource.Name, "path", resource.Path, "namespace", namespace, "parameterName", parameterName, "parameterValue", parameterValue, "user", user)
 
-			result, err := c.clientset.CoreV1().RESTClient().Get().AbsPath(resource.Path).Namespace(namespace).Resource(resource.Name).Param(parameterName, parameterValue).SetHeader("Accept", "application/json;as=Table;v=v1;g=meta.k8s.io,application/json;as=Table;v=v1beta1;g=meta.k8s.io,application/json").SetHeader("Impersonate-User", user).SetHeader("Impersonate-Group", groups...).DoRaw(ctx)
-			if err != nil {
-				c.logger.Error("Failed to get resources", "error", err.Error())
-				span.RecordError(err)
-				span.SetStatus(codes.Error, err.Error())
+				result, err := c.clientset.CoreV1().RESTClient().Get().AbsPath(resource.Path).Namespace(namespace).Resource(resource.Name).Param(parameterName, parameterValue).SetHeader("Accept", "application/json;as=Table;v=v1;g=meta.k8s.io,application/json;as=Table;v=v1beta1;g=meta.k8s.io,application/json").SetHeader("Impersonate-User", user).SetHeader("Impersonate-Group", groups...).DoRaw(ctx)
+				if err != nil {
+					c.logger.Error("Failed to get resources", "error", err.Error())
+					span.RecordError(err)
+					span.SetStatus(codes.Error, err.Error())
 
-				errorsMutex.Lock()
-				errors = append(errors, err)
-				errorsMutex.Unlock()
-				return
-			}
+					errorsMutex.Lock()
+					errors = append(errors, err)
+					errorsMutex.Unlock()
+					return
+				}
 
-			resourcesMutex.Lock()
-			resources = append(resources, result)
-			resourcesMutex.Unlock()
-		}(namespace)
+				resourcesMutex.Lock()
+				resources = append(resources, result)
+				resourcesMutex.Unlock()
+			}(namespace, parameterValue)
+		}
 	}
 
 	resourcesWG.Wait()
