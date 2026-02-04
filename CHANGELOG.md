@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.4.3](https://github.com/ricoberger/grafana-kubernetes-plugin/tree/v0.4.3) (2026-02-04)
+
+[Full Changelog](https://github.com/ricoberger/grafana-kubernetes-plugin/compare/v0.4.2...v0.4.3)
+
+- Fix Type in JSONPath Filter [\#90](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/90) ([ricoberger](https://github.com/ricoberger))
+- Fix Duplicated Kubernetes Resources in Data Frame [\#89](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/89) ([ricoberger](https://github.com/ricoberger))
+
 ## [v0.4.2](https://github.com/ricoberger/grafana-kubernetes-plugin/tree/v0.4.2) (2026-02-04)
 
 [Full Changelog](https://github.com/ricoberger/grafana-kubernetes-plugin/compare/v0.4.1...v0.4.2)
