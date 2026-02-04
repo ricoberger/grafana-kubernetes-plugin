@@ -119,6 +119,9 @@ func createResourcesDataFrame(logger log.Logger, resource Resource, resources []
 
 	// If the resource is a namespaced resource, we include the namespace as
 	// first field in the data frame.
+	//
+	// We also create a unique slice of rows, to avoid duplicate entries in the
+	// data frame.
 	if namespaced {
 		var values []string
 		for _, row := range table.Rows {
@@ -129,9 +132,13 @@ func createResourcesDataFrame(logger log.Logger, resource Resource, resources []
 			values = append(values, metadata.Namespace)
 		}
 
+		table.Rows, values = unique(table.Rows, values)
+
 		frame.Fields = append(frame.Fields,
 			data.NewField("Namespace", nil, values),
 		)
+	} else {
+		table.Rows, _ = unique(table.Rows, make([]string, len(table.Rows)))
 	}
 
 	// Loop through all columns and rows to create the data frame. Depending on
@@ -209,4 +216,25 @@ func executeJSONPath(logger log.Logger, tmpl string, input any) (string, bool, e
 	}
 
 	return resultBuf.String(), true, nil
+}
+
+// Since we support or conditions in the label selector, it might be possible
+// that we fetched the same resource multiple times. To avoid duplicate entries
+// in the data frame, we need to filter the rows to be unique based on the first
+// column (which is always the name of the resource).
+func unique(rows []metav1.TableRow, namespaces []string) ([]metav1.TableRow, []string) {
+	var uniqueRows []metav1.TableRow
+	var uniqueNamespaces []string
+	keys := make(map[string]struct{})
+
+	for index, row := range rows {
+		key := namespaces[index] + row.Cells[0].(string)
+		if _, exists := keys[key]; !exists {
+			keys[key] = struct{}{}
+			uniqueRows = append(uniqueRows, row)
+			uniqueNamespaces = append(uniqueNamespaces, namespaces[index])
+		}
+	}
+
+	return uniqueRows, uniqueNamespaces
 }
