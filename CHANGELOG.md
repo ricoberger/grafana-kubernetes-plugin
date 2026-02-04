@@ -1,5 +1,18 @@
 # Changelog
 
+## [v0.4.2](https://github.com/ricoberger/grafana-kubernetes-plugin/tree/v0.4.2) (2026-02-04)
+
+[Full Changelog](https://github.com/ricoberger/grafana-kubernetes-plugin/compare/v0.4.1...v0.4.2)
+
+- Add Basic JSONPath Support for Filtering Resources [\#88](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/88) ([ricoberger](https://github.com/ricoberger))
+- Improve Naming of Data Frames [\#87](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/87) ([ricoberger](https://github.com/ricoberger))
+- Add `||` Label Selector [\#86](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/86) ([ricoberger](https://github.com/ricoberger))
+- Fix Condition to Disable Selector Value Input [\#85](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/85) ([ricoberger](https://github.com/ricoberger))
+- chore: bump @grafana/create-plugin configuration to 6.8.3 [\#82](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/82) ([ricoberger](https://github.com/ricoberger))
+- chore: bump @grafana/create-plugin configuration to 6.6.0 [\#76](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/76) ([ricoberger](https://github.com/ricoberger))
+- handle missing trailing slash in grafana url [\#74](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/74) ([jkraml-staffbase](https://github.com/jkraml-staffbase))
+- Update GitHub Actions [\#73](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/73) ([ricoberger](https://github.com/ricoberger))
+
 ## [v0.4.1](https://github.com/ricoberger/grafana-kubernetes-plugin/tree/v0.4.1) (2025-12-02)
 
 [Full Changelog](https://github.com/ricoberger/grafana-kubernetes-plugin/compare/v0.4.0...v0.4.1)
