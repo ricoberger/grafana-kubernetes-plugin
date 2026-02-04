@@ -1,17 +1,20 @@
 package kubernetes
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"slices"
 	"strings"
 
+	"github.com/grafana/grafana-plugin-sdk-go/backend/log"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/tracing"
 	"github.com/grafana/grafana-plugin-sdk-go/data"
 	"go.opentelemetry.io/otel/codes"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/util/jsonpath"
 )
 
 func (c *client) getResources(ctx context.Context) (map[string]Resource, error) {
@@ -72,7 +75,7 @@ func (c *client) getResources(ctx context.Context) (map[string]Resource, error) 
 // data. The resources JSON data is expected to be in the format of a Kubernetes
 // Table object. If the wide parameter is true, all columns are included in the
 // data frame, otherwise only the columns with priority 0 are included.
-func createResourcesDataFrame(resource Resource, resources [][]byte, namespaced, wide bool) (*data.Frame, error) {
+func createResourcesDataFrame(logger log.Logger, resource Resource, resources [][]byte, namespaced, wide bool, jsonPath string) (*data.Frame, error) {
 	table := metav1.Table{}
 	frame := data.NewFrame(resource.Kind)
 
@@ -86,7 +89,32 @@ func createResourcesDataFrame(resource Resource, resources [][]byte, namespaced,
 		}
 
 		table.ColumnDefinitions = tmpTable.ColumnDefinitions
-		table.Rows = append(table.Rows, tmpTable.Rows...)
+
+		for _, row := range tmpTable.Rows {
+			// If a JSONPath filter is provided, we need to evaluate it against
+			// all the rows and only include the ones that match.
+			// NOTE: The object in the row only contains partial metadata, so we
+			// can only filter on the metadata for now.
+			if jsonPath != "" {
+				var objects []map[string]any
+				var object map[string]any
+				if err := json.Unmarshal(row.Object.Raw, &object); err != nil {
+					return nil, err
+				}
+				objects = append(objects, object)
+
+				_, found, err := executeJSONPath(logger, jsonPath, objects)
+				if err != nil {
+					return nil, err
+				}
+
+				if found {
+					table.Rows = append(table.Rows, row)
+				}
+			} else {
+				table.Rows = append(table.Rows, row)
+			}
+		}
 	}
 
 	// If the resource is a namespaced resource, we include the namespace as
@@ -161,4 +189,24 @@ func formatValue(resourceId, name string, value any) string {
 	}
 
 	return fmt.Sprintf("%v", value)
+}
+
+func executeJSONPath(logger log.Logger, tmpl string, input any) (string, bool, error) {
+	jsonPath := jsonpath.New("")
+
+	if err := jsonPath.Parse(fmt.Sprintf("{%s}", tmpl)); err != nil {
+		return "", false, fmt.Errorf("error parsing jsonpath: %w", err)
+	}
+
+	resultBuf := &bytes.Buffer{}
+	if err := jsonPath.Execute(resultBuf, input); err != nil {
+		logger.Debug("error executing jsonpath", "error", err.Error())
+		return "", false, nil
+	}
+
+	if strings.TrimSpace(resultBuf.String()) == "" {
+		return "", false, nil
+	}
+
+	return resultBuf.String(), true, nil
 }
