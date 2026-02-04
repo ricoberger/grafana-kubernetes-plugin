@@ -96,8 +96,8 @@ func createResourcesDataFrame(logger log.Logger, resource Resource, resources []
 			// NOTE: The object in the row only contains partial metadata, so we
 			// can only filter on the metadata for now.
 			if jsonPath != "" {
-				var objects []map[string]any
-				var object map[string]any
+				var objects []metav1.PartialObjectMetadata
+				var object metav1.PartialObjectMetadata
 				if err := json.Unmarshal(row.Object.Raw, &object); err != nil {
 					return nil, err
 				}
