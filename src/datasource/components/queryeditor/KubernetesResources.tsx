@@ -58,6 +58,7 @@ export function KubernetesResources({
               { label: 'None', value: '' },
               { label: 'Label', value: 'labelSelector' },
               { label: 'Field', value: 'fieldSelector' },
+              { label: 'JSONPath', value: 'jsonPath' },
             ]}
             value={query.parameterName || ''}
             onChange={(value: string) => {
@@ -75,7 +76,8 @@ export function KubernetesResources({
           grow={true}
           disabled={
             query.parameterName !== 'labelSelector' &&
-            query.parameterName !== 'fieldSelector'
+            query.parameterName !== 'fieldSelector' &&
+            query.parameterName !== 'jsonPath'
           }
         >
           <Input

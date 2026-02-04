@@ -23,7 +23,7 @@ services:
 
   jaeger:
     container_name: grafana-jaeger
-    image: cr.jaegertracing.io/jaegertracing/jaeger:2.10.0
+    image: jaegertracing/jaeger:2.14.0
 
   k3s:
     container_name: grafana-k3s

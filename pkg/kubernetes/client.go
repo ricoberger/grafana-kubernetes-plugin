@@ -195,6 +195,16 @@ func (c *client) GetResources(ctx context.Context, user string, groups []string,
 		namespace = ""
 	}
 	namespaces := strings.Split(namespace, ",")
+
+	// Check if the parameter name is "jsonPath". If this is the case, we remove
+	// the parameter name and value to get all resources without filtering,
+	// because we will apply the JSONPath later when creating the data frame.
+	var jsonPath string
+	if parameterName == "jsonPath" {
+		jsonPath = parameterValue
+		parameterName = ""
+		parameterValue = ""
+	}
 	parameterValues := strings.Split(parameterValue, "||")
 
 	var errors []error
@@ -237,7 +247,7 @@ func (c *client) GetResources(ctx context.Context, user string, groups []string,
 		return nil, errors[0]
 	}
 
-	return createResourcesDataFrame(resource, resources, resource.Namespaced, wide)
+	return createResourcesDataFrame(c.logger, resource, resources, resource.Namespaced, wide, jsonPath)
 }
 
 // GetContainer returns a list of all containers for the requested resource
