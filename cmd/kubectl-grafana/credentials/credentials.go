@@ -13,8 +13,9 @@ import (
 )
 
 type Cmd struct {
-	GrafanaUrl        string `default:"" help:"Url of the Grafana instance, e.g. \"https://play.grafana.org/\"."`
-	GrafanaDatasource string `default:"kubernetes" help:"Uid of the Kubernetes datasource."`
+	GrafanaUrl        string        `default:"" help:"Url of the Grafana instance, e.g. \"https://play.grafana.org/\"."`
+	GrafanaDatasource string        `default:"kubernetes" help:"Uid of the Kubernetes datasource."`
+	Timeout           time.Duration `default:"30s" help:"Timeout for waiting for the credentials."`
 }
 
 func (r *Cmd) Run() error {
@@ -89,17 +90,21 @@ func (r *Cmd) Run() error {
 	// redirects the user to our local HTTP server.
 	utils.OpenUrl(credentialsUrl)
 
-	err = <-doneChannel
-	if err != nil {
-		return err
-	}
-	time.Sleep(1 * time.Second)
+	select {
+	case err := <-doneChannel:
+		if err != nil {
+			return err
+		}
+		time.Sleep(1 * time.Second)
 
-	// Store the new credentials in the cache and print them to stdout.
-	if err := cache.Set(credentials); err != nil {
-		return err
-	}
+		// Store the new credentials in the cache and print them to stdout.
+		if err := cache.Set(credentials); err != nil {
+			return err
+		}
 
-	fmt.Fprintln(os.Stdout, credentials)
-	return nil
+		fmt.Fprintln(os.Stdout, credentials)
+		return nil
+	case <-time.After(r.Timeout):
+		return fmt.Errorf("timeout while waiting for credentials")
+	}
 }
