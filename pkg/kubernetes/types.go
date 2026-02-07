@@ -19,6 +19,11 @@ type Resource struct {
 	Namespaced bool   `json:"namespaced"`
 }
 
+type NamespacedName struct {
+	Namespace string `json:"namespace"`
+	Name      string `json:"name"`
+}
+
 // Stream represents a logs stream for a single pod. It contains the "Pod" name
 // and the actual "Stream".
 type Stream struct {
