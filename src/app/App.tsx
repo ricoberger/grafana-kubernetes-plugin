@@ -10,6 +10,7 @@ import { KubectlPage } from '../pages/kubectl/KubectlPage';
 import { ResourcesPage } from '../pages/resources/ResourcesPage';
 import { HelmPage } from '../pages/helm/HelmPage';
 import { FluxPage } from '../pages/flux/FluxPage';
+import { CertManagerPage } from '../pages/certmanager/CertManagerPage';
 
 /**
  * NOTE: Without this the plugin is not loaded and throws the following error:
@@ -26,6 +27,7 @@ function getSceneApp() {
       ResourcesPage,
       HelmPage,
       FluxPage,
+      CertManagerPage,
       KubeconfigPage,
       KubectlPage,
     ],

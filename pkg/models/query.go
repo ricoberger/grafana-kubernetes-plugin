@@ -11,6 +11,7 @@ const (
 	QueryTypeHelmReleases          = "helm-releases"
 	QueryTypeHelmReleaseHistory    = "helm-release-history"
 	QueryTypeFluxResources         = "flux-resources"
+	QueryTypeCertManagerResources  = "certmanager-resources"
 )
 
 type QueryModelKubernetesResources struct {

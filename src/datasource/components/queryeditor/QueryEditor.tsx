@@ -15,6 +15,7 @@ import { KubernetesResources } from './KubernetesResources';
 import { HelmReleases } from './HelmReleases';
 import { HelmReleaseHistory } from './HelmReleaseHistory';
 import { FluxResources } from './FluxResources';
+import { CertManagerResources } from './CertManagerResources';
 
 type Props = QueryEditorProps<DataSource, Query, DataSourceOptions>;
 
@@ -36,6 +37,10 @@ export function QueryEditor({
               { label: 'Helm Releases', value: 'helm-releases' },
               { label: 'Helm Release History', value: 'helm-release-history' },
               { label: 'Flux: Resources', value: 'flux-resources' },
+              {
+                label: 'cert-manager: Resources',
+                value: 'certmanager-resources',
+              },
             ]}
             onChange={(option: ComboboxOption<QueryType>) => {
               onChange({
@@ -87,6 +92,15 @@ export function QueryEditor({
 
       {query.queryType === 'flux-resources' && (
         <FluxResources
+          datasource={datasource}
+          query={query}
+          onChange={onChange}
+          onRunQuery={onRunQuery}
+        />
+      )}
+
+      {query.queryType === 'certmanager-resources' && (
+        <CertManagerResources
           datasource={datasource}
           query={query}
           onChange={onChange}

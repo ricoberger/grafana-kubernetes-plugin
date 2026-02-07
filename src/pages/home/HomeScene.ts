@@ -5,6 +5,7 @@ import { ROUTES } from '../../constants';
 import resourcesImg from '../../img/logo.svg';
 import helmImg from '../../img/helm.svg';
 import fluxImg from '../../img/flux.svg';
+import certmanagerImg from '../../img/cert-manager.svg';
 
 export function HomeScene() {
   const integrations = new Integrations({
@@ -29,6 +30,13 @@ export function HomeScene() {
         image: fluxImg,
         description: 'Manage your Flux resources.',
         link: 'https://fluxcd.io',
+      },
+      {
+        route: ROUTES.CertManager,
+        title: 'cert-manager',
+        image: certmanagerImg,
+        description: 'Manage your cert-manager resources.',
+        link: 'https://cert-manager.io',
       },
       {
         route: ROUTES.Kubeconfig,
