@@ -11,7 +11,7 @@ datasources:
     editable: true
     jsonData:
       clusterProvider: path
-      clusterPath: /kubeconfig-grafana.yaml
+      clusterPath: /kubeconfig.yaml
       clusterContext: default
       grafanaUsername: admin
       impersonateUser: false
@@ -30,19 +30,9 @@ datasources:
     secureJsonData:
       clusterKubeconfig:
       grafanaPassword: admin
-  - name: Jaeger
-    type: jaeger
-    uid: jaeger
-    url: http://jaeger:16686
-    # To use a Jaeger instance running on the host machine, uncomment the line
-    # below and comment out the line above.
-    # url: http://host.docker.internal:16686
+
+  - name: Prometheus
+    type: prometheus
+    uid: prometheus
+    url: http://host.docker.internal:8481/select/0/prometheus
     access: proxy
-  # To use a Prometheus instance running on the host machine, uncomment the
-  # lines bewlow. This can be used to test the metrics integration of the
-  # Kubernetes datasource.
-  # - name: Prometheus
-  #   type: prometheus
-  #   uid: prometheus
-  #   url: http://host.docker.internal:8481/select/0/prometheus
-  #   access: proxy
