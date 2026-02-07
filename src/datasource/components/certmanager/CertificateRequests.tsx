@@ -28,7 +28,7 @@ export function CertificateRequests({ datasource, namespace, name }: Props) {
         resourceId: 'certificaterequest.cert-manager.io',
         namespace: namespace,
         parameterName: 'jsonPath',
-        parameterValue: `[?(@.metadata.annotations.cert-manager\\.io/certificate-name=='${name}')]`,
+        parameterValue: `{.items[?(@.metadata.annotations.cert-manager\\.io/certificate-name=='${name}')]}`,
       },
     ],
   });

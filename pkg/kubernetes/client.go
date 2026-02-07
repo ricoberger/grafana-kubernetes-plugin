@@ -34,6 +34,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/transport"
+	"k8s.io/client-go/util/jsonpath"
 )
 
 type Client interface {
@@ -211,6 +212,7 @@ func (c *client) GetResources(ctx context.Context, user string, groups []string,
 	errorsMutex := &sync.Mutex{}
 
 	var resources [][]byte
+	var resourcesJSONPath []NamespacedName
 	resourcesMutex := &sync.Mutex{}
 
 	var resourcesWG sync.WaitGroup
@@ -234,9 +236,31 @@ func (c *client) GetResources(ctx context.Context, user string, groups []string,
 					return
 				}
 
-				resourcesMutex.Lock()
-				resources = append(resources, result)
-				resourcesMutex.Unlock()
+				// If the user provided a JSONPath to filter the resources, we
+				// also have to get all resources by the provided JSONPath, to
+				// filter the resources later when creating the data frame.
+				if jsonPath != "" {
+					resultJSONPath, err := c.getResourcesByJSONPath(ctx, user, groups, resource, namespace, jsonPath)
+					if err != nil {
+						c.logger.Error("Failed to get JSONPath resources", "error", err.Error())
+						span.RecordError(err)
+						span.SetStatus(codes.Error, err.Error())
+
+						errorsMutex.Lock()
+						errors = append(errors, err)
+						errorsMutex.Unlock()
+						return
+					}
+
+					resourcesMutex.Lock()
+					resources = append(resources, result)
+					resourcesJSONPath = append(resourcesJSONPath, resultJSONPath...)
+					resourcesMutex.Unlock()
+				} else {
+					resourcesMutex.Lock()
+					resources = append(resources, result)
+					resourcesMutex.Unlock()
+				}
 			}(namespace, parameterValue)
 		}
 	}
@@ -247,7 +271,60 @@ func (c *client) GetResources(ctx context.Context, user string, groups []string,
 		return nil, errors[0]
 	}
 
-	return createResourcesDataFrame(c.logger, resource, resources, resource.Namespaced, wide, jsonPath)
+	return createResourcesDataFrame(resource, resources, resourcesJSONPath, jsonPath != "", wide)
+}
+
+// getResourcesByJSONPath returns a list of resources as namespaced names
+// filtered by the provided JSONPath.
+//
+// NOTE: This is required for the GetResources method, because we can not
+// directly filter on the resources, which are retrieved in this method, because
+// the do not contain the complete manifest.
+func (c *client) getResourcesByJSONPath(ctx context.Context, user string, groups []string, resource Resource, namespace, jsonPath string) ([]NamespacedName, error) {
+	result, err := c.clientset.CoreV1().RESTClient().Get().AbsPath(resource.Path).Namespace(namespace).Resource(resource.Name).SetHeader("Impersonate-User", user).SetHeader("Impersonate-Group", groups...).DoRaw(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var resultMap map[string]any
+	if err := json.Unmarshal(result, &resultMap); err != nil {
+		return nil, err
+	}
+
+	jp := jsonpath.New("").AllowMissingKeys(true)
+
+	if err := jp.Parse(jsonPath); err != nil {
+		return nil, fmt.Errorf("error parsing JSONPath: %w", err)
+	}
+
+	results, err := jp.FindResults(resultMap)
+	if err != nil {
+		return nil, fmt.Errorf("error finding results for jsonpath: %w", err)
+	}
+
+	var found []NamespacedName
+	for _, result := range results {
+		for _, r := range result {
+			if metadata, ok := r.Interface().(map[string]any)["metadata"].(map[string]any); ok {
+				var namespace string
+				var name string
+
+				if ns, ok := metadata["namespace"].(string); ok {
+					namespace = ns
+				}
+				if n, ok := metadata["name"].(string); ok {
+					name = n
+				}
+
+				found = append(found, NamespacedName{
+					Namespace: namespace,
+					Name:      name,
+				})
+			}
+		}
+	}
+
+	return found, nil
 }
 
 // GetContainer returns a list of all containers for the requested resource

@@ -26,8 +26,10 @@ Helm and Flux.
 - View Kubernetes resources like Pods, DaemonSets, Deployments, StatefulSets,
   etc.
 - Includes support for Custom Resource Definitions.
-- Filter and search for resources, by Namespace, label selectors and field
-  selectors.
+- Filter and search for resources, by Namespace, label selectors, field
+  selectors or JSONPath (for example the following JSONPath filter can be used
+  to get all Jobs for a CronJob with the name `mycronjob`:
+  `{.items[?(@.metadata.ownerReferences[0].name=='mycronjob')]}`).
 - Get a fast overview of the status of resources, including detailed information
   and events.
 - Modify resources, by adjusting the YAML manifest files or using the built-in
