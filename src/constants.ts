@@ -7,6 +7,7 @@ export enum ROUTES {
   Resources = 'resources',
   Helm = 'helm',
   Flux = 'flux',
+  CertManager = 'cert-manager',
   Kubeconfig = 'kubeconfig',
   Kubectl = 'kubectl',
 }

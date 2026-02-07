@@ -49,6 +49,8 @@ Helm and Flux.
   - Helm: View Helm releases including the history, rollback and uninstall Helm
     releases.
   - Flux: View Flux resources, reconcile, suspend and resume Flux resources.
+  - cert-manager: View cert-manager resources, renew certificates and approve or
+    deny certificate requests.
 
 ## Installation
 

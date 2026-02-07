@@ -118,6 +118,7 @@ func NewDatasource(ctx context.Context, pCtx backend.DataSourceInstanceSettings)
 	queryTypeMux.HandleFunc(models.QueryTypeHelmReleases, ds.handleHelmReleasesQueries)
 	queryTypeMux.HandleFunc(models.QueryTypeHelmReleaseHistory, ds.handleHelmReleaseHistoryQueries)
 	queryTypeMux.HandleFunc(models.QueryTypeFluxResources, ds.handleKubernetesResourcesQueries)
+	queryTypeMux.HandleFunc(models.QueryTypeCertManagerResources, ds.handleKubernetesResourcesQueries)
 	ds.queryHandler = queryTypeMux
 
 	mux := http.NewServeMux()

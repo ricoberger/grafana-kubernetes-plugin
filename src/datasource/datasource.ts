@@ -26,6 +26,7 @@ import {
 } from './transformations/kubernetes';
 import { helmTransformation } from './transformations/helm';
 import { fluxResourcesTransformation } from './transformations/flux';
+import { certManagerResourcesTransformation } from './transformations/certmanager';
 import datasourcePluginJson from './plugin.json';
 
 export class DataSource extends DataSourceWithBackend<
@@ -167,6 +168,14 @@ export class DataSource extends DataSourceWithBackend<
               query?.queryType === 'flux-resources'
             ) {
               return fluxResourcesTransformation(
+                this.applyTemplateVariables(query, request.scopedVars),
+                frame,
+              );
+            } else if (
+              request.app !== CoreApp.Explore &&
+              query?.queryType === 'certmanager-resources'
+            ) {
+              return certManagerResourcesTransformation(
                 this.applyTemplateVariables(query, request.scopedVars),
                 frame,
               );
@@ -368,6 +377,17 @@ export class DataSource extends DataSourceWithBackend<
      */
     if (
       query.queryType === 'flux-resources' &&
+      (!query.resourceId || !query.namespace)
+    ) {
+      return false;
+    }
+
+    /**
+     * If the query type is "certmanager-resources" need a resource and
+     * namespace to run the query.
+     */
+    if (
+      query.queryType === 'certmanager-resources' &&
       (!query.resourceId || !query.namespace)
     ) {
       return false;
