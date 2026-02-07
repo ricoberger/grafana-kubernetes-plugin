@@ -8,6 +8,7 @@ import { Metadata } from '../shared/details/Metadata';
 import { Certificate } from './overview/Certificate';
 import { CertificateRequest } from './overview/CertificateRequest';
 import { Order } from './overview/Order';
+import { Challenge } from './overview/Challenge';
 
 interface Props {
   datasource?: string;
@@ -49,6 +50,9 @@ export function Overview({
         )}
         {manifest && resourceId === 'order.acme.cert-manager.io' && (
           <Order manifest={manifest} />
+        )}
+        {manifest && resourceId === 'challenge.acme.cert-manager.io' && (
+          <Challenge manifest={manifest} />
         )}
       </DefinitionLists>
     </ScrollContainer>

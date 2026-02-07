@@ -11,6 +11,7 @@ import { Events } from '../shared/details/Events';
 import { Overview } from './Overview';
 import { AI } from './AI';
 import { CertificateRequests } from './CertificateRequests';
+import { IssuerRefs } from './IssuerRefs';
 
 initPluginTranslations('ricoberger-kubernetes-app');
 
@@ -93,6 +94,43 @@ export function Details({
                 }}
               />
             )}
+            {(resourceId === 'clusterissuer.cert-manager.io' ||
+              resourceId === 'issuer.cert-manager.io') && (
+                <>
+                  <Tab
+                    label="Certificates"
+                    active={activeTab === 'issuerref-certificates'}
+                    onChangeTab={(ev) => {
+                      ev?.preventDefault();
+                      setActiveTab('issuerref-certificates');
+                    }}
+                  />
+                  <Tab
+                    label="CertificateRequests"
+                    active={activeTab === 'issuerref-certificaterequests'}
+                    onChangeTab={(ev) => {
+                      ev?.preventDefault();
+                      setActiveTab('issuerref-certificaterequests');
+                    }}
+                  />
+                  <Tab
+                    label="Orders"
+                    active={activeTab === 'issuerref-orders'}
+                    onChangeTab={(ev) => {
+                      ev?.preventDefault();
+                      setActiveTab('issuerref-orders');
+                    }}
+                  />
+                  <Tab
+                    label="Challenges"
+                    active={activeTab === 'issuerref-challenges'}
+                    onChangeTab={(ev) => {
+                      ev?.preventDefault();
+                      setActiveTab('issuerref-challenges');
+                    }}
+                  />
+                </>
+              )}
             {ai.value && (
               <Tab
                 label="AI"
@@ -136,6 +174,42 @@ export function Details({
               datasource={datasource}
               namespace={namespace}
               name={name}
+            />
+          )}
+          {activeTab === 'issuerref-certificates' && (
+            <IssuerRefs
+              datasource={datasource}
+              resourceId="certificate.cert-manager.io"
+              namespace={namespace}
+              name={name}
+              title="Certificates"
+            />
+          )}
+          {activeTab === 'issuerref-certificaterequests' && (
+            <IssuerRefs
+              datasource={datasource}
+              resourceId="certificaterequest.cert-manager.io"
+              namespace={namespace}
+              name={name}
+              title="CertificateRequests"
+            />
+          )}
+          {activeTab === 'issuerref-orders' && (
+            <IssuerRefs
+              datasource={datasource}
+              resourceId="order.acme.cert-manager.io"
+              namespace={namespace}
+              name={name}
+              title="Orders"
+            />
+          )}
+          {activeTab === 'issuerref-challenges' && (
+            <IssuerRefs
+              datasource={datasource}
+              resourceId="challenge.acme.cert-manager.io"
+              namespace={namespace}
+              name={name}
+              title="Challenges"
             />
           )}
 
