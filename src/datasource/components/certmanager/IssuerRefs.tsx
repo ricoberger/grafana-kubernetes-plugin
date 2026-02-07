@@ -11,11 +11,19 @@ import datasourcePluginJson from '../../../datasource/plugin.json';
 
 interface Props {
   datasource?: string;
+  resourceId: string;
   namespace?: string;
   name?: string;
+  title: string;
 }
 
-export function CertificateRequests({ datasource, namespace, name }: Props) {
+export function IssuerRefs({
+  datasource,
+  resourceId,
+  namespace,
+  name,
+  title,
+}: Props) {
   const queryRunner = new SceneQueryRunner({
     datasource: {
       type: datasourcePluginJson.id,
@@ -25,10 +33,10 @@ export function CertificateRequests({ datasource, namespace, name }: Props) {
       {
         refId: 'A',
         queryType: 'kubernetes-resources',
-        resourceId: 'certificaterequest.cert-manager.io',
-        namespace: namespace,
+        resourceId: resourceId,
+        namespace: namespace || '*',
         parameterName: 'jsonPath',
-        parameterValue: `{.items[?(@.metadata.annotations.cert-manager\\.io/certificate-name=='${name}')]}`,
+        parameterValue: `{.items[?(@.spec.issuerRef.name=='${name}')]}`,
       },
     ],
   });
@@ -38,7 +46,7 @@ export function CertificateRequests({ datasource, namespace, name }: Props) {
     body: new SceneFlexLayout({
       children: [
         new SceneFlexItem({
-          body: PanelBuilders.table().setTitle('CertificateRequests').build(),
+          body: PanelBuilders.table().setTitle(title).build(),
         }),
       ],
     }),
