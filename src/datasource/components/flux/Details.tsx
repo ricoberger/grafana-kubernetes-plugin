@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Alert, Drawer, LoadingPlaceholder, Tab, TabsBar } from '@grafana/ui';
 import { initPluginTranslations } from '@grafana/i18n';
 import { useAsync } from 'react-use';
+import { llm } from '@grafana/llm';
 
 import { getResourceManifest } from '../../../utils/utils.resource';
 import { KubernetesManifest } from '../../types/kubernetes';
@@ -9,7 +10,6 @@ import { Yaml } from '../shared/details/Yaml';
 import { Events } from '../shared/details/Events';
 import { Overview } from './Overview';
 import { AI } from './AI';
-import { llm } from '@grafana/llm';
 
 initPluginTranslations('ricoberger-kubernetes-app');
 
@@ -110,6 +110,7 @@ export function Details({
           {activeTab === 'overview' && (
             <Overview
               datasource={datasource}
+              resourceId={resourceId}
               namespace={namespace}
               name={name}
               manifest={state.value}

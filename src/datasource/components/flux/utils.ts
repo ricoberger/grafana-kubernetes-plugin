@@ -1,0 +1,15 @@
+export const fluxKindToResourceId: Record<string, string> = {
+  Kustomization: 'kustomization.kustomize.toolkit.fluxcd.io',
+  GitRepository: 'gitrepository.source.toolkit.fluxcd.io',
+  HelmRelease: 'helmrelease.helm.toolkit.fluxcd.io',
+  HelmRepository: 'helmrepository.source.toolkit.fluxcd.io',
+  Bucket: 'bucket.source.toolkit.fluxcd.io',
+  HelmChart: 'helmchart.source.toolkit.fluxcd.io',
+  OCIRepository: 'ocirepository.source.toolkit.fluxcd.io',
+  ImagePolicy: 'imagepolicy.image.toolkit.fluxcd.io',
+  ImageRepository: 'imagerepository.imagerepositories.image.toolkit.fluxcd.io',
+  ImageUpdateAutomation: 'imageupdateautomation.image.toolkit.fluxcd.io',
+  Alert: 'alert.notification.toolkit.fluxcd.io',
+  Provider: 'provider.notification.toolkit.fluxcd.io',
+  Receiver: 'receiver.notification.toolkit.fluxcd.io',
+};
