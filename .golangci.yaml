@@ -24,6 +24,17 @@ linters:
       - third_party$
       - builtin$
       - examples$
+  settings:
+    gosec:
+      excludes:
+        # TODO: The following lints cause false-positives in many repositories,
+        # should be fixed with the next release.
+        #
+        # See: https://github.com/securego/gosec/issues/1500
+        - G703
+        - G704
+        - G705
+        - G706
 formatters:
   enable:
     - gofmt
