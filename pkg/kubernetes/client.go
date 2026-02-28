@@ -319,21 +319,23 @@ func (c *client) getResourcesByJSONPath(ctx context.Context, user string, groups
 	var found []NamespacedName
 	for _, result := range results {
 		for _, r := range result {
-			if metadata, ok := r.Interface().(map[string]any)["metadata"].(map[string]any); ok {
-				var namespace string
-				var name string
+			if item, ok := r.Interface().(map[string]any); ok {
+				if metadata, ok := item["metadata"].(map[string]any); ok {
+					var namespace string
+					var name string
 
-				if ns, ok := metadata["namespace"].(string); ok {
-					namespace = ns
-				}
-				if n, ok := metadata["name"].(string); ok {
-					name = n
-				}
+					if ns, ok := metadata["namespace"].(string); ok {
+						namespace = ns
+					}
+					if n, ok := metadata["name"].(string); ok {
+						name = n
+					}
 
-				found = append(found, NamespacedName{
-					Namespace: namespace,
-					Name:      name,
-				})
+					found = append(found, NamespacedName{
+						Namespace: namespace,
+						Name:      name,
+					})
+				}
 			}
 		}
 	}
