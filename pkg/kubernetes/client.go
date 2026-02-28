@@ -197,12 +197,26 @@ func (c *client) GetResources(ctx context.Context, user string, groups []string,
 	}
 	namespaces := strings.Split(namespace, ",")
 
-	// Check if the parameter name is "jsonPath". If this is the case, we remove
-	// the parameter name and value to get all resources without filtering,
-	// because we will apply the JSONPath later when creating the data frame.
+	// Check if the parameter name is "jsonPath" or "regex". If this is the
+	// case, we remove the parameter name and value to get all resources without
+	// filtering, because we will apply the JSONPath or regular expression later
+	// when creating the data frame.
 	var jsonPath string
-	if parameterName == "jsonPath" {
+	var regex *regexp.Regexp
+	switch parameterName {
+	case "jsonPath":
 		jsonPath = parameterValue
+		parameterName = ""
+		parameterValue = ""
+	case "regex":
+		var err error
+		regex, err = regexp.Compile(parameterValue)
+		if err != nil {
+			c.logger.Error("Failed to compile regex", "error", err.Error())
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
+			return nil, err
+		}
 		parameterName = ""
 		parameterValue = ""
 	}
@@ -271,7 +285,7 @@ func (c *client) GetResources(ctx context.Context, user string, groups []string,
 		return nil, errors[0]
 	}
 
-	return createResourcesDataFrame(resource, resources, resourcesJSONPath, jsonPath != "", wide)
+	return createResourcesDataFrame(resource, resources, resourcesJSONPath, jsonPath != "", wide, regex)
 }
 
 // getResourcesByJSONPath returns a list of resources as namespaced names
