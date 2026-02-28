@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"slices"
 	"strings"
 
@@ -72,7 +73,7 @@ func (c *client) getResources(ctx context.Context) (map[string]Resource, error) 
 // data. The resources JSON data is expected to be in the format of a Kubernetes
 // Table object. If the wide parameter is true, all columns are included in the
 // data frame, otherwise only the columns with priority 0 are included.
-func createResourcesDataFrame(resource Resource, resources [][]byte, resourcesJSONPath []NamespacedName, hasJSONPath, wide bool) (*data.Frame, error) {
+func createResourcesDataFrame(resource Resource, resources [][]byte, resourcesJSONPath []NamespacedName, hasJSONPath, wide bool, regex *regexp.Regexp) (*data.Frame, error) {
 	table := metav1.Table{}
 	frame := data.NewFrame(resource.Kind)
 
@@ -108,6 +109,12 @@ func createResourcesDataFrame(resource Resource, resources [][]byte, resourcesJS
 			// If a JSONPath filter was provided, we need to check if the
 			// current resource is in the list of JSONPath resources.
 			if hasJSONPath && !isInNamespacedNames(resourcesJSONPath, metadata.Namespace, metadata.Name) {
+				continue
+			}
+
+			// If a regex filter was provided, we need to check if the name of
+			// the current resource matches the regex.
+			if regex != nil && !regex.MatchString(metadata.Name) {
 				continue
 			}
 
