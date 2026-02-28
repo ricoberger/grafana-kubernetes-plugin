@@ -30,6 +30,7 @@ import { Overview } from './Overview';
 import { Pods } from './Pods';
 import { Top } from './Top';
 import { AI } from './AI';
+import { Jobs } from './Jobs';
 
 initPluginTranslations('ricoberger-kubernetes-app');
 
@@ -120,6 +121,16 @@ export function Details({
                   }}
                 />
               )}
+            {['cronjob.batch'].includes(resourceId || '') && (
+              <Tab
+                label="Jobs"
+                active={activeTab === 'jobs'}
+                onChangeTab={(ev) => {
+                  ev?.preventDefault();
+                  setActiveTab('jobs');
+                }}
+              />
+            )}
             {[
               'daemonset.apps',
               'deployment.apps',
@@ -206,6 +217,9 @@ export function Details({
               namespace={namespace}
               manifest={state.value}
             />
+          )}
+          {activeTab === 'jobs' && (
+            <Jobs datasource={datasource} namespace={namespace} name={name} />
           )}
           {activeTab === 'top' && (
             <Top
