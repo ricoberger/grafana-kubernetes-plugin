@@ -20,7 +20,7 @@ type Cmd struct {
 	GrafanaUrl        string        `default:"" help:"Url of the Grafana instance, e.g. \"https://play.grafana.org/\"."`
 	GrafanaDatasource string        `default:"kubernetes" help:"Uid of the Kubernetes datasource."`
 	Kubeconfig        string        `default:"$HOME/.kube/config" help:"Path to the Kubeconfig file."`
-	Timeout           time.Duration `default:"30s" help:"Timeout for waiting for the Kubeconfig."`
+	Timeout           time.Duration `default:"120s" help:"Timeout for waiting for the Kubeconfig."`
 }
 
 func (r *Cmd) Run() error {
