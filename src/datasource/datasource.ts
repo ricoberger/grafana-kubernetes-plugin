@@ -99,7 +99,7 @@ export class DataSource extends DataSourceWithBackend<
           .getDataStream({
             addr: {
               scope: LiveChannelScope.DataSource,
-              namespace: this.uid,
+              stream: this.uid,
               path: `${query.resourceId}-${query.namespace}-${query.name}-${query.container}`,
               data: {
                 ...query,
