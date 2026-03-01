@@ -866,52 +866,51 @@ func (c *client) Proxy(user string, groups []string, requestUrl string, w http.R
 
 	// Create the reverse proxy and modify the request. Then use the proxy to
 	// serve the request.
-	proxy := httputil.NewSingleHostReverseProxy(url)
-	proxy.Transport = clientRoundTripper
-	proxy.FlushInterval = -1
-	proxy.ModifyResponse = func(resp *http.Response) error {
-		c.logger.Info("Proxy", "user", user, "groups", groups, "method", r.Method, "requestUrl", requestUrl, "responseCode", resp.StatusCode)
-		span.SetAttributes(attribute.Key("responseCode").Int(resp.StatusCode))
-		return nil
-	}
+	proxy := &httputil.ReverseProxy{
+		Rewrite: func(preq *httputil.ProxyRequest) {
+			c.logger.Debug("IN HEADERS", "headers", preq.In.Header)
+			c.logger.Debug("OUT HEADERS BEFORE", "headers", preq.Out.Header)
+			otel.GetTextMapPropagator().Inject(ctx, propagation.HeaderCarrier(preq.Out.Header))
 
-	originalDirector := proxy.Director
-	proxy.Director = func(req *http.Request) {
-		originalDirector(req)
-		otel.GetTextMapPropagator().Inject(ctx, propagation.HeaderCarrier(req.Header))
+			preq.Out.URL = url
 
-		req.URL = url
+			if preq.Out.Header == nil {
+				preq.Out.Header = make(http.Header)
+			}
 
-		if req.Header == nil {
-			req.Header = make(http.Header)
-		}
+			// Always delete the impersonate user, uid and group headers, to ensure
+			// that privileges can not be escalated. Then set the impersonate user
+			// and group header if the feature is enabled and a user and list of
+			// groups was provided.
+			//
+			// NOTE: This also means that we do not support the "--as", "--as-uid"
+			// and "--as-group" flags of kubectl.
+			preq.Out.Header.Del("Impersonate-User")
+			preq.Out.Header.Del("Impersonate-Uid")
+			preq.Out.Header.Del("Impersonate-Group")
 
-		// Always delete the impersonate user, uid and group headers, to ensure
-		// that privileges can not be escalated. Then set the impersonate user
-		// and group header if the feature is enabled and a user and list of
-		// groups was provided.
-		//
-		// NOTE: This also means that we do not support the "--as", "--as-uid"
-		// and "--as-group" flags of kubectl.
-		req.Header.Del("Impersonate-User")
-		req.Header.Del("Impersonate-Uid")
-		req.Header.Del("Impersonate-Group")
+			if user != "" {
+				preq.Out.Header.Add("Impersonate-User", user)
+			}
 
-		if user != "" {
-			req.Header.Add("Impersonate-User", user)
-		}
+			for _, group := range groups {
+				preq.Out.Header.Add("Impersonate-Group", group)
+			}
+		},
+		Transport:     clientRoundTripper,
+		FlushInterval: -1,
+		ModifyResponse: func(resp *http.Response) error {
+			c.logger.Info("Proxy", "user", user, "groups", groups, "method", r.Method, "requestUrl", requestUrl, "responseCode", resp.StatusCode)
+			span.SetAttributes(attribute.Key("responseCode").Int(resp.StatusCode))
+			return nil
+		},
+		ErrorHandler: func(w http.ResponseWriter, r *http.Request, err error) {
+			c.logger.Error("Client request failed", "error", err.Error())
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
 
-		for _, group := range groups {
-			req.Header.Add("Impersonate-Group", group)
-		}
-	}
-
-	proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
-		c.logger.Error("Client request failed", "error", err.Error())
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
-
-		http.Error(w, "Client request failed", http.StatusBadGateway)
+			http.Error(w, "Client request failed", http.StatusBadGateway)
+		},
 	}
 
 	proxy.ServeHTTP(w, r)
