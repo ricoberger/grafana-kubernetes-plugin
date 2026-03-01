@@ -78,5 +78,6 @@ jobs:
       - name: Upload Artifact
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SKIP_OSV_SCANNER: 'true'
         run: |
           gh release upload ${{ github.ref_name }} ./dist/kubectl-grafana/kubectl-grafana-${{ matrix.platform.os }}-${{ matrix.platform.arch }}.tar.gz
