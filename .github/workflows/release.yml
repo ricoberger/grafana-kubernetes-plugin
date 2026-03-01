@@ -27,6 +27,8 @@ jobs:
 
       - name: Build Plugin
         uses: grafana/plugin-actions/build-plugin@build-plugin/v1.2.0
+        env:
+          SKIP_OSV_SCANNER: 'true'
         with:
           go-version: '1.26.0'
           node-version: '22'
@@ -78,6 +80,5 @@ jobs:
       - name: Upload Artifact
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SKIP_OSV_SCANNER: 'true'
         run: |
           gh release upload ${{ github.ref_name }} ./dist/kubectl-grafana/kubectl-grafana-${{ matrix.platform.os }}-${{ matrix.platform.arch }}.tar.gz
