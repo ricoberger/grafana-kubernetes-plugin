@@ -28,7 +28,7 @@ jobs:
       - name: Build Plugin
         uses: grafana/plugin-actions/build-plugin@build-plugin/v1.2.0
         with:
-          go-version: '1.25.6'
+          go-version: '1.26.0'
           node-version: '22'
           attestation: true
           use_changelog_generator: true
