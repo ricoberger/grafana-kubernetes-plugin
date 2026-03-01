@@ -99,6 +99,11 @@ export class DataSource extends DataSourceWithBackend<
           .getDataStream({
             addr: {
               scope: LiveChannelScope.DataSource,
+              // @ts-expect-error - from the Grafana with React 19 version,
+              // the interface of the Live feature expects the `stream` field
+              // instead of the `namespace`, so we need to send both for
+              // compatibility with older versions.
+              namespace: this.uid,
               stream: this.uid,
               path: `${query.resourceId}-${query.namespace}-${query.name}-${query.container}`,
               data: {
