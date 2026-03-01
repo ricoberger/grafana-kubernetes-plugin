@@ -1,6 +1,41 @@
 ---
 version: 2
 updates:
+  - package-ecosystem: npm
+    directory: '/'
+    schedule:
+      interval: 'monthly'
+    assignees:
+      - 'ricoberger'
+    groups:
+      unit-test:
+        patterns:
+          - '@testing-library/*'
+          - 'jest*'
+          - '@types/jest'
+      eslint:
+        patterns:
+          - '@grafana/eslint-config'
+          - 'eslint*'
+          - '@typescript-eslint/*'
+          - '@stylistic/*'
+      grafana:
+        patterns:
+          - '@grafana/*'
+        dependency-type: 'production'
+        update-types:
+          - 'minor'
+          - 'patch'
+      react:
+        patterns:
+          - 'react'
+          - 'react-dom'
+          - '@types/react'
+          - '@types/react-dom'
+        update-types:
+          - 'minor'
+          - 'patch'
+
   - package-ecosystem: 'github-actions'
     directory: '/'
     schedule:
