@@ -45,6 +45,7 @@ ci/
 
 .eslintcache
 
-# k3s kubeconfig
+# Kubeconfig and validate plugin output
 kubeconfig.yaml
-kubeconfig-grafana.yaml
+/.cache
+ricoberger-kubernetes-app*
