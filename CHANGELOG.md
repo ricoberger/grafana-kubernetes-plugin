@@ -1,5 +1,24 @@
 # Changelog
 
+## [v0.5.0](https://github.com/ricoberger/grafana-kubernetes-plugin/tree/v0.5.0) (2026-03-01)
+
+[Full Changelog](https://github.com/ricoberger/grafana-kubernetes-plugin/compare/v0.4.3...v0.5.0)
+
+- Update Initialization of Plugin Translation [\#125](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/125) ([ricoberger](https://github.com/ricoberger))
+- Add `AGENTS.md` File and Skills [\#110](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/110) ([ricoberger](https://github.com/ricoberger))
+- Add Dependabot Configuration for npm [\#109](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/109) ([ricoberger](https://github.com/ricoberger))
+- chore: bump @grafana/create-plugin configuration to 7.0.0 [\#108](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/108) ([ricoberger](https://github.com/ricoberger))
+- Fix Panic when Invalid JSONPath is Provided [\#107](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/107) ([ricoberger](https://github.com/ricoberger))
+- Show Jobs in CronJob Details [\#106](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/106) ([ricoberger](https://github.com/ricoberger))
+- Add Regular Expression Filter [\#105](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/105) ([ricoberger](https://github.com/ricoberger))
+- Extend Options for kubernetes Resources in Variable Query Editor [\#104](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/104) ([ricoberger](https://github.com/ricoberger))
+- Add Details View for Flux Resources [\#99](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/99) ([ricoberger](https://github.com/ricoberger))
+- Remove K3s and Jaeger from Docker Compose Setup [\#96](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/96) ([ricoberger](https://github.com/ricoberger))
+- cert-manager: Show Related Resources in Details [\#95](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/95) ([ricoberger](https://github.com/ricoberger))
+- Improve JSONPath Support [\#94](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/94) ([ricoberger](https://github.com/ricoberger))
+- Add cert-manager Integration [\#93](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/93) ([ricoberger](https://github.com/ricoberger))
+- Add Timeout for `kubectl-grafana` Plugin [\#92](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/92) ([ricoberger](https://github.com/ricoberger))
+
 ## [v0.4.3](https://github.com/ricoberger/grafana-kubernetes-plugin/tree/v0.4.3) (2026-02-04)
 
 [Full Changelog](https://github.com/ricoberger/grafana-kubernetes-plugin/compare/v0.4.2...v0.4.3)
