@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Alert, Drawer, LoadingPlaceholder, Tab, TabsBar } from '@grafana/ui';
-import { initPluginTranslations } from '@grafana/i18n';
 import { useAsync } from 'react-use';
+import { initPluginTranslations } from '@grafana/i18n';
+import { loadResources } from '@grafana/scenes';
 
 import { Release } from '../../types/helm';
 import { Overview } from './Overview';
@@ -10,8 +11,9 @@ import { Yaml } from '../shared/details/Yaml';
 import { Templates } from './Templates';
 import { llm } from '@grafana/llm';
 import { AI } from './AI';
+import pluginJson from '../../../plugin.json';
 
-initPluginTranslations('ricoberger-kubernetes-app');
+await initPluginTranslations(pluginJson.id, [loadResources]);
 
 interface Props {
   datasource?: string;
