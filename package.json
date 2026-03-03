@@ -90,7 +90,7 @@
     "@grafana/i18n": "^12.3.2",
     "@grafana/llm": "0.22.1",
     "@grafana/runtime": "^12.3.2",
-    "@grafana/scenes": "^6.38.0",
+    "@grafana/scenes": "^7.0.0",
     "@grafana/schema": "^12.3.2",
     "@grafana/ui": "^12.3.2",
     "@kubernetes/client-node": "^1.4.0",
