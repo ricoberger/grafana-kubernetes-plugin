@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.5.1](https://github.com/ricoberger/grafana-kubernetes-plugin/tree/v0.5.1) (2026-03-03)
+
+[Full Changelog](https://github.com/ricoberger/grafana-kubernetes-plugin/compare/v0.5.0...v0.5.1)
+
+- Revert all NPM Updates [\#128](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/128) ([ricoberger](https://github.com/ricoberger))
+- Revert Dependabot Updates [\#126](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/126) ([ricoberger](https://github.com/ricoberger))
+
 ## [v0.5.0](https://github.com/ricoberger/grafana-kubernetes-plugin/tree/v0.5.0) (2026-03-01)
 
 [Full Changelog](https://github.com/ricoberger/grafana-kubernetes-plugin/compare/v0.4.3...v0.5.0)
