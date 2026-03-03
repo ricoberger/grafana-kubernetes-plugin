@@ -3,7 +3,6 @@ import { Alert, Drawer, LoadingPlaceholder, Tab, TabsBar } from '@grafana/ui';
 import { useAsync } from 'react-use';
 import { llm } from '@grafana/llm';
 import { initPluginTranslations } from '@grafana/i18n';
-import { loadResources } from '@grafana/scenes';
 
 import { getResourceManifest } from '../../../utils/utils.resource';
 import { KubernetesManifest } from '../../types/kubernetes';
@@ -13,9 +12,8 @@ import { Overview } from './Overview';
 import { AI } from './AI';
 import { CertificateRequests } from './CertificateRequests';
 import { IssuerRefs } from './IssuerRefs';
-import pluginJson from '../../../plugin.json';
 
-await initPluginTranslations(pluginJson.id, [loadResources]);
+initPluginTranslations('ricoberger-kubernetes-app');
 
 interface Props {
   datasource?: string;

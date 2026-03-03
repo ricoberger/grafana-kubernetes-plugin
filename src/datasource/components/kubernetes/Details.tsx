@@ -10,7 +10,6 @@ import {
 import { useAsync } from 'react-use';
 import { llm } from '@grafana/llm';
 import { initPluginTranslations } from '@grafana/i18n';
-import { loadResources } from '@grafana/scenes';
 
 import { getResourceManifest } from '../../../utils/utils.resource';
 import { KubernetesManifest } from '../../types/kubernetes';
@@ -32,9 +31,8 @@ import { Pods } from './Pods';
 import { Top } from './Top';
 import { AI } from './AI';
 import { Jobs } from './Jobs';
-import pluginJson from '../../../plugin.json';
 
-await initPluginTranslations(pluginJson.id, [loadResources]);
+initPluginTranslations('ricoberger-kubernetes-app');
 
 interface Props {
   settings: DataSourceOptions;

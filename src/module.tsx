@@ -1,14 +1,24 @@
 import React, { Suspense, lazy } from 'react';
 import { AppPlugin, type AppRootProps } from '@grafana/data';
 import { LoadingPlaceholder } from '@grafana/ui';
-import { initPluginTranslations } from '@grafana/i18n';
-import { loadResources } from '@grafana/scenes';
 
-import pluginJson from './plugin.json';
+let translationsPromise: Promise<void>;
 
-await initPluginTranslations(pluginJson.id, [loadResources]);
+function ensureTranslationsInitialized(): Promise<void> {
+  if (!translationsPromise) {
+    translationsPromise = import('@grafana/i18n').then(
+      async ({ initPluginTranslations }) => {
+        await initPluginTranslations('ricoberger-kubernetes-app');
+      },
+    );
+  }
+  return translationsPromise;
+}
 
-const LazyApp = lazy(() => import('./app/App'));
+const LazyApp = lazy(async () => {
+  await ensureTranslationsInitialized();
+  return import('./app/App');
+});
 
 const App = (props: AppRootProps) => (
   <Suspense fallback={<LoadingPlaceholder text="" />}>
