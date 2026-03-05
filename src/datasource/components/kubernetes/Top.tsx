@@ -1,11 +1,10 @@
 import React from 'react';
+import { VizConfigBuilders } from '@grafana/scenes';
 import {
-  EmbeddedScene,
-  PanelBuilders,
-  SceneFlexItem,
-  SceneFlexLayout,
-  SceneQueryRunner,
-} from '@grafana/scenes';
+  SceneContextProvider,
+  useQueryRunner,
+  VizPanel,
+} from '@grafana/scenes-react';
 
 import datasourcePluginJson from '../../../datasource/plugin.json';
 import { KubernetesManifest } from '../../types/kubernetes';
@@ -19,13 +18,34 @@ interface Props {
 }
 
 export function Top({ datasource, resourceId, namespace, manifest }: Props) {
+  return (
+    <SceneContextProvider
+      timeRange={{ from: `now-1h`, to: 'now' }}
+      withQueryController
+    >
+      <TopTable
+        datasource={datasource}
+        resourceId={resourceId}
+        namespace={namespace}
+        manifest={manifest}
+      />
+    </SceneContextProvider>
+  );
+}
+
+export function TopTable({
+  datasource,
+  resourceId,
+  namespace,
+  manifest,
+}: Props) {
   const selector = manifest?.spec?.selector?.matchLabels
     ? Object.keys(manifest?.spec.selector.matchLabels)
       .map((key) => `${key}=${manifest?.spec.selector.matchLabels[key]}`)
       .join(',')
     : '';
 
-  const queryRunner = new SceneQueryRunner({
+  const dataProvider = useQueryRunner({
     datasource: {
       type: datasourcePluginJson.id,
       uid: datasource || undefined,
@@ -47,16 +67,7 @@ export function Top({ datasource, resourceId, namespace, manifest }: Props) {
     ],
   });
 
-  const scene = new EmbeddedScene({
-    $data: queryRunner,
-    body: new SceneFlexLayout({
-      children: [
-        new SceneFlexItem({
-          body: PanelBuilders.table().setTitle('Top').build(),
-        }),
-      ],
-    }),
-  });
+  const viz = VizConfigBuilders.table().build();
 
-  return <scene.Component model={scene} />;
+  return <VizPanel title="Top" viz={viz} dataProvider={dataProvider} />;
 }

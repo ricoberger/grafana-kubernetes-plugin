@@ -1,11 +1,10 @@
 import React from 'react';
+import { VizConfigBuilders } from '@grafana/scenes';
 import {
-  EmbeddedScene,
-  PanelBuilders,
-  SceneFlexItem,
-  SceneFlexLayout,
-  SceneQueryRunner,
-} from '@grafana/scenes';
+  SceneContextProvider,
+  useQueryRunner,
+  VizPanel,
+} from '@grafana/scenes-react';
 
 import datasourcePluginJson from '../../../datasource/plugin.json';
 import { KubernetesManifest } from '../../types/kubernetes';
@@ -17,6 +16,20 @@ interface Props {
 }
 
 export function Pods({ datasource, namespace, manifest }: Props) {
+  return (
+    <SceneContextProvider
+      timeRange={{ from: `now-1h`, to: 'now' }}
+      withQueryController
+    >
+      <PodsTable
+        datasource={datasource}
+        namespace={namespace}
+        manifest={manifest}
+      />
+    </SceneContextProvider>
+  );
+}
+function PodsTable({ datasource, namespace, manifest }: Props) {
   /**
    * Create the selector which can be used to get the pods for all resources
    * except nodes. Therefore we check if the selector is defined in the query
@@ -29,7 +42,7 @@ export function Pods({ datasource, namespace, manifest }: Props) {
       .join(',')
     : '';
 
-  const queryRunner = new SceneQueryRunner({
+  const dataProvider = useQueryRunner({
     datasource: {
       type: datasourcePluginJson.id,
       uid: datasource || undefined,
@@ -48,16 +61,7 @@ export function Pods({ datasource, namespace, manifest }: Props) {
     ],
   });
 
-  const scene = new EmbeddedScene({
-    $data: queryRunner,
-    body: new SceneFlexLayout({
-      children: [
-        new SceneFlexItem({
-          body: PanelBuilders.table().setTitle('Pods').build(),
-        }),
-      ],
-    }),
-  });
+  const viz = VizConfigBuilders.table().build();
 
-  return <scene.Component model={scene} />;
+  return <VizPanel title="Pods" viz={viz} dataProvider={dataProvider} />;
 }

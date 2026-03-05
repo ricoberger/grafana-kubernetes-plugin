@@ -1,25 +1,21 @@
 import React from 'react';
-import {
-  SceneComponentProps,
-  SceneObjectBase,
-  SceneObjectState,
-} from '@grafana/scenes';
-import { Alert, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
+import { PluginPage } from '@grafana/runtime';
+import { Alert, Stack, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { useAsync } from 'react-use';
 
-interface KubectlState extends SceneObjectState { }
+import resourcesImg from '../../img/logo.svg';
 
-export class Kubectl extends SceneObjectBase<KubectlState> {
-  static Component = KubectlRenderer;
-}
-
-function KubectlRenderer({ }: SceneComponentProps<Kubectl>) {
+export const KubectlPage = () => {
   const styles = useStyles2(() => {
     return {
-      container: css({
-        width: '100%',
-      }),
+      title: {
+        image: css({
+          width: '32px',
+          height: '32px',
+          marginRight: '16px',
+        }),
+      },
     };
   });
 
@@ -49,18 +45,28 @@ function KubectlRenderer({ }: SceneComponentProps<Kubectl>) {
   }, []);
 
   return (
-    <>
-      <div className={styles.container}>
-        {state.loading ? (
-          <LoadingPlaceholder text={`Loading ${type}...`} />
-        ) : state.error ? (
-          <Alert severity="error" title={`Failed to load ${type}`}>
-            {state.error.message}
-          </Alert>
-        ) : (
-          <LoadingPlaceholder text={'Redirecting...'} />
-        )}
-      </div>
-    </>
+    <PluginPage
+      renderTitle={() => (
+        <Stack gap={0}>
+          <img
+            className={styles.title.image}
+            alt="kubectl"
+            src={resourcesImg}
+          />
+          <h1>kubectl</h1>
+        </Stack>
+      )}
+      subTitle="Generate a Kubeconfig file and get Kubeconfig credentials."
+    >
+      {state.loading ? (
+        <LoadingPlaceholder text={`Loading ${type}...`} />
+      ) : state.error ? (
+        <Alert severity="error" title={`Failed to load ${type}`}>
+          {state.error.message}
+        </Alert>
+      ) : (
+        <LoadingPlaceholder text={'Redirecting...'} />
+      )}
+    </PluginPage>
   );
-}
+};

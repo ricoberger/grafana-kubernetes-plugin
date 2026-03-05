@@ -1,11 +1,10 @@
 import React from 'react';
+import { VizConfigBuilders } from '@grafana/scenes';
 import {
-  EmbeddedScene,
-  PanelBuilders,
-  SceneFlexItem,
-  SceneFlexLayout,
-  SceneQueryRunner,
-} from '@grafana/scenes';
+  SceneContextProvider,
+  useQueryRunner,
+  VizPanel,
+} from '@grafana/scenes-react';
 
 import datasourcePluginJson from '../../../datasource/plugin.json';
 
@@ -24,7 +23,30 @@ export function IssuerRefs({
   name,
   title,
 }: Props) {
-  const queryRunner = new SceneQueryRunner({
+  return (
+    <SceneContextProvider
+      timeRange={{ from: `now-1h`, to: 'now' }}
+      withQueryController
+    >
+      <IssuerRefsTable
+        datasource={datasource}
+        resourceId={resourceId}
+        namespace={namespace}
+        name={name}
+        title={title}
+      />
+    </SceneContextProvider>
+  );
+}
+
+function IssuerRefsTable({
+  datasource,
+  resourceId,
+  namespace,
+  name,
+  title,
+}: Props) {
+  const dataProvider = useQueryRunner({
     datasource: {
       type: datasourcePluginJson.id,
       uid: datasource || undefined,
@@ -41,16 +63,7 @@ export function IssuerRefs({
     ],
   });
 
-  const scene = new EmbeddedScene({
-    $data: queryRunner,
-    body: new SceneFlexLayout({
-      children: [
-        new SceneFlexItem({
-          body: PanelBuilders.table().setTitle(title).build(),
-        }),
-      ],
-    }),
-  });
+  const viz = VizConfigBuilders.table().build();
 
-  return <scene.Component model={scene} />;
+  return <VizPanel title={title} viz={viz} dataProvider={dataProvider} />;
 }
