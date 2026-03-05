@@ -1,11 +1,10 @@
 import React from 'react';
+import { VizConfigBuilders } from '@grafana/scenes';
 import {
-  EmbeddedScene,
-  PanelBuilders,
-  SceneFlexItem,
-  SceneFlexLayout,
-  SceneQueryRunner,
-} from '@grafana/scenes';
+  SceneContextProvider,
+  useQueryRunner,
+  VizPanel,
+} from '@grafana/scenes-react';
 
 import datasourcePluginJson from '../../../datasource/plugin.json';
 
@@ -16,7 +15,18 @@ interface Props {
 }
 
 export function History({ datasource, namespace, name }: Props) {
-  const queryRunner = new SceneQueryRunner({
+  return (
+    <SceneContextProvider
+      timeRange={{ from: `now-1h`, to: 'now' }}
+      withQueryController
+    >
+      <HistoryTable datasource={datasource} namespace={namespace} name={name} />
+    </SceneContextProvider>
+  );
+}
+
+function HistoryTable({ datasource, namespace, name }: Props) {
+  const dataProvider = useQueryRunner({
     datasource: {
       type: datasourcePluginJson.id,
       uid: datasource || undefined,
@@ -31,16 +41,7 @@ export function History({ datasource, namespace, name }: Props) {
     ],
   });
 
-  const scene = new EmbeddedScene({
-    $data: queryRunner,
-    body: new SceneFlexLayout({
-      children: [
-        new SceneFlexItem({
-          body: PanelBuilders.table().setTitle('History').build(),
-        }),
-      ],
-    }),
-  });
+  const viz = VizConfigBuilders.table().build();
 
-  return <scene.Component model={scene} />;
+  return <VizPanel title="History" viz={viz} dataProvider={dataProvider} />;
 }

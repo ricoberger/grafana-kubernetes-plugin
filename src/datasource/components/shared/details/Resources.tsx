@@ -1,12 +1,11 @@
 import React from 'react';
 import { Drawer } from '@grafana/ui';
+import { VizConfigBuilders } from '@grafana/scenes';
 import {
-  EmbeddedScene,
-  PanelBuilders,
-  SceneFlexItem,
-  SceneFlexLayout,
-  SceneQueryRunner,
-} from '@grafana/scenes';
+  SceneContextProvider,
+  useQueryRunner,
+  VizPanel,
+} from '@grafana/scenes-react';
 
 import datasourcePluginJson from '../../../plugin.json';
 
@@ -29,9 +28,35 @@ export function Resources({
   parameterValue,
   onClose,
 }: Props) {
-  console.log(datasource, resourceId, namespace, parameterName, parameterValue);
+  return (
+    <Drawer title={title} scrollableContent={false} onClose={() => onClose()}>
+      <SceneContextProvider
+        timeRange={{ from: `now-1h`, to: 'now' }}
+        withQueryController
+      >
+        <ResourcesTable
+          title={title}
+          datasource={datasource}
+          resourceId={resourceId}
+          namespace={namespace}
+          parameterName={parameterName}
+          parameterValue={parameterValue}
+          onClose={onClose}
+        />
+      </SceneContextProvider>
+    </Drawer>
+  );
+}
 
-  const queryRunner = new SceneQueryRunner({
+function ResourcesTable({
+  title,
+  datasource,
+  resourceId,
+  namespace,
+  parameterName,
+  parameterValue,
+}: Props) {
+  const dataProvider = useQueryRunner({
     datasource: {
       type: datasourcePluginJson.id,
       uid: datasource || undefined,
@@ -48,20 +73,7 @@ export function Resources({
     ],
   });
 
-  const scene = new EmbeddedScene({
-    $data: queryRunner,
-    body: new SceneFlexLayout({
-      children: [
-        new SceneFlexItem({
-          body: PanelBuilders.table().setTitle(title).build(),
-        }),
-      ],
-    }),
-  });
+  const viz = VizConfigBuilders.table().build();
 
-  return (
-    <Drawer title={title} scrollableContent={false} onClose={() => onClose()}>
-      <scene.Component model={scene} />
-    </Drawer>
-  );
+  return <VizPanel title={title} viz={viz} dataProvider={dataProvider} />;
 }
