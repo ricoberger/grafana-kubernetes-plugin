@@ -3,7 +3,6 @@ import { IconButton, Menu, WithContextMenu } from '@grafana/ui';
 import { DataFrame } from '@grafana/data';
 
 import { Query } from '../../types/query';
-import { DataSourceOptions } from '../../types/settings';
 import { Delete } from './Delete';
 import { Scale } from './Scale';
 import { Restart } from './Restart';
@@ -22,10 +21,9 @@ interface Props {
   query: Query;
   frame: DataFrame;
   rowIndex: number;
-  settings: DataSourceOptions;
 }
 
-export function Actions({ query, frame, rowIndex, settings }: Props) {
+export function Actions({ query, frame, rowIndex }: Props) {
   const [open, setOpen] = useState('');
 
   const datasource = query.datasource?.uid;
@@ -126,7 +124,6 @@ export function Actions({ query, frame, rowIndex, settings }: Props) {
 
       {open === 'details' && (
         <Details
-          settings={settings}
           datasource={datasource}
           resourceId={resourceId}
           namespace={namespace}
