@@ -23,9 +23,7 @@ datasources:
       generateKubeconfigRedirectUrls:
         - http://localhost:11716
       integrationsMetricsDatasourceUid: prometheus
-      integrationsMetricsKubeletJob: kubelet
-      integrationsMetricsKubeStateMetricsJob: kube-state-metrics
-      integrationsMetricsNodeExporterJob: node-exporter
+      integrationsMetricsClusterLabel: '.*'
       integrationsTracesQuery: '{"datasource":"jaeger","queries":[{"query":"$${__value.raw}","refId":"A"}]}'
     secureJsonData:
       clusterKubeconfig:

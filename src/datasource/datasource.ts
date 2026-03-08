@@ -324,6 +324,14 @@ export class DataSource extends DataSourceWithBackend<
     }
 
     /**
+     * If the query type is "settings" we also need the setting which should be
+     * retrieved.
+     */
+    if (query.queryType === 'settings' && !query.setting) {
+      return false;
+    }
+
+    /**
      * If the query type is "kubernetes-containers" we also need the resource,
      * namespace and name.
      */

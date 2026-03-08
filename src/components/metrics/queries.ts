@@ -1,0 +1,2692 @@
+export function variableQuery(query: string) {
+  return query.replace(/(?:\r\n|\r|\n)/g, '');
+}
+
+/**
+ * queries contains all PromQL queries which are used in the plugin.
+ *
+ * NOTE: Queries should be formatted using the following command:
+ * cat metrics | curl -X POST --data-binary @- https://xbin.io/promql-metricsql-prettify > output
+ */
+export const queries = {
+  cluster: {
+    cpuCapacity: `sum(
+  max(
+    kube_node_status_capacity{cluster=~"$cluster",resource=~"cpu"}
+  ) by(cluster,node,resource)
+)`,
+    cpuLimits: `sum(
+  max(
+    namespace_cpu:kube_pod_container_resource_limits:sum{cluster=~"$cluster"}
+  ) by(cluster,namespace)
+)`,
+    cpuRequests: `sum(
+  max(
+    namespace_cpu:kube_pod_container_resource_requests:sum{cluster=~"$cluster"}
+  ) by(cluster,namespace)
+)`,
+    cpuUsage: `sum(
+  label_join(
+    (
+      sum(
+        max(
+          (
+            1
+              -
+            rate(node_cpu_seconds_total{cluster=~"$cluster",mode=~"idle"}[$__rate_interval])
+          )
+            >=
+          0
+        ) by(cluster,instance,cpu,core)
+      ) by(cluster,instance)
+        or
+      sum(
+        rate(node_cpu_usage_seconds_total{cluster=~"$cluster"}[$__rate_interval]) >= 0
+      ) by(cluster,instance)
+    )
+      or
+    sum(
+      label_join(
+        label_join(
+          k8s_node_cpu_usage{k8s_cluster_name=~"$prometheus"},
+          "cluster",
+          ",",
+          "k8s_cluster_name"
+        ),
+        "instance",
+        ",",
+        "k8s_node_name"
+      )
+    ) by(cluster,instance),
+    "node",
+    ",",
+    "instance"
+  )
+)`,
+    memoryCapacity: `sum(
+  max(
+    kube_node_status_capacity{cluster=~"$cluster",resource=~"memory"}
+  ) by(cluster,node,resource)
+)`,
+    memoryLimits: `sum(
+  max(
+    namespace_memory:kube_pod_container_resource_limits:sum{cluster=~"$cluster"}
+  ) by(cluster,namespace)
+)`,
+    memoryRequests: `sum(
+  max(
+    namespace_memory:kube_pod_container_resource_requests:sum{
+      cluster=~"$cluster"
+    }
+  ) by(cluster,namespace)
+)`,
+    memoryUsage: `sum(
+  label_join(
+    (
+      max(
+        node_memory_Active_file_bytes{cluster=~"$cluster"}
+      ) by(cluster,instance)
+        + on(cluster,instance) group_left()
+      max(node_memory_AnonPages_bytes{cluster=~"$cluster"}) by(cluster,instance)
+    )
+      or
+    max(node_memory_working_set_bytes{cluster=~"$cluster"}) by(cluster,instance),
+    "node",
+    ",",
+    "instance"
+  )
+)`,
+  },
+  nodes: {
+    info: `avg_over_time(
+  (max(kube_node_info{cluster=~"$cluster",node=~".+"}) by(cluster,node))[$__range:]
+)`,
+    count: `count(kube_node_info{cluster=~"$cluster",node!=""})`,
+    cpuUsageAvgOverTime: `avg_over_time(
+  (
+    sum(
+      label_join(
+        (
+          sum(
+            max(
+              (
+                1
+                  -
+                rate(
+                  node_cpu_seconds_total{
+                    cluster=~"$cluster",instance=~".+",mode=~"idle"
+                  }[$__rate_interval]
+                )
+              )
+                >=
+              0
+            ) by(cluster,instance,cpu,core)
+          ) by(cluster,instance)
+            or
+          sum(
+            rate(
+              node_cpu_usage_seconds_total{cluster=~"$cluster",instance=~".+"}[$__rate_interval]
+            )
+              >=
+            0
+          ) by(cluster,instance)
+        )
+          or
+        sum(
+          label_join(
+            label_join(
+              k8s_node_cpu_usage{k8s_cluster_name=~"$cluster"},
+              "cluster",
+              ",",
+              "k8s_cluster_name"
+            ),
+            "instance",
+            ",",
+            "k8s_node_name"
+          )
+        ) by(cluster,instance),
+        "node",
+        ",",
+        "instance"
+      )
+    ) by(cluster,node)
+  )[$__range:]
+)`,
+    cpuUsageAvgPercentOverTime: `avg_over_time(
+  (
+    sum(
+      label_join(
+        (
+          sum(
+            max(
+              (
+                1
+                  -
+                rate(
+                  node_cpu_seconds_total{
+                    cluster=~"$cluster",instance=~".+",mode=~"idle"
+                  }[$__rate_interval]
+                )
+              )
+                >=
+              0
+            ) by(cluster,instance,cpu,core)
+          ) by(cluster,instance)
+            or
+          sum(
+            rate(
+              node_cpu_usage_seconds_total{cluster=~"$cluster",instance=~".+"}[$__rate_interval]
+            )
+              >=
+            0
+          ) by(cluster,instance)
+        )
+          or
+        sum(
+          label_join(
+            label_join(
+              k8s_node_cpu_usage{k8s_cluster_name=~"$cluster"},
+              "cluster",
+              ",",
+              "k8s_cluster_name"
+            ),
+            "instance",
+            ",",
+            "k8s_node_name"
+          )
+        ) by(cluster,instance),
+        "node",
+        ",",
+        "instance"
+      )
+    ) by(cluster,node)
+  )[$__range:]
+)
+  / on(cluster,node) group_left()
+max(
+  kube_node_status_capacity{cluster=~"$cluster",resource=~"cpu",node=~".+"}
+) by(cluster,node,resource)`,
+    cpuUsageMaxOverTime: `max_over_time(
+  (
+    sum(
+      label_join(
+        (
+          sum(
+            max(
+              (
+                1
+                  -
+                rate(
+                  node_cpu_seconds_total{
+                    cluster=~"$cluster",instance=~".+",mode=~"idle"
+                  }[$__rate_interval]
+                )
+              )
+                >=
+              0
+            ) by(cluster,instance,cpu,core)
+          ) by(cluster,instance)
+            or
+          sum(
+            rate(
+              node_cpu_usage_seconds_total{cluster=~"$cluster",instance=~".+"}[$__rate_interval]
+            )
+              >=
+            0
+          ) by(cluster,instance)
+        )
+          or
+        sum(
+          label_join(
+            label_join(
+              k8s_node_cpu_usage{k8s_cluster_name=~"$cluster"},
+              "cluster",
+              ",",
+              "k8s_cluster_name"
+            ),
+            "instance",
+            ",",
+            "k8s_node_name"
+          )
+        ) by(cluster,instance),
+        "node",
+        ",",
+        "instance"
+      )
+    ) by(cluster,node)
+  )[$__range:]
+)`,
+    cpuUsageMaxPercentOverTime: `max_over_time(
+  (
+    sum(
+      label_join(
+        (
+          sum(
+            max(
+              (
+                1
+                  -
+                rate(
+                  node_cpu_seconds_total{
+                    cluster=~"$cluster",instance=~".+",mode=~"idle"
+                  }[$__rate_interval]
+                )
+              )
+                >=
+              0
+            ) by(cluster,instance,cpu,core)
+          ) by(cluster,instance)
+            or
+          sum(
+            rate(
+              node_cpu_usage_seconds_total{cluster=~"$cluster",instance=~".+"}[$__rate_interval]
+            )
+              >=
+            0
+          ) by(cluster,instance)
+        )
+          or
+        sum(
+          label_join(
+            label_join(
+              k8s_node_cpu_usage{k8s_cluster_name=~"$cluster"},
+              "cluster",
+              ",",
+              "k8s_cluster_name"
+            ),
+            "instance",
+            ",",
+            "k8s_node_name"
+          )
+        ) by(cluster,instance),
+        "node",
+        ",",
+        "instance"
+      )
+    ) by(cluster,node)
+  )[$__range:]
+)
+  / on(cluster,node) group_left()
+max(
+  kube_node_status_capacity{cluster=~"$cluster",resource=~"cpu",node=~".+"}
+) by(cluster,node,resource)`,
+    memoryUsageAvgOverTime: `avg_over_time(
+  (
+    sum(
+      label_join(
+        (
+          max(
+            node_memory_Active_file_bytes{cluster=~"$cluster",instance=~".+"}
+          ) by(cluster,instance)
+            + on(cluster,instance) group_left()
+          max(
+            node_memory_AnonPages_bytes{cluster=~"$cluster",instance=~".+"}
+          ) by(cluster,instance)
+        )
+          or
+        max(
+          node_memory_working_set_bytes{cluster=~"$cluster",instance=~".+"}
+        ) by(cluster,instance),
+        "node",
+        ",",
+        "instance"
+      )
+    ) by(cluster,node)
+  )[$__range:]
+)`,
+    memoryUsageAvgPercentOverTime: `avg_over_time(
+  (
+    sum(
+      label_join(
+        (
+          max(
+            node_memory_Active_file_bytes{cluster=~"$cluster",instance=~".+"}
+          ) by(cluster,instance)
+            + on(cluster,instance) group_left()
+          max(
+            node_memory_AnonPages_bytes{cluster=~"$cluster",instance=~".+"}
+          ) by(cluster,instance)
+        )
+          or
+        max(
+          node_memory_working_set_bytes{cluster=~"$cluster",instance=~".+"}
+        ) by(cluster,instance),
+        "node",
+        ",",
+        "instance"
+      )
+    ) by(cluster,node)
+  )[$__range:]
+)
+  / on(cluster,node) group_left()
+max(
+  kube_node_status_capacity{cluster=~"$cluster",resource=~"memory",node=~".+"}
+) by(cluster,node,resource)`,
+    memoryUsageMaxOverTime: `max_over_time(
+  (
+    sum(
+      label_join(
+        (
+          max(
+            node_memory_Active_file_bytes{cluster=~"$cluster",instance=~".+"}
+          ) by(cluster,instance)
+            + on(cluster,instance) group_left()
+          max(
+            node_memory_AnonPages_bytes{cluster=~"$cluster",instance=~".+"}
+          ) by(cluster,instance)
+        )
+          or
+        max(
+          node_memory_working_set_bytes{cluster=~"$cluster",instance=~".+"}
+        ) by(cluster,instance),
+        "node",
+        ",",
+        "instance"
+      )
+    ) by(cluster,node)
+  )[$__range:]
+)`,
+    memoryUsageMaxPercentOverTime: `max_over_time(
+  (
+    sum(
+      label_join(
+        (
+          max(
+            node_memory_Active_file_bytes{cluster=~"$cluster",instance=~".+"}
+          ) by(cluster,instance)
+            + on(cluster,instance) group_left()
+          max(
+            node_memory_AnonPages_bytes{cluster=~"$cluster",instance=~".+"}
+          ) by(cluster,instance)
+        )
+          or
+        max(
+          node_memory_working_set_bytes{cluster=~"$cluster",instance=~".+"}
+        ) by(cluster,instance),
+        "node",
+        ",",
+        "instance"
+      )
+    ) by(cluster,node)
+  )[$__range:]
+)
+  / on(cluster,node) group_left()
+max(
+  kube_node_status_capacity{cluster=~"$cluster",resource=~"memory",node=~".+"}
+) by(cluster,node,resource)`,
+    alertsCount: `count(
+  ALERTS{node!="",alertname=~"(Kube.*|CPUThrottlingHigh)",alertstate=~"firing"}
+    or
+  (
+    max(
+      ALERTS{
+        node="",
+        pod!="",
+        alertname=~"(Kube.*|CPUThrottlingHigh)",
+        alertstate=~"firing"
+      }
+    ) by(cluster,namespace,pod)
+      * on(cluster,namespace,pod) group_left(node)
+    max(kube_pod_info{node!="",node!=""}) by(cluster,namespace,pod,node)
+  )
+) by(cluster,node)`,
+    cpuCapacity: `max(
+  kube_node_status_capacity{
+    cluster=~"$cluster",
+    node=~"$node(:[0-9]{2,5})?",
+    resource=~"cpu"
+  }
+) by(cluster,node,resource)`,
+    cpuLimits: `sum(
+  max(
+    cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits{
+      container!="",
+      cluster=~"$cluster",
+      node=~"$node(:[0-9]{2,5})?"
+    }
+  ) by(cluster,namespace,node,pod,container)
+)
+  or
+sum(
+  label_join(
+    label_join(
+      k8s_container_cpu_limit{
+        k8s_cluster_name=~"$cluster",
+        k8s_node_name=~"$node"
+      },
+      "cluster",
+      ",",
+      "k8s_cluster_name"
+    ),
+    "node",
+    ",",
+    "k8s_node_name"
+  )
+)`,
+    cpuRequests: `sum(
+  max(
+    cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{
+      container!="",
+      cluster=~"$cluster",
+      node=~"$node(:[0-9]{2,5})?"
+    }
+  ) by(cluster,namespace,node,pod,container,resource)
+)`,
+    cpuUsage: `sum(
+  label_join(
+    (
+      sum(
+        max(
+          (
+            1
+              -
+            rate(
+              node_cpu_seconds_total{
+                cluster=~"$cluster",
+                instance=~"$node(:[0-9]{2,5})?",
+                mode=~"idle"
+              }[$__rate_interval]
+            )
+          )
+            >=
+          0
+        ) by(cluster,instance,cpu,core)
+      ) by(cluster,instance)
+        or
+      sum(
+        rate(
+          node_cpu_usage_seconds_total{
+            cluster=~"$cluster",
+            instance=~"$node(:[0-9]{2,5})?"
+          }[$__rate_interval]
+        )
+          >=
+        0
+      ) by(cluster,instance)
+    )
+      or
+    sum(
+      label_join(
+        label_join(
+          k8s_node_cpu_usage{k8s_cluster_name=~"$cluster"},
+          "cluster",
+          ",",
+          "k8s_cluster_name"
+        ),
+        "instance",
+        ",",
+        "k8s_node_name"
+      )
+    ) by(cluster,instance),
+    "node",
+    ",",
+    "instance"
+  )
+    or
+  label_join(
+    (
+      sum(
+        max(
+          (
+            1
+              -
+            rate(
+              node_cpu_seconds_total{
+                cluster=~"$cluster",
+                node=~"$node(:[0-9]{2,5})?",
+                mode=~"idle"
+              }[$__rate_interval]
+            )
+          )
+            >=
+          0
+        ) by(cluster,instance,cpu,core)
+      ) by(cluster,instance)
+        or
+      sum(
+        rate(
+          node_cpu_usage_seconds_total{
+            cluster=~"$cluster",
+            node=~"$node(:[0-9]{2,5})?"
+          }[$__rate_interval]
+        )
+          >=
+        0
+      ) by(cluster,instance)
+    )
+      or
+    sum(
+      label_join(
+        label_join(
+          k8s_node_cpu_usage{
+            k8s_cluster_name=~"$cluster",
+            k8s_node_name=~"$node(:[0-9]{2,5})?"
+          },
+          "cluster",
+          ",",
+          "k8s_cluster_name"
+        ),
+        "instance",
+        ",",
+        "k8s_node_name"
+      )
+    ) by(cluster,instance),
+    "node",
+    ",",
+    "instance"
+  )
+)`,
+    memoryCapacity: `max(
+  kube_node_status_capacity{
+    cluster=~"$cluster",
+    node=~"$node(:[0-9]{2,5})?",
+    resource=~"memory"
+  }
+) by(cluster,node,resource)`,
+    memoryLimits: `sum(
+  max(
+    cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{
+      container!="",
+      cluster=~"$cluster",
+      node=~"$node(:[0-9]{2,5})?"
+    }
+  ) by(cluster,namespace,node,pod,container)
+)`,
+    memoryRequests: `sum(
+  max(
+    cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{
+      container!="",
+      cluster=~"$cluster",
+      node=~"$node(:[0-9]{2,5})?"
+    }
+  ) by(cluster,namespace,node,pod,container,resource)
+)`,
+    memoryUsage: `label_join(
+  (
+    max(
+      node_memory_Active_file_bytes{
+        cluster=~"$cluster",
+        instance=~"$node"
+      }
+    ) by(cluster,instance)
+      + on(cluster,instance) group_left()
+    max(
+      node_memory_AnonPages_bytes{
+        cluster=~"$cluster",
+        instance=~"$node"
+      }
+    ) by(cluster,instance)
+  )
+    or
+  max(
+    node_memory_working_set_bytes{
+      cluster=~"$cluster",
+      instance=~"$node"
+    }
+  ) by(cluster,instance),
+  "node",
+  ",",
+  "instance"
+)`,
+  },
+  namespaces: {
+    labelsByCluster: `label_values(kube_namespace_status_phase{cluster=~"$cluster"}, namespace)`,
+    count: `count(
+  group(
+    kube_namespace_status_phase{cluster=~"$cluster",namespace=~"$namespace"}
+  ) by(namespace)
+)`,
+    info: `sum(
+  topk(
+    1,
+    group(
+      namespace_workload_pod:kube_pod_owner:relabel{
+        cluster=~"$cluster",namespace=~"$namespace"
+      }
+    ) by(cluster,namespace,workload)
+  ) by(cluster,namespace,pod,workload,workload_type)
+) by(cluster,namespace)
+  or on(cluster,namespace)
+(
+  last_over_time(
+    (
+      group(
+        kube_namespace_status_phase{
+          cluster=~"$cluster",namespace=~"$namespace",phase="Active"
+        }
+          ==
+        1
+      ) by(cluster,namespace)
+    )[$__range:]
+  )
+    -
+  1
+)`,
+    cpuUsageAvgOverTime: `avg_over_time(
+  (
+    sum(
+      max(
+        node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{
+          cluster=~"$cluster",
+          namespace=~"$namespace",
+          container!="POD",
+          container!=""
+        }
+      ) by(cluster,namespace,pod,container)
+    ) by(cluster,namespace)
+  )[$__range:$__interval]
+)`,
+    cpuUsageAvgPercentOverTime: `avg_over_time(
+  (
+    sum(
+      max(
+        node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{
+          cluster=~"$cluster",
+          namespace=~"$namespace",
+          container!="POD",
+          container!=""
+        }
+      ) by(cluster,namespace,pod,container)
+    ) by(cluster,namespace)
+  )[$__range:$__interval]
+)
+  / on(cluster,namespace) group_left()
+sum(
+  namespace_cpu:kube_pod_container_resource_requests:sum{
+    namespace=~"$namespace",cluster=~"$cluster"
+  }
+) by(cluster,namespace)`,
+    cpuUsageMaxOverTime: `max_over_time(
+  (
+    sum(
+      max(
+        node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{
+          cluster=~"$cluster",
+          namespace=~"$namespace",
+          container!="POD",
+          container!=""
+        }
+      ) by(cluster,namespace,pod,container)
+    ) by(cluster,namespace)
+  )[$__range:$__interval]
+)`,
+    cpuUsageMaxPercentOverTime: `max_over_time(
+  (
+    sum(
+      max(
+        node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{
+          cluster=~"$cluster",
+          namespace=~"$namespace",
+          container!="POD",
+          container!=""
+        }
+      ) by(cluster,namespace,pod,container)
+    ) by(cluster,namespace)
+  )[$__range:$__interval]
+)
+  / on(cluster,namespace) group_left()
+sum(
+  namespace_cpu:kube_pod_container_resource_requests:sum{
+    cluster=~"$cluster",namespace=~"$namespace"
+  }
+) by(cluster,namespace)`,
+    memoryUsageAvgOverTime: `avg_over_time(
+  (
+    sum(
+      max(
+        node_namespace_pod_container:container_memory_working_set_bytes{
+          cluster=~"$cluster",
+          namespace=~"$namespace",
+          container!="POD",
+          container!=""
+        }
+      ) by(cluster,namespace,pod,container)
+    ) by(cluster,namespace)
+  )[$__range:$__interval]
+)`,
+    memoryUsageAvgPercentOverTime: `avg_over_time(
+  (
+    sum(
+      max(
+        node_namespace_pod_container:container_memory_working_set_bytes{
+          cluster=~"$cluster",
+          namespace=~"$namespace",
+          container!="POD",
+          container!=""
+        }
+      ) by(cluster,namespace,pod,container)
+    ) by(cluster,namespace)
+  )[$__range:$__interval]
+)
+  / on(cluster,namespace) group_left()
+sum(
+  namespace_memory:kube_pod_container_resource_requests:sum{
+    cluster=~"$cluster",namespace=~"$namespace"
+  }
+) by(cluster,namespace)`,
+    memoryUsageMaxOverTime: `max_over_time(
+  (
+    sum(
+      max(
+        node_namespace_pod_container:container_memory_working_set_bytes{
+          cluster=~"$cluster",
+          namespace=~"$namespace",
+          container!="POD",
+          container!=""
+        }
+      ) by(cluster,namespace,pod,container)
+    ) by(cluster,namespace)
+  )[$__range:$__interval]
+)`,
+    memoryUsageMaxPercentOverTime: `max_over_time(
+  (
+    sum(
+      max(
+        node_namespace_pod_container:container_memory_working_set_bytes{
+          cluster=~"$cluster",
+          namespace=~"$namespace",
+          container!="POD",
+          container!=""
+        }
+      ) by(cluster,namespace,pod,container)
+    ) by(cluster,namespace)
+  )[$__range:$__interval]
+)
+  / on(cluster,namespace) group_left()
+sum(
+  namespace_memory:kube_pod_container_resource_requests:sum{
+    cluster=~"$cluster",namespace=~"$namespace"
+  }
+) by(cluster,namespace)`,
+    alertsCount: `count(
+  ALERTS{
+    alertname=~"(Kube.*|CPUThrottlingHigh)",
+    alertstate=~"firing",
+    cluster=~"$cluster",
+    namespace=~"$namespace"
+  }
+) by(cluster,namespace)`,
+    cpuAllocation: `max(
+  namespace_cpu:kube_pod_container_resource_requests:sum{
+    cluster=~"$cluster",namespace="$namespace"
+  }
+    or
+  sum(
+    max(
+      rate(
+        container_cpu_usage_seconds_total{
+          cluster=~"$cluster",
+          namespace="$namespace",
+          container!="POD",
+          container!=""
+        }[$__rate_interval]
+      )
+    ) by(namespace,pod,container)
+  ) by(namespace)
+) by(namespace)`,
+    cpuLimits: `max(
+  namespace_cpu:kube_pod_container_resource_limits:sum{
+    cluster=~"$cluster",namespace=~"$namespace"
+  }
+) by(cluster,namespace)
+  or
+sum(
+  label_join(
+    label_join(
+      k8s_container_cpu_limit{
+        k8s_cluster_name=~"$cluster",
+        k8s_namespace_name=~"$namespace"
+      },
+      "cluster",
+      ",",
+      "k8s_cluster_name"
+    ),
+    "namespace",
+    ",",
+    "k8s_namespace_name"
+  )
+)`,
+    cpuRequests: `max(
+  namespace_cpu:kube_pod_container_resource_requests:sum{
+    cluster=~"$cluster",namespace=~"$namespace"
+  }
+) by(cluster,namespace)`,
+    cpuUsage: `sum(
+  max(
+    rate(
+      container_cpu_usage_seconds_total{
+        cluster=~"$cluster",
+        namespace="$namespace",
+        container!="POD",
+        container!=""
+      }[$__rate_interval]
+    )
+  ) by(cluster,namespace,pod,container)
+)`,
+    memoryAllocation: `max(
+  namespace_memory:kube_pod_container_resource_requests:sum{
+    cluster=~"$cluster",namespace="$namespace"
+  }
+    or
+  sum(
+    max(
+      container_memory_working_set_bytes{
+        cluster=~"$cluster",
+        namespace="$namespace",
+        container!="POD",
+        container!=""
+      }
+    ) by(namespace,pod,container)
+  ) by(namespace)
+) by(namespace)`,
+    memoryLimits: `max(
+  namespace_memory:kube_pod_container_resource_limits:sum{
+    cluster=~"$cluster",namespace=~"$namespace"
+  }
+) by(cluster,namespace)`,
+    memoryRequests: `max(
+  namespace_memory:kube_pod_container_resource_requests:sum{
+    cluster=~"$cluster",namespace=~"$namespace"
+  }
+) by(cluster,namespace)`,
+    memoryUsage: `sum(
+  max(
+    container_memory_working_set_bytes{
+      cluster=~"$cluster",
+      namespace="$namespace",
+      container!="POD",
+      container!=""
+    }
+  ) by(cluster,namespace,pod,container)
+)`,
+  },
+  workloads: {
+    labelsByClusterNamespace: `query_result(
+  max(
+    (
+      (
+        (
+          (
+            (
+              max(
+                last_over_time(
+                  kube_replicaset_spec_replicas{
+                    cluster=~"$cluster",namespace=~"$namespace",replicaset=~".+"
+                  }[$__range:]
+                )
+              ) by(cluster,namespace,replicaset)
+                * on(cluster,namespace,replicaset) group_left(workload,workload_type)
+              label_replace(
+                label_replace(
+                  max(
+                    last_over_time(
+                      kube_replicaset_owner{
+                        cluster=~"$cluster",
+                        namespace=~"$namespace",
+                        replicaset=~".+",
+                        owner_kind=""
+                      }[$__range:]
+                    )
+                  ) by(cluster,namespace,replicaset),
+                  "workload",
+                  "$1",
+                  "replicaset",
+                  "(.+)"
+                ),
+                "workload_type",
+                "replicaset",
+                "",
+                ""
+              )
+            )
+              or
+            (
+              max(
+                last_over_time(
+                  kube_replicaset_spec_replicas{
+                    cluster=~"$cluster",namespace=~"$namespace",replicaset=~".+"
+                  }[$__range:]
+                )
+              ) by(cluster,namespace,replicaset)
+                * on(cluster,namespace,replicaset) group_left(workload,workload_type)
+              label_replace(
+                label_replace(
+                  max(
+                    last_over_time(
+                      kube_replicaset_owner{
+                        cluster=~"$cluster",
+                        namespace=~"$namespace",
+                        replicaset=~".+",
+                        owner_is_controller="true",
+                        owner_kind="Deployment",
+                        owner_name!=""
+                      }[$__range:]
+                    )
+                  ) by(cluster,namespace,replicaset,owner_name),
+                  "workload",
+                  "$1",
+                  "owner_name",
+                  "(.+)"
+                ),
+                "workload_type",
+                "deployment",
+                "",
+                ""
+              )
+            )
+          )
+            or
+          label_replace(
+            label_replace(
+              max(
+                last_over_time(
+                  kube_deployment_spec_replicas{
+                    cluster=~"$cluster",namespace=~"$namespace",deployment=~".+"
+                  }[$__range:]
+                )
+              ) by(cluster,namespace,deployment),
+              "workload",
+              "$1",
+              "deployment",
+              "(.+)"
+            ),
+            "workload_type",
+            "deployment",
+            "",
+            ""
+          )
+        )
+          or
+        label_replace(
+          label_replace(
+            max(
+              last_over_time(
+                kube_daemonset_status_desired_number_scheduled{
+                  cluster=~"$cluster",namespace=~"$namespace",daemonset=~".+"
+                }[$__range:]
+              )
+            ) by(cluster,namespace,daemonset),
+            "workload",
+            "$1",
+            "daemonset",
+            "(.+)"
+          ),
+          "workload_type",
+          "daemonset",
+          "",
+          ""
+        )
+      )
+        or
+      label_replace(
+        label_replace(
+          max(
+            last_over_time(
+              kube_statefulset_replicas{
+                cluster=~"$cluster",namespace=~"$namespace",statefulset=~".+"
+              }[$__range:]
+            )
+          ) by(cluster,namespace,statefulset),
+          "workload",
+          "$1",
+          "statefulset",
+          "(.+)"
+        ),
+        "workload_type",
+        "statefulset",
+        "",
+        ""
+      )
+    )
+      or
+    last_over_time(
+      namespace_workload_pod:kube_pod_owner:relabel{
+        cluster=~"$cluster",
+        namespace=~"$namespace",
+        workload=~".+",
+        workload_type!="replicaset",
+        workload_type!="deployment",
+        workload_type!="daemonset",
+        workload_type!="statefulset"
+      }[$__range:]
+    )
+  ) by(cluster,namespace,workload,workload_type)
+)`,
+    count: `count(
+  max(
+    (
+      (
+        (
+          (
+            (
+              max(
+                last_over_time(
+                  kube_replicaset_spec_replicas{
+                    cluster=~"$cluster",namespace=~"$namespace",replicaset=~".+"
+                  }[$__range:]
+                )
+              ) by(cluster,namespace,replicaset)
+                * on(cluster,namespace,replicaset) group_left(workload,workload_type)
+              label_replace(
+                label_replace(
+                  max(
+                    last_over_time(
+                      kube_replicaset_owner{
+                        cluster=~"$cluster",
+                        namespace=~"$namespace",
+                        replicaset=~".+",
+                        owner_kind=""
+                      }[$__range:]
+                    )
+                  ) by(cluster,namespace,replicaset),
+                  "workload",
+                  "$1",
+                  "replicaset",
+                  "(.+)"
+                ),
+                "workload_type",
+                "replicaset",
+                "",
+                ""
+              )
+            )
+              or
+            (
+              max(
+                last_over_time(
+                  kube_replicaset_spec_replicas{
+                    cluster=~"$cluster",namespace=~"$namespace",replicaset=~".+"
+                  }[$__range:]
+                )
+              ) by(cluster,namespace,replicaset)
+                * on(cluster,namespace,replicaset) group_left(workload,workload_type)
+              label_replace(
+                label_replace(
+                  max(
+                    last_over_time(
+                      kube_replicaset_owner{
+                        cluster=~"$cluster",
+                        namespace=~"$namespace",
+                        replicaset=~".+",
+                        owner_is_controller="true",
+                        owner_kind="Deployment",
+                        owner_name!=""
+                      }[$__range:]
+                    )
+                  ) by(cluster,namespace,replicaset,owner_name),
+                  "workload",
+                  "$1",
+                  "owner_name",
+                  "(.+)"
+                ),
+                "workload_type",
+                "deployment",
+                "",
+                ""
+              )
+            )
+          )
+            or
+          label_replace(
+            label_replace(
+              max(
+                last_over_time(
+                  kube_deployment_spec_replicas{
+                    cluster=~"$cluster",namespace=~"$namespace",deployment=~".+"
+                  }[$__range:]
+                )
+              ) by(cluster,namespace,deployment),
+              "workload",
+              "$1",
+              "deployment",
+              "(.+)"
+            ),
+            "workload_type",
+            "deployment",
+            "",
+            ""
+          )
+        )
+          or
+        label_replace(
+          label_replace(
+            max(
+              last_over_time(
+                kube_daemonset_status_desired_number_scheduled{
+                  cluster=~"$cluster",namespace=~"$namespace",daemonset=~".+"
+                }[$__range:]
+              )
+            ) by(cluster,namespace,daemonset),
+            "workload",
+            "$1",
+            "daemonset",
+            "(.+)"
+          ),
+          "workload_type",
+          "daemonset",
+          "",
+          ""
+        )
+      )
+        or
+      label_replace(
+        label_replace(
+          max(
+            last_over_time(
+              kube_statefulset_replicas{
+                cluster=~"$cluster",namespace=~"$namespace",statefulset=~".+"
+              }[$__range:]
+            )
+          ) by(cluster,namespace,statefulset),
+          "workload",
+          "$1",
+          "statefulset",
+          "(.+)"
+        ),
+        "workload_type",
+        "statefulset",
+        "",
+        ""
+      )
+    )
+      or
+    last_over_time(
+      namespace_workload_pod:kube_pod_owner:relabel{
+        cluster=~"$cluster",
+        namespace=~"$namespace",
+        workload=~".+",
+        workload_type!="replicaset",
+        workload_type!="deployment",
+        workload_type!="daemonset",
+        workload_type!="statefulset"
+      }[$__range:]
+    )
+  ) by(cluster,namespace,workload,workload_type)
+)`,
+    desiredPods: `max(
+  (
+    (
+      (
+        (
+          (
+            max(
+              last_over_time(
+                kube_replicaset_spec_replicas{
+                  cluster=~"$cluster",
+                  namespace=~"$namespace",
+                  replicaset=~"$workload"
+                }[$__range:]
+              )
+            ) by(cluster,namespace,replicaset)
+              * on(cluster,namespace,replicaset) group_left(workload,workload_type)
+            label_replace(
+              label_replace(
+                max(
+                  last_over_time(
+                    kube_replicaset_owner{
+                      cluster=~"$cluster",
+                      namespace=~"$namespace",
+                      replicaset=~"$workload",
+                      owner_kind=""
+                    }[$__range:]
+                  )
+                ) by(cluster,namespace,replicaset),
+                "workload",
+                "$1",
+                "replicaset",
+                "(.+)"
+              ),
+              "workload_type",
+              "replicaset",
+              "",
+              ""
+            )
+          )
+            or
+          (
+            max(
+              last_over_time(
+                kube_replicaset_spec_replicas{
+                  cluster=~"$cluster",
+                  namespace=~"$namespace",
+                  replicaset=~"$workload"
+                }[$__range:]
+              )
+            ) by(cluster,namespace,replicaset)
+              * on(cluster,namespace,replicaset) group_left(workload,workload_type)
+            label_replace(
+              label_replace(
+                max(
+                  last_over_time(
+                    kube_replicaset_owner{
+                      cluster=~"$cluster",
+                      namespace=~"$namespace",
+                      replicaset=~"$workload",
+                      owner_is_controller="true",
+                      owner_kind="Deployment",
+                      owner_name!=""
+                    }[$__range:]
+                  )
+                ) by(cluster,namespace,replicaset,owner_name),
+                "workload",
+                "$1",
+                "owner_name",
+                "(.+)"
+              ),
+              "workload_type",
+              "deployment",
+              "",
+              ""
+            )
+          )
+        )
+          or
+        label_replace(
+          label_replace(
+            max(
+              last_over_time(
+                kube_deployment_spec_replicas{
+                  cluster=~"$cluster",
+                  namespace=~"$namespace",
+                  deployment=~"$workload"
+                }[$__range:]
+              )
+            ) by(cluster,namespace,deployment),
+            "workload",
+            "$1",
+            "deployment",
+            "(.+)"
+          ),
+          "workload_type",
+          "deployment",
+          "",
+          ""
+        )
+      )
+        or
+      label_replace(
+        label_replace(
+          max(
+            last_over_time(
+              kube_daemonset_status_desired_number_scheduled{
+                cluster=~"$cluster",
+                namespace=~"$namespace",
+                daemonset=~"$workload"
+              }[$__range:]
+            )
+          ) by(cluster,namespace,daemonset),
+          "workload",
+          "$1",
+          "daemonset",
+          "(.+)"
+        ),
+        "workload_type",
+        "daemonset",
+        "",
+        ""
+      )
+    )
+      or
+    label_replace(
+      label_replace(
+        max(
+          last_over_time(
+            kube_statefulset_replicas{
+              cluster=~"$cluster",
+              namespace=~"$namespace",
+              statefulset=~"$workload"
+            }[$__range:]
+          )
+        ) by(cluster,namespace,statefulset),
+        "workload",
+        "$1",
+        "statefulset",
+        "(.+)"
+      ),
+      "workload_type",
+      "statefulset",
+      "",
+      ""
+    )
+  )
+    or
+  last_over_time(
+    namespace_workload_pod:kube_pod_owner:relabel{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      workload=~"$workload",
+      workload_type!="replicaset",
+      workload_type!="deployment",
+      workload_type!="daemonset",
+      workload_type!="statefulset"
+    }[$__range:]
+  )
+) by(cluster,namespace,workload,workload_type)
+`,
+    readyPods: `max(
+  (
+    (
+      (
+        (
+          (
+            max(
+              kube_replicaset_status_ready_replicas{
+                cluster=~"$cluster",
+                namespace=~"$namespace",
+                replicaset=~"$workload"
+              }
+            ) by(cluster,namespace,replicaset)
+              * on(cluster,namespace,replicaset) group_left(workload,workload_type)
+            label_replace(
+              label_replace(
+                max(
+                  kube_replicaset_owner{
+                    cluster=~"$cluster",
+                    namespace=~"$namespace",
+                    replicaset=~"$workload",
+                    owner_kind=~""
+                  }
+                ) by(cluster,namespace,replicaset),
+                "workload",
+                "$1",
+                "replicaset",
+                "(.+)"
+              ),
+              "workload_type",
+              "replicaset",
+              "",
+              ""
+            )
+          )
+            or
+          (
+            max(
+              kube_replicaset_status_ready_replicas{
+                cluster=~"$cluster",
+                namespace=~"$namespace",
+                replicaset=~"$workload"
+              }
+            ) by(cluster,namespace,replicaset)
+              * on(cluster,namespace,replicaset) group_left(workload,workload_type)
+            label_replace(
+              label_replace(
+                max(
+                  kube_replicaset_owner{
+                    cluster=~"$cluster",
+                    namespace=~"$namespace",
+                    replicaset=~"$workload",
+                    owner_is_controller="true",
+                    owner_kind="Deployment",
+                    owner_name!=""
+                  }
+                ) by(cluster,namespace,replicaset,owner_name),
+                "workload",
+                "$1",
+                "owner_name",
+                "(.+)"
+              ),
+              "workload_type",
+              "deployment",
+              "",
+              ""
+            )
+          )
+        )
+          or
+        label_replace(
+          label_replace(
+            max(
+              kube_deployment_status_replicas_available{
+                cluster=~"$cluster",
+                namespace=~"$namespace",
+                deployment=~"$workload"
+              }
+            ) by(cluster,namespace,deployment),
+            "workload",
+            "$1",
+            "deployment",
+            "(.+)"
+          ),
+          "workload_type",
+          "deployment",
+          "",
+          ""
+        )
+      )
+        or
+      label_replace(
+        label_replace(
+          max(
+            kube_daemonset_status_number_ready{
+              cluster=~"$cluster",
+              namespace=~"$namespace",
+              daemonset=~"$workload"
+            }
+          ) by(cluster,namespace,daemonset),
+          "workload",
+          "$1",
+          "daemonset",
+          "(.+)"
+        ),
+        "workload_type",
+        "daemonset",
+        "",
+        ""
+      )
+    )
+      or
+    label_replace(
+      label_replace(
+        max(
+          kube_statefulset_status_replicas_ready{
+            cluster=~"$cluster",
+            namespace=~"$namespace",
+            statefulset=~"$workload"
+          }
+        ) by(cluster,namespace,statefulset),
+        "workload",
+        "$1",
+        "statefulset",
+        "(.+)"
+      ),
+      "workload_type",
+      "statefulset",
+      "",
+      ""
+    )
+  )
+    or
+  namespace_workload_pod:kube_pod_owner:relabel{
+    cluster=~"$cluster",
+    namespace=~"$namespace",
+    workload=~"$workload",
+    workload_type!="replicaset",
+    workload_type!="deployment",
+    workload_type!="daemonset",
+    workload_type!="statefulset"
+  }
+) by(cluster,namespace,workload,workload_type)`,
+    cpuUsageAvgOverTime: `sum(
+  topk(
+    1,
+    group(
+      namespace_workload_pod:kube_pod_owner:relabel{
+        cluster=~"$cluster",
+        namespace=~"$namespace",
+        workload=~"$workload"
+      }
+    ) by(cluster,namespace,workload,workload_type,pod)
+  ) by(cluster,namespace,pod)
+    * on(cluster,namespace,pod) group_left()
+  avg_over_time(
+    (
+      sum(
+        max(
+          node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{
+            cluster=~"$cluster",
+            namespace=~"$namespace",
+            pod=~".+-.+",
+            container!="POD",
+            container!=""
+          }
+        ) by(cluster,namespace,pod,pod,container)
+      ) by(cluster,namespace,pod)
+    )[$__range:$__interval]
+  )
+) by(cluster,namespace,workload,workload_type)`,
+    cpuUsageAvgPercentOverTime: `sum(
+  topk(
+    1,
+    group(
+      namespace_workload_pod:kube_pod_owner:relabel{
+        cluster=~"$cluster",
+        namespace=~"$namespace",
+        workload=~"$workload"
+      }
+    ) by(cluster,namespace,workload,workload_type,pod)
+  ) by(cluster,namespace,pod)
+    * on(cluster,namespace,pod) group_left()
+  avg_over_time(
+    (
+      sum(
+        max(
+          node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{
+            cluster=~"$cluster",
+            namespace=~"$namespace",
+            pod=~".+-.+",
+            container!="POD",
+            container!=""
+          }
+        ) by(cluster,namespace,pod,pod,container)
+      ) by(cluster,namespace,pod)
+    )[$__range:$__interval]
+  )
+) by(cluster,namespace,workload,workload_type)
+  /
+sum(
+  topk(
+    1,
+    group(
+      namespace_workload_pod:kube_pod_owner:relabel{
+        cluster=~"$cluster",
+        namespace=~"$namespace",
+        workload=~"$workload"
+      }
+    ) by(cluster,namespace,workload,workload_type,pod)
+  ) by(cluster,namespace,pod)
+    * on(cluster,namespace,pod) group_left()
+  sum(
+    kube_pod_container_resource_requests{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      container!="POD",
+      container!="",
+      pod=~".+-.+",
+      resource="cpu"
+    }
+  ) by(cluster,namespace,pod)
+) by(cluster,namespace,workload,workload_type)`,
+    cpuUsageMaxOverTime: `sum(
+  topk(
+    1,
+    group(
+      namespace_workload_pod:kube_pod_owner:relabel{
+        cluster=~"$cluster",
+        namespace=~"$namespace",
+        workload=~"$workload"
+      }
+    ) by(cluster,namespace,workload,workload_type,pod)
+  ) by(cluster,namespace,pod)
+    * on(cluster,namespace,pod) group_left()
+  max_over_time(
+    (
+      sum(
+        max(
+          node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{
+            cluster=~"$cluster",
+            namespace=~"$namespace",
+            pod=~".+-.+",
+            container!="POD",
+            container!=""
+          }
+        ) by(cluster,namespace,pod,container)
+      ) by(cluster,namespace,pod)
+    )[$__range:$__interval]
+  )
+) by(cluster,namespace,workload,workload_type)`,
+    cpuUsageMaxPercentOverTime: `sum(
+  topk(
+    1,
+    group(
+      namespace_workload_pod:kube_pod_owner:relabel{
+        cluster=~"$cluster",
+        namespace=~"$namespace",
+        workload=~"$workload"
+      }
+    ) by(cluster,namespace,workload,workload_type,pod)
+  ) by(cluster,namespace,pod)
+    * on(cluster,namespace,pod) group_left()
+  max_over_time(
+    (
+      sum(
+        max(
+          node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{
+            cluster=~"$cluster",
+            namespace=~"$namespace",
+            pod=~".+-.+",
+            container!="POD",
+            container!=""
+          }
+        ) by(cluster,namespace,pod,container)
+      ) by(cluster,namespace,pod)
+    )[$__range:$__interval]
+  )
+) by(cluster,namespace,workload,workload_type)
+  /
+sum(
+  topk(
+    1,
+    group(
+      namespace_workload_pod:kube_pod_owner:relabel{
+        cluster=~"$cluster",
+        namespace=~"$namespace",
+        workload=~"$workload"
+      }
+    ) by(cluster,namespace,workload,workload_type,pod)
+  ) by(cluster,namespace,pod)
+    * on(cluster,namespace,pod) group_left()
+  sum(
+    kube_pod_container_resource_requests{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      container!="POD",
+      container!="",
+      pod=~".+-.+",
+      resource="cpu"
+    }
+  ) by(cluster,namespace,pod)
+) by(cluster,namespace,workload,workload_type)`,
+    memoryUsageAvgOverTime: `sum(
+  topk(
+    1,
+    group(
+      namespace_workload_pod:kube_pod_owner:relabel{
+        cluster=~"$cluster",
+        namespace=~"$namespace",
+        workload=~"$workload"
+      }
+    ) by(cluster,namespace,workload,workload_type,pod)
+  ) by(cluster,namespace,pod)
+    * on(cluster,namespace,pod) group_left()
+  avg_over_time(
+    (
+      sum(
+        max(
+          node_namespace_pod_container:container_memory_working_set_bytes{
+            cluster=~"$cluster",
+            namespace=~"$namespace",
+            pod=~".+-.+",
+            container!="POD",
+            container!=""
+          }
+        ) by(cluster,namespace,pod,container)
+      ) by(cluster,namespace,pod)
+    )[$__range:$__interval]
+  )
+) by(cluster,namespace,workload,workload_type)`,
+    memoryUsageAvgPercentOverTime: `sum(
+  topk(
+    1,
+    group(
+      namespace_workload_pod:kube_pod_owner:relabel{
+        cluster=~"$cluster",
+        namespace=~"$namespace",
+        workload=~"$workload"
+      }
+    ) by(cluster,namespace,workload,workload_type,pod)
+  ) by(cluster,namespace,pod)
+    * on(cluster,namespace,pod) group_left()
+  avg_over_time(
+    (
+      sum(
+        max(
+          node_namespace_pod_container:container_memory_working_set_bytes{
+            cluster=~"$cluster",
+            namespace=~"$namespace",
+            pod=~".+-.+",
+            container!="POD",
+            container!=""
+          }
+        ) by(cluster,namespace,pod,container)
+      ) by(cluster,namespace,pod)
+    )[$__range:$__interval]
+  )
+) by(cluster,namespace,workload,workload_type)
+  /
+sum(
+  topk(
+    1,
+    group(
+      namespace_workload_pod:kube_pod_owner:relabel{
+        cluster=~"$cluster",
+        namespace=~"$namespace",
+        workload=~"$workload"
+      }
+    ) by(cluster,namespace,workload,workload_type,pod)
+  ) by(cluster,namespace,pod)
+    * on(cluster,namespace,pod) group_left()
+  sum(
+    kube_pod_container_resource_requests{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      container!="POD",
+      container!="",
+      pod=~".+-.+",
+      resource="memory"
+    }
+  ) by(cluster,namespace,pod)
+) by(cluster,namespace,workload,workload_type)`,
+    memoryUsageMaxOverTime: `sum(
+  topk(
+    1,
+    group(
+      namespace_workload_pod:kube_pod_owner:relabel{
+        cluster=~"$cluster",
+        namespace=~"$namespace",
+        workload=~"$workload"
+      }
+    ) by(cluster,namespace,workload,workload_type,pod)
+  ) by(cluster,namespace,pod)
+    * on(cluster,namespace,pod) group_left()
+  max_over_time(
+    (
+      sum(
+        max(
+          node_namespace_pod_container:container_memory_working_set_bytes{
+            cluster=~"$cluster",
+            namespace=~"$namespace",
+            pod=~".+-.+",
+            container!="POD",
+            container!=""
+          }
+        ) by(cluster,namespace,pod,container)
+      ) by(cluster,namespace,pod)
+    )[$__range:$__interval]
+  )
+) by(cluster,namespace,workload,workload_type)`,
+    memoryUsageMaxPercentOverTime: `sum(
+  topk(
+    1,
+    group(
+      namespace_workload_pod:kube_pod_owner:relabel{
+        cluster=~"$cluster",
+        namespace=~"$namespace",
+        workload=~"$workload"
+      }
+    ) by(cluster,namespace,workload,workload_type,pod)
+  ) by(cluster,namespace,pod)
+    * on(cluster,namespace,pod) group_left()
+  max_over_time(
+    (
+      sum(
+        max(
+          node_namespace_pod_container:container_memory_working_set_bytes{
+            cluster=~"$cluster",
+            namespace=~"$namespace",
+            pod=~".+-.+",
+            container!="POD",
+            container!=""
+          }
+        ) by(cluster,namespace,pod,container)
+      ) by(cluster,namespace,pod)
+    )[$__range:$__interval]
+  )
+) by(cluster,namespace,workload,workload_type)
+  /
+sum(
+  topk(
+    1,
+    group(
+      namespace_workload_pod:kube_pod_owner:relabel{
+        cluster=~"$cluster",
+        namespace=~"$namespace",
+        workload=~"$workload"
+      }
+    ) by(cluster,namespace,workload,workload_type,pod)
+  ) by(cluster,namespace,pod)
+    * on(cluster,namespace,pod) group_left()
+  sum(
+    kube_pod_container_resource_requests{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      container!="POD",
+      container!="",
+      pod=~".+-.+",
+      resource="memory"
+    }
+  ) by(cluster,namespace,pod)
+) by(cluster,namespace,workload,workload_type)`,
+    alertsCount: `sum(
+  (
+    (
+      (
+        (
+          (
+            group(
+              ALERTS{
+                alertname=~"(Kube.*|CPUThrottlingHigh)",
+                alertstate=~"firing",
+                cluster=~"$cluster",
+                namespace=~"$namespace",
+                pod=~".+-.+"
+              }
+            ) by(cluster,namespace,pod)
+              * on(cluster,namespace,pod) group_left(workload,workload_type)
+            topk(
+              1,
+              group(
+                namespace_workload_pod:kube_pod_owner:relabel{
+                  cluster=~"$cluster",
+                  namespace=~"$namespace",
+                  workload=~"$workload"
+                }
+              ) by(cluster,namespace,workload,workload_type,pod)
+            ) by(cluster,namespace,pod)
+          )
+            or
+          label_replace(
+            label_replace(
+              ALERTS{
+                alertname=~"(Kube.*|CPUThrottlingHigh)",
+                alertstate=~"firing",
+                cluster=~"$cluster",
+                namespace=~"$namespace",
+                pod=~"",
+                replicaset=~"$workload"
+              },
+              "workload_type",
+              "",
+              "replicaset",
+              ""
+            ),
+            "workload",
+            "$1",
+            "replicaset",
+            "(.*)"
+          )
+        )
+          or
+        label_replace(
+          label_replace(
+            ALERTS{
+              alertname=~"(Kube.*|CPUThrottlingHigh)",
+              alertstate=~"firing",
+              cluster=~"$cluster",
+              namespace=~"$namespace",
+              pod=~"",
+              daemonset=~"$workload"
+            },
+            "workload_type",
+            "",
+            "daemonset",
+            ""
+          ),
+          "workload",
+          "$1",
+          "daemonset",
+          "(.*)"
+        )
+      )
+        or
+      label_replace(
+        label_replace(
+          ALERTS{
+            alertname=~"(Kube.*|CPUThrottlingHigh)",
+            alertstate=~"firing",
+            cluster=~"$cluster",
+            namespace=~"$namespace",
+            pod=~"",
+            deployment=~"$workload"
+          },
+          "workload_type",
+          "",
+          "deployment",
+          ""
+        ),
+        "workload",
+        "$1",
+        "deployment",
+        "(.*)"
+      )
+    )
+      or
+    label_replace(
+      label_replace(
+        ALERTS{
+          alertname=~"(Kube.*|CPUThrottlingHigh)",
+          alertstate=~"firing",
+          cluster=~"$cluster",
+          namespace=~"$namespace",
+          pod=~"",
+          statefulset=~"$workload"
+        },
+        "workload_type",
+        "",
+        "statefulset",
+        ""
+      ),
+      "workload",
+      "$1",
+      "statefulset",
+      "(.*)"
+    )
+  )
+    or
+  label_replace(
+    label_replace(
+      ALERTS{
+        alertname=~"(Kube.*|CPUThrottlingHigh)",
+        alertstate=~"firing",
+        cluster=~"$cluster",
+        namespace=~"$namespace",
+        pod=~"",
+        job_name=~"$workload"
+      },
+      "workload_type",
+      "",
+      "job",
+      ""
+    ),
+    "workload",
+    "$1",
+    "job_name",
+    "(.*)"
+  )
+) by(cluster,namespace,workload,workload_type)`,
+    cpuAllocation: `max(
+  sum(
+    max(
+      cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{
+        container!="",
+        cluster=~"$cluster",
+        namespace=~"$namespace",
+        pod=~"$pod"
+      }
+    ) by(cluster,namespace,node,pod,container,resource)
+  ) by(resource)
+    or
+  sum(
+    max(
+      node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{
+        container!="",
+        cluster=~"$cluster",
+        namespace=~"$namespace",
+        pod=~"$pod"
+      }
+    ) by(cluster,namespace,node,pod,container)
+  )
+)`,
+    cpuLimits: `sum(
+  max(
+    cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits{
+      container!="",
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod"
+    }
+  ) by(cluster,namespace,node,pod,container)
+)`,
+    cpuRequests: `sum(
+  max(
+    cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{
+      container!="",
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod"
+    }
+  ) by(cluster,namespace,node,pod,container,resource)
+) by(resource)`,
+    cpuUsage: `sum(
+  max(
+    node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{
+      container!="",
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod"
+    }
+  ) by(cluster,namespace,node,pod,container)
+)`,
+    memoryAllocation: `max(
+  sum(
+    kube_pod_container_resource_requests{
+      cluster=~"$cluster",
+      namespace="$namespace",
+      pod=~"$pod",
+      container!="POD",
+      container!="",
+      resource="memory"
+    }
+  ) by(namespace,resource)
+    or
+  sum(
+    max(
+      container_memory_working_set_bytes{
+        cluster=~"$cluster",
+        namespace="$namespace",
+        pod=~"$pod",
+        container!="POD",
+        container!=""
+      }
+    ) by(namespace,pod,container)
+  ) by(namespace)
+) by(namespace)`,
+    memoryLimits: `sum(
+  max(
+    cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{
+      container!="",
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod"
+    }
+  ) by(cluster,namespace,node,pod,container)
+)`,
+    memoryRequests: `sum(
+  max(
+    cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{
+      container!="",
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod"
+    }
+  ) by(cluster,namespace,node,pod,container,resource)
+)`,
+    memoryUsage: `sum(
+  max(
+    container_memory_working_set_bytes{
+      cluster=~"$cluster",
+      namespace="$namespace",
+      pod=~"$pod",
+      container!="POD",
+      container!=""
+    }
+  ) by(cluster,namespace,pod,container)
+)`,
+    podsCount: `count(
+  namespace_workload_pod:kube_pod_owner:relabel{
+    cluster=~"$cluster",
+    namespace=~"$namespace",
+    workload=~"$workload",
+    workload_type=~"$workloadtype"
+  }
+)`,
+    images: `count(
+  kube_pod_container_info{
+    pod=~"$pod",cluster=~"$cluster",namespace="$namespace"
+  }
+) by(image_spec)`,
+    statefulsetReplicas: `sum(
+  kube_statefulset_status_replicas{
+    cluster=~"$cluster",namespace=~"$namespace",statefulset=~"$workload"
+  }
+)`,
+    statefulsetAvailable: `sum(
+  kube_statefulset_status_replicas_available{
+    cluster=~"$cluster",namespace=~"$namespace",statefulset=~"$workload"
+  }
+)`,
+    statefulsetReady: `sum(
+  kube_statefulset_status_replicas_ready{
+    cluster=~"$cluster",namespace=~"$namespace",statefulset=~"$workload"
+  }
+)`,
+    statefulsetUpdated: `sum(
+  kube_statefulset_status_replicas_updated{
+    cluster=~"$cluster",namespace=~"$namespace",statefulset=~"$workload"
+  }
+)`,
+    deploymentReplicas: `sum(
+  kube_deployment_status_replicas{
+    cluster=~"$cluster",namespace=~"$namespace",deployment=~"$workload"
+  }
+)`,
+    deploymentAvailable: `sum(
+  kube_deployment_status_replicas_available{
+    cluster=~"$cluster",namespace=~"$namespace",deployment=~"$workload"
+  }
+)`,
+    deploymentReady: `sum(
+  kube_deployment_status_replicas_ready{
+    cluster=~"$cluster",namespace=~"$namespace",deployment=~"$workload"
+  }
+)`,
+    deploymentUpdated: `sum(
+  kube_deployment_status_replicas_updated{
+    cluster=~"$cluster",namespace=~"$namespace",deployment=~"$workload"
+  }
+)`,
+    deploymentUnavailable: `sum(
+  kube_deployment_status_replicas_unavailable{
+    cluster=~"$cluster",namespace=~"$namespace",deployment=~"$workload"
+  }
+)`,
+    daemonsetDesired: `sum(
+  kube_daemonset_status_desired_number_scheduled{
+    cluster=~"$cluster",namespace=~"$namespace",daemonset=~"$workload"
+  }
+)`,
+    daemonsetScheduled: `sum(
+  kube_daemonset_status_current_number_scheduled{
+    cluster=~"$cluster",namespace=~"$namespace",daemonset=~"$workload"
+  }
+)`,
+    daemonsetAvailable: `sum(
+  kube_daemonset_status_number_available{
+    cluster=~"$cluster",namespace=~"$namespace",daemonset=~"$workload"
+  }
+)`,
+    daemonsetReady: `sum(
+  kube_daemonset_status_number_ready{
+    cluster=~"$cluster",namespace=~"$namespace",daemonset=~"$workload"
+  }
+)`,
+    daemonsetUpdated: `sum(
+  kube_daemonset_status_updated_number_scheduled{
+    cluster=~"$cluster",namespace=~"$namespace",daemonset=~"$workload"
+  }
+)`,
+    daemonsetUnavailable: `sum(
+  kube_daemonset_status_number_unavailable{
+    cluster=~"$cluster",namespace=~"$namespace",daemonset=~"$workload"
+  }
+)`,
+    daemonsetMisscheduled: `sum(
+  kube_daemonset_status_number_misscheduled{
+    cluster=~"$cluster",namespace=~"$namespace",daemonset=~"$workload"
+  }
+)`,
+    cronjobActive: `sum(
+  kube_cronjob_status_active{
+    cluster=~"$cluster",namespace=~"$namespace",cronjob=~"$workload"
+  }
+)`,
+    jobActive: `sum(
+  kube_job_status_active{
+    cluster=~"$cluster",namespace=~"$namespace",job_name=~"$workload"
+  }
+)`,
+    jobSucceeded: `sum(
+  kube_job_status_succeeded{
+    cluster=~"$cluster",namespace=~"$namespace",job_name=~"$workload"
+  }
+)`,
+    jobFailed: `sum(
+  kube_job_status_failed{
+    cluster=~"$cluster",namespace=~"$namespace",job_name=~"$workload"
+  }
+)`,
+  },
+  pods: {
+    count: `count(kube_pod_info{cluster=~"$cluster", namespace=~"$namespace", pod!=""})`,
+    labelsByClusterNamespace: `label_values(
+  namespace_workload_pod:kube_pod_owner:relabel{
+    cluster=~"$cluster",namespace=~"$namespace"
+  },
+  pod
+)`,
+    labelsByClusterNode: `label_values(
+  kube_pod_info{
+    cluster=~"$cluster",node=~"$node"
+  },
+  pod
+)`,
+    labelsByClusterNamespaceWorkload: `label_values(
+  namespace_workload_pod:kube_pod_owner:relabel{
+    cluster=~"$cluster",
+    namespace=~"$namespace",
+    workload=~"$workload"
+  },
+  pod
+)`,
+    info: `topk(
+  1,
+  max(
+    last_over_time(
+      timestamp(
+        kube_pod_info{
+          cluster=~"$cluster",
+          node=~"$node",
+          namespace=~"$namespace",
+          pod=~"$pod"
+        }
+      )[$__range:]
+    )
+  ) by(cluster,namespace,pod,node,pod_ip,uid)
+    * on(cluster,namespace,pod) group_left(phase)
+  group(
+    topk(
+      1,
+      last_over_time(
+        timestamp(
+          kube_pod_status_phase{
+            cluster=~"$cluster",
+            namespace=~"$namespace",
+            pod=~"$pod"
+          }
+            ==
+          1
+        )[$__range:]
+      )
+    ) by(cluster,namespace,pod)
+  ) by(cluster,namespace,pod,phase)
+) by(cluster,namespace,pod)`,
+    cpuUsageAvgOverTime: `avg_over_time(
+  (
+    sum(
+      node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{
+        cluster=~"$cluster",
+        node=~"$node",
+        namespace=~"$namespace",
+        pod=~"$pod",
+        container!="POD",
+        container!=""
+      }
+    ) by(cluster,namespace,pod)
+  )[$__range:$__interval]
+)`,
+    cpuUsageAvgPercentOverTime: `avg_over_time(
+  (
+    sum(
+      node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{
+        cluster=~"$cluster",
+        node=~"$node",
+        namespace=~"$namespace",
+        pod=~"$pod",
+        container!="POD",
+        container!=""
+      }
+    ) by(cluster,namespace,pod)
+  )[$__range:$__interval]
+)
+  /
+sum(
+  kube_pod_container_resource_requests{
+    cluster=~"$cluster",
+    node=~"$node",
+    namespace=~"$namespace",
+    pod=~"$pod",
+    container!="POD",
+    container!="",
+    resource="cpu"
+  }
+) by(cluster,namespace,pod)`,
+    cpuUsageMaxOverTime: `max_over_time(
+  (
+    sum(
+      node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{
+        cluster=~"$cluster",
+        node=~"$node",
+        namespace=~"$namespace",
+        pod=~"$pod",
+        container!="POD",
+        container!=""
+      }
+    ) by(cluster,namespace,pod)
+  )[$__range:$__interval]
+)`,
+    cpuUsageMaxPercentOverTime: `max_over_time(
+  (
+    sum(
+      node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{
+        cluster=~"$cluster",
+        node=~"$node",
+        namespace=~"$namespace",
+        pod=~"$pod",
+        container!="POD",
+        container!=""
+      }
+    ) by(cluster,namespace,pod)
+  )[$__range:$__interval]
+)
+  /
+sum(
+  kube_pod_container_resource_requests{
+    cluster=~"$cluster",
+    node=~"$node",
+    namespace=~"$namespace",
+    pod=~"$pod",
+    container!="POD",
+    container!="",
+    resource="cpu"
+  }
+) by(cluster,namespace,pod)`,
+    memoryUsageAvgOverTime: `avg_over_time(
+  (
+    sum(
+      node_namespace_pod_container:container_memory_working_set_bytes{
+        cluster=~"$cluster",
+        node=~"$node",
+        namespace=~"$namespace",
+        pod=~"$pod",
+        container!="POD",
+        container!=""
+      }
+    ) by(cluster,namespace,pod)
+  )[$__range:$__interval]
+)`,
+    memoryUsageAvgPercentOverTime: `avg_over_time(
+  (
+    sum(
+      node_namespace_pod_container:container_memory_working_set_bytes{
+        cluster=~"$cluster",
+        node=~"$node",
+        namespace=~"$namespace",
+        pod=~"$pod",
+        container!="POD",
+        container!=""
+      }
+    ) by(cluster,namespace,pod)
+  )[$__range:$__interval]
+)
+  /
+sum(
+  kube_pod_container_resource_requests{
+    cluster=~"$cluster",
+    node=~"$node",
+    namespace=~"$namespace",
+    pod=~"$pod",
+    container!="POD",
+    container!="",
+    resource="memory"
+  }
+) by(cluster,namespace,pod)`,
+    memoryUsageMaxOverTime: `max_over_time(
+  (
+    sum(
+      max(
+        node_namespace_pod_container:container_memory_working_set_bytes{
+          cluster=~"$cluster",
+          node=~"$node",
+          namespace=~"$namespace",
+          pod=~"$pod",
+          container!="POD",
+          container!=""
+        }
+      ) by(cluster,namespace,pod,container)
+    ) by(cluster,namespace,pod)
+  )[$__range:$__interval]
+)`,
+    memoryUsageMaxPercentOverTime: `max_over_time(
+  (
+    sum(
+      max(
+        node_namespace_pod_container:container_memory_working_set_bytes{
+          cluster=~"$cluster",
+          node=~"$node",
+          namespace=~"$namespace",
+          pod=~"$pod",
+          container!="POD",
+          container!=""
+        }
+      ) by(cluster,namespace,pod,container)
+    ) by(cluster,namespace,pod)
+  )[$__range:$__interval]
+)
+  /
+sum(
+  kube_pod_container_resource_requests{
+    cluster=~"$cluster",
+    node=~"$node",
+    namespace=~"$namespace",
+    pod=~"$pod",
+    container!="POD",
+    container!="",
+    resource="memory"
+  }
+) by(cluster,namespace,pod)`,
+    alertsCount: `ALERTS{
+  pod=~"$pod",
+  alertname=~"(Kube.*|CPUThrottlingHigh)",
+  alertstate=~"firing",
+  cluster=~"$cluster",
+  namespace=~"$namespace"
+}`,
+    cpuAllocation: `max(
+  sum(
+    max(
+      cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{
+        container!="",
+        cluster=~"$cluster",
+        namespace=~"$namespace",
+        pod=~"$pod"
+      }
+    ) by(cluster,namespace,node,pod,container,resource)
+  ) by(namespace,resource)
+    or
+  sum(
+    max(
+      rate(
+        container_cpu_usage_seconds_total{
+          container!="",
+          cluster=~"$cluster",
+          namespace=~"$namespace",
+          pod=~"$pod"
+        }[$__rate_interval]
+      )
+    ) by(cluster,instance,namespace,pod,container)
+  ) by(namespace)
+) by(namespace)`,
+    cpuLimits: `sum(
+  max(
+    cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits{
+      container!="",
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod"
+    }
+  ) by(cluster,namespace,node,pod,container)
+) by(pod)`,
+    cpuRequests: `sum(
+  max(
+    cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{
+      container!="",
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod"
+    }
+  ) by(cluster,namespace,node,pod,container,resource)
+) by(pod)`,
+    cpuUsage: `sum(
+  max(
+    rate(
+      container_cpu_usage_seconds_total{
+        container!="",
+        cluster=~"$cluster",
+        namespace=~"$namespace",
+        pod=~"$pod"
+      }[$__rate_interval]
+    )
+  ) by(cluster,instance,namespace,pod,container)
+) by(pod)`,
+    memoryAllocation: `max(
+  sum(
+    max(
+      cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{
+        container!="",
+        cluster=~"$cluster",
+        namespace=~"$namespace",
+        pod=~"$pod"
+      }
+    ) by(cluster,namespace,node,pod,container,resource)
+  ) by(namespace,resource)
+    or
+  sum(
+    max(
+      node_namespace_pod_container:container_memory_working_set_bytes{
+        container!="",
+        cluster=~"$cluster",
+        namespace=~"$namespace",
+        pod=~"$pod"
+      }
+    ) by(cluster,node,namespace,pod,container,image)
+  ) by(namespace)
+) by(namespace)`,
+    memoryLimits: `sum(
+  max(
+    cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{
+      container!="",
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod"
+    }
+  ) by(cluster,namespace,node,pod,container)
+) by(pod)`,
+    memoryRequests: `sum(
+  max(
+    cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{
+      container!="",
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod"
+    }
+  ) by(cluster,namespace,node,pod,container,resource)
+) by(pod)`,
+    memoryUsage: `sum(
+  max(
+    node_namespace_pod_container:container_memory_working_set_bytes{
+      container!="",
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod"
+    }
+  ) by(cluster,node,namespace,pod,container,image)
+) by(pod)`,
+  },
+  containers: {
+    info: `last_over_time(
+  (
+    max(
+      kube_pod_container_info{
+        pod="$pod",
+        cluster=~"$cluster",
+        namespace="$namespace"
+      }
+    ) by(cluster,namespace,pod,container,image_spec)
+  )[$__range:]
+)`,
+    cpuUsageAvgOverTime: `avg_over_time(
+  (
+    max(
+      node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{
+        cluster=~"$cluster",
+        namespace="$namespace",
+        pod="$pod",
+        container!="POD",
+        container!=""
+      }
+    ) by(container)
+  )[$__range:$__interval]
+)`,
+    cpuUsageAvgPercentOverTime: `avg_over_time(
+  (
+    max(
+      node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{
+        cluster=~"$cluster",
+        namespace="$namespace",
+        pod="$pod",
+        container!="POD",
+        container!=""
+      }
+    ) by(container)
+  )[$__range:$__interval]
+)
+  /
+sum(
+  kube_pod_container_resource_requests{
+    cluster=~"$cluster",
+    namespace="$namespace",
+    pod="$pod",
+    container!="POD",
+    container!="",
+    resource="cpu"
+  }
+) by(container)`,
+    cpuUsageMaxOverTime: `max_over_time(
+  (
+    max(
+      node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{
+        cluster=~"$cluster",
+        namespace="$namespace",
+        pod="$pod",
+        container!="POD",
+        container!=""
+      }
+    ) by(container)
+  )[$__range:$__interval]
+)`,
+    cpuUsageMaxPercentOverTime: `max_over_time(
+  (
+    max(
+      node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{
+        cluster=~"$cluster",
+        namespace="$namespace",
+        pod="$pod",
+        container!="POD",
+        container!=""
+      }
+    ) by(container)
+  )[$__range:$__interval]
+)
+  /
+sum(
+  kube_pod_container_resource_requests{
+    cluster=~"$cluster",
+    namespace="$namespace",
+    pod="$pod",
+    container!="POD",
+    container!="",
+    resource="cpu"
+  }
+) by(container)`,
+    memoryUsageAvgOverTime: `avg_over_time(
+  (
+    avg(
+      node_namespace_pod_container:container_memory_working_set_bytes{
+        cluster=~"$cluster",
+        namespace="$namespace",
+        pod="$pod",
+        container!="POD",
+        container!=""
+      }
+    ) by(container)
+  )[$__range:$__interval]
+)`,
+    memoryUsageAvgPercentOverTime: `avg_over_time(
+  (
+    avg(
+      node_namespace_pod_container:container_memory_working_set_bytes{
+        cluster=~"$cluster",
+        namespace="$namespace",
+        pod="$pod",
+        container!="POD",
+        container!=""
+      }
+    ) by(container)
+  )[$__range:$__interval]
+)
+  /
+sum(
+  kube_pod_container_resource_requests{
+    cluster=~"$cluster",
+    namespace="$namespace",
+    pod="$pod",
+    container!="POD",
+    container!="",
+    resource="memory"
+  }
+) by(container)`,
+    memoryUsageMaxOverTime: `max_over_time(
+  (
+    max(
+      node_namespace_pod_container:container_memory_working_set_bytes{
+        cluster=~"$cluster",
+        namespace="$namespace",
+        pod="$pod",
+        container!="POD",
+        container!=""
+      }
+    ) by(container)
+  )[$__range:$__interval]
+)`,
+    memoryUsageMaxPercentOverTime: `max_over_time(
+  (
+    max(
+      node_namespace_pod_container:container_memory_working_set_bytes{
+        cluster=~"$cluster",
+        namespace="$namespace",
+        pod="$pod",
+        container!="POD",
+        container!=""
+      }
+    ) by(container)
+  )[$__range:$__interval]
+)
+  /
+sum(
+  kube_pod_container_resource_requests{
+    cluster=~"$cluster",
+    namespace="$namespace",
+    pod="$pod",
+    container!="POD",
+    container!="",
+    resource="memory"
+  }
+) by(container)`,
+  },
+  persistentVolumeClaims: {
+    count: `count(
+  kube_persistentvolumeclaim_info{
+    cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim!=""
+  }
+)`,
+  },
+};

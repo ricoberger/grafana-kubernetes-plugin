@@ -44,56 +44,18 @@ export function Integrations({ options, onOptionsChange }: Props) {
           width={65}
         />
       </InlineField>
-      <InlineField label="Metrics kubelet job" labelWidth={30} interactive>
+      <InlineField label="Metrics cluster label" labelWidth={30} interactive>
         <Input
           onChange={(event: ChangeEvent<HTMLInputElement>) => {
             onOptionsChange({
               ...options,
               jsonData: {
                 ...options.jsonData,
-                integrationsMetricsKubeletJob: event.target.value,
+                integrationsMetricsClusterLabel: event.target.value,
               },
             });
           }}
-          value={options.jsonData.integrationsMetricsKubeletJob}
-          width={65}
-        />
-      </InlineField>
-      <InlineField
-        label="Metrics kube-state-metrics job"
-        labelWidth={30}
-        interactive
-      >
-        <Input
-          onChange={(event: ChangeEvent<HTMLInputElement>) => {
-            onOptionsChange({
-              ...options,
-              jsonData: {
-                ...options.jsonData,
-                integrationsMetricsKubeStateMetricsJob: event.target.value,
-              },
-            });
-          }}
-          value={options.jsonData.integrationsMetricsKubeStateMetricsJob}
-          width={65}
-        />
-      </InlineField>
-      <InlineField
-        label="Metrics node-exporter job"
-        labelWidth={30}
-        interactive
-      >
-        <Input
-          onChange={(event: ChangeEvent<HTMLInputElement>) => {
-            onOptionsChange({
-              ...options,
-              jsonData: {
-                ...options.jsonData,
-                integrationsMetricsNodeExporterJob: event.target.value,
-              },
-            });
-          }}
-          value={options.jsonData.integrationsMetricsNodeExporterJob}
+          value={options.jsonData.integrationsMetricsClusterLabel}
           width={65}
         />
       </InlineField>

@@ -3,6 +3,7 @@ package models
 type QueryType string
 
 const (
+	QueryTypeSettings              = "settings"
 	QueryTypeKubernetesResourceIds = "kubernetes-resourceids"
 	QueryTypeKubernetesNamespaces  = "kubernetes-namespaces"
 	QueryTypeKubernetesResources   = "kubernetes-resources"
@@ -13,6 +14,10 @@ const (
 	QueryTypeFluxResources         = "flux-resources"
 	QueryTypeCertManagerResources  = "certmanager-resources"
 )
+
+type QueryModelSettings struct {
+	Setting string `json:"setting"`
+}
 
 type QueryModelKubernetesResources struct {
 	ResourceId     string `json:"resourceId"`

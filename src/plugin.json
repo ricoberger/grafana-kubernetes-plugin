@@ -92,6 +92,13 @@
     },
     {
       "type": "page",
+      "name": "Metrics",
+      "path": "/a/%PLUGIN_ID%/metrics",
+      "addToNav": true,
+      "defaultNav": false
+    },
+    {
+      "type": "page",
       "name": "Resources",
       "path": "/a/%PLUGIN_ID%/resources",
       "addToNav": true,

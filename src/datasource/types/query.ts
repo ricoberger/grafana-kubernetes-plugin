@@ -17,6 +17,9 @@ export const DEFAULT_QUERY: Partial<Query> = {
  * when the user changes the query type in the query editor.
  */
 export const DEFAULT_QUERIES: Record<QueryType, Partial<Query>> = {
+  settings: {
+    setting: '',
+  },
   'kubernetes-resourceids': {},
   'kubernetes-namespaces': {},
   'kubernetes-containers': {
@@ -73,6 +76,7 @@ export const DEFAULT_QUERIES: Record<QueryType, Partial<Query>> = {
  * frame which can be used within a panel.
  */
 export type QueryType =
+  | 'settings'
   | 'kubernetes-resourceids'
   | 'kubernetes-namespaces'
   | 'kubernetes-containers'
@@ -90,6 +94,7 @@ export type QueryType =
 export interface Query
   extends DataQuery,
   QueryModelVariable,
+  QueryModelSettings,
   QueryModelKubernetesResources,
   QueryModelKubernetesContainers,
   QueryModelKubernetesLogs,
@@ -101,6 +106,10 @@ export interface Query
 
 export interface QueryModelVariable {
   variableField?: string;
+}
+
+export interface QueryModelSettings {
+  setting?: string;
 }
 
 export interface QueryModelKubernetesResources {

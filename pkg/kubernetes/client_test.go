@@ -224,7 +224,7 @@ func TestProxy(t *testing.T) {
 	require.NoError(t, err)
 
 	t.Run("should return pods via proxy", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodGet, "https://localhost:3000/api/datasources/proxy/uid/UID/proxy/api/v1/namespaces/default/pods?limit=500", nil)
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "https://localhost:3000/api/datasources/proxy/uid/UID/proxy/api/v1/namespaces/default/pods?limit=500", nil)
 		w := httptest.NewRecorder()
 
 		kubeClient.Proxy("", nil, "api/v1/namespaces/default/pods?limit=500", w, req)
@@ -238,7 +238,7 @@ func TestProxy(t *testing.T) {
 	})
 
 	t.Run("should impersonate user and groups", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodGet, "https://localhost:3000/api/datasources/proxy/uid/UID/proxy/api/v1/namespaces/default/pods?limit=500", nil)
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "https://localhost:3000/api/datasources/proxy/uid/UID/proxy/api/v1/namespaces/default/pods?limit=500", nil)
 		w := httptest.NewRecorder()
 
 		kubeClient.Proxy("test@user", []string{"test@group"}, "api/v1/namespaces/default/pods?limit=500", w, req)
@@ -269,7 +269,7 @@ func TestProxy(t *testing.T) {
 			},
 		}
 
-		req := httptest.NewRequest(http.MethodGet, testServer.URL, nil)
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, testServer.URL, nil)
 		req.Header.Add("Impersonate-User", "existinguser")
 		req.Header.Add("Impersonate-Uid", "existinguid")
 		req.Header.Add("Impersonate-Group", "existinggroup1")
@@ -296,7 +296,7 @@ func TestProxy(t *testing.T) {
 			},
 		}
 
-		req := httptest.NewRequest(http.MethodGet, testServer.URL, nil)
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, testServer.URL, nil)
 		req.Header.Add("Impersonate-User", "existinguser")
 		req.Header.Add("Impersonate-Uid", "existinguid")
 		req.Header.Add("Impersonate-Group", "existinggroup1")
