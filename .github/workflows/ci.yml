@@ -241,6 +241,9 @@ jobs:
     name: Docker
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      packages: write
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -267,6 +270,12 @@ jobs:
         with:
           version: latest
           args: buildAll
+
+      - name: Create Archive
+        run: |
+          cp -r dist ricoberger-kubernetes-app
+          zip -qr ricoberger-kubernetes-app.zip ricoberger-kubernetes-app
+          rm -rf ricoberger-kubernetes-app
 
       - name: Docker Metadata
         id: metadata
