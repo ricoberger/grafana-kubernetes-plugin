@@ -110,6 +110,7 @@ func NewDatasource(ctx context.Context, pCtx backend.DataSourceInstanceSettings)
 	}
 
 	queryTypeMux := datasource.NewQueryTypeMux()
+	queryTypeMux.HandleFunc(models.QueryTypeSettings, ds.handleSettingsQueries)
 	queryTypeMux.HandleFunc(models.QueryTypeKubernetesResourceIds, ds.handleKubernetesResourceIdsQueries)
 	queryTypeMux.HandleFunc(models.QueryTypeKubernetesNamespaces, ds.handleKubernetesNamespacesQueries)
 	queryTypeMux.HandleFunc(models.QueryTypeKubernetesResources, ds.handleKubernetesResourcesQueries)

@@ -10,4 +10,10 @@ export enum ROUTES {
   CertManager = 'cert-manager',
   Kubeconfig = 'kubeconfig',
   Kubectl = 'kubectl',
+  Metrics = 'metrics',
+  MetricsNodes = 'metrics/nodes',
+  MetricsNamespaces = 'metrics/namespaces',
+  MetricsWorkloads = 'metrics/workloads',
+  MetricsPods = 'metrics/pods',
+  MetricsPersistentVolumeClaims = 'metrics/persistentvolumeclaims',
 }

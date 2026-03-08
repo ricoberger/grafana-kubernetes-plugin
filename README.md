@@ -182,8 +182,8 @@ Integrations allow you to integrate the Kubernetes datasource with other
 datasources to view metrics or traces related to your Kubernetes resources.
 
 To view the metrics of your Kubernetes resources you have to provide the UID of
-a Prometheus datasource and the job label for the kubelet, kube-state-metrics
-and node-exporter metrics.
+a Prometheus datasource and the cluster label for the kubelet,
+kube-state-metrics and node-exporter metrics.
 
 To view the traces of your Kubernetes logs you have to provide a query for your
 traces. In the query you can use the `${__value.raw}` variable which will be

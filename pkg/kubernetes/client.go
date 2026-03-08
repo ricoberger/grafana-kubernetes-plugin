@@ -192,7 +192,7 @@ func (c *client) GetResources(ctx context.Context, user string, groups []string,
 		return nil, err
 	}
 
-	if namespace == "*" || !resource.Namespaced {
+	if namespace == "*" || namespace == ".*" || namespace == ".+" || !resource.Namespaced {
 		namespace = ""
 	}
 	namespaces := strings.Split(namespace, ",")

@@ -11,12 +11,39 @@ import { ResourcesPage } from './resources/ResourcesPage';
 import { HelmPage } from './helm/HelmPage';
 import { FluxPage } from './flux/FluxPage';
 import { CertManagerPage } from './certmanager/CertManagerPage';
+import { MetricsPage } from './metrics/MetricsPage';
+import { NodesPage } from './metrics/nodes/NodesPage';
+import { NamespacesPage } from './metrics/namespaces/NamespacesPage';
+import { WorkloadsPage } from './metrics/workloads/WorkloadsPage';
+import { PodsPage } from './metrics/pods/PodsPage';
+import { NodePage } from './metrics/nodes/NodePage';
+import { NamespacePage } from './metrics/namespaces/NamespacePage';
+import { WorkloadPage } from './metrics/workloads/WorkloadPage';
+import { PodPage } from './metrics/pods/PodPage';
 
 function App(props: AppRootProps) {
   return (
     <PluginPropsContext.Provider value={props}>
       <Routes>
         <Route path={ROUTES.Home} element={<HomePage />} />
+        <Route path={ROUTES.Metrics} element={<MetricsPage />} />
+        <Route path={ROUTES.MetricsNodes} element={<NodesPage />} />
+        <Route path={`${ROUTES.MetricsNodes}/:node`} element={<NodePage />} />
+        <Route path={ROUTES.MetricsNamespaces} element={<NamespacesPage />} />
+        <Route
+          path={`${ROUTES.MetricsNamespaces}/:namespace`}
+          element={<NamespacePage />}
+        />
+        <Route path={ROUTES.MetricsWorkloads} element={<WorkloadsPage />} />
+        <Route
+          path={`${ROUTES.MetricsWorkloads}/:namespace/:workloadType/:workload`}
+          element={<WorkloadPage />}
+        />
+        <Route path={ROUTES.MetricsPods} element={<PodsPage />} />
+        <Route
+          path={`${ROUTES.MetricsPods}/:namespace/:pod`}
+          element={<PodPage />}
+        />
         <Route path={ROUTES.Resources} element={<ResourcesPage />} />
         <Route path={ROUTES.Helm} element={<HelmPage />} />
         <Route path={ROUTES.Flux} element={<FluxPage />} />

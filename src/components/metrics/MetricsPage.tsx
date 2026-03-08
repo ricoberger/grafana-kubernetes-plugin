@@ -1,7 +1,7 @@
 import React from 'react';
 import { VariableHide, VariableSort } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
-import { Card, Stack, useStyles2 } from '@grafana/ui';
+import { Stack, useStyles2 } from '@grafana/ui';
 import {
   SceneContextProvider,
   DataSourceVariable,
@@ -11,65 +11,15 @@ import {
   RefreshPicker,
 } from '@grafana/scenes-react';
 
+import pluginJson from '../../plugin.json';
 import { ROUTES } from '../../constants';
 import resourcesImg from '../../img/logo.svg';
-import helmImg from '../../img/helm.svg';
-import fluxImg from '../../img/flux.svg';
-import certmanagerImg from '../../img/cert-manager.svg';
-import { prefixRoute } from '../../utils/utils.routing';
 import { getStyles } from '../../utils/utils.styles';
 import datasourcePluginJson from '../../datasource/plugin.json';
-import { StatWithFixedColorAndLink } from '../metrics/shared/StatWithFixedColorAndLink';
-import { TimeSeriesMemoryOrCPU } from '../metrics/shared/TimeSeriesMemoryOrCPU';
-import { queries, variableQuery } from '../metrics/queries';
+import { StatWithFixedColorAndLink } from './shared/StatWithFixedColorAndLink';
+import { queries, variableQuery } from './queries';
 
-interface Item {
-  route: ROUTES;
-  title: string;
-  image: string;
-  description: string;
-  link: string;
-}
-
-const items: Item[] = [
-  {
-    route: ROUTES.Resources,
-    title: 'Resources',
-    image: resourcesImg,
-    description: 'Manage your Kubernetes resources.',
-    link: 'https://kubernetes.io',
-  },
-  {
-    route: ROUTES.Helm,
-    title: 'Helm',
-    image: helmImg,
-    description: 'Manage your Helm releases.',
-    link: 'https://helm.sh',
-  },
-  {
-    route: ROUTES.Flux,
-    title: 'Flux',
-    image: fluxImg,
-    description: 'Manage your Flux resources.',
-    link: 'https://fluxcd.io',
-  },
-  {
-    route: ROUTES.CertManager,
-    title: 'cert-manager',
-    image: certmanagerImg,
-    description: 'Manage your cert-manager resources.',
-    link: 'https://cert-manager.io',
-  },
-  {
-    route: ROUTES.Kubeconfig,
-    title: 'Kubeconfig',
-    image: resourcesImg,
-    description: 'Generate a Kubeconfig file.',
-    link: 'https://kubernetes.io',
-  },
-];
-
-export function HomePage() {
+export function MetricsPage() {
   const styles = useStyles2(getStyles);
 
   return (
@@ -124,6 +74,17 @@ export function HomePage() {
               sort={VariableSort.alphabeticalCaseInsensitiveAsc}
             >
               <PluginPage
+                renderTitle={() => (
+                  <Stack gap={0}>
+                    <img
+                      className={styles.pluginPage.title.image}
+                      alt="Metrics"
+                      src={resourcesImg}
+                    />
+                    <h1>Metrics</h1>
+                  </Stack>
+                )}
+                subTitle={pluginJson.info.description}
                 actions={
                   <>
                     <TimeRangePicker />
@@ -167,54 +128,8 @@ export function HomePage() {
                         route={ROUTES.MetricsPersistentVolumeClaims}
                       />
                     </div>
-                    <div className={styles.dashboard.row.height400px}>
-                      <TimeSeriesMemoryOrCPU
-                        title="Cluster CPU"
-                        unit="cores"
-                        capacityExpr={queries.cluster.cpuCapacity}
-                        limitsExpr={queries.cluster.cpuLimits}
-                        requestsExpr={queries.cluster.cpuRequests}
-                        usageExpr={queries.cluster.cpuUsage}
-                      />
-                      <TimeSeriesMemoryOrCPU
-                        title="Cluster Memory"
-                        unit="bytes"
-                        capacityExpr={queries.cluster.memoryCapacity}
-                        limitsExpr={queries.cluster.memoryLimits}
-                        requestsExpr={queries.cluster.memoryRequests}
-                        usageExpr={queries.cluster.memoryUsage}
-                      />
-                    </div>
                   </Stack>
                 </Stack>
-
-                <div className={styles.pluginPage.section}>
-                  <h4>Integrations</h4>
-                  <ul className={styles.list}>
-                    {items.map((item) => (
-                      <li
-                        key={item.route}
-                        data-testid={`integration-${item.route}`}
-                      >
-                        <Card noMargin href={prefixRoute(item.route)}>
-                          <Card.Heading>{item.title}</Card.Heading>
-                          <Card.Figure>
-                            <img
-                              src={item.image}
-                              alt={`${item.title} logo`}
-                              width="40"
-                              height="40"
-                            />
-                          </Card.Figure>
-                          <Card.Meta>
-                            <span>{item.description}</span>
-                            <a href={item.link}>{item.link}</a>
-                          </Card.Meta>
-                        </Card>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
               </PluginPage>
             </QueryVariable>
           </QueryVariable>
