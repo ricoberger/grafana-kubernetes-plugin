@@ -30,22 +30,22 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: '22'
-          cache: 'npm'
+          cache: 'yarn'
 
       - name: Install Dependencies
-        run: npm ci
+        run: yarn install
 
       - name: Check Types
-        run: npm run typecheck
+        run: yarn run typecheck
 
       - name: Lint
-        run: npm run lint
+        run: yarn run lint
 
       - name: Unit Tests
-        run: npm run test:ci
+        run: yarn run test:ci
 
       - name: Build Frontend
-        run: npm run build
+        run: yarn run build
 
       - name: Check for Backend
         id: check-for-backend
@@ -89,7 +89,7 @@ jobs:
 
       - name: Sign Plugin
         if: ${{ env.GRAFANA_ACCESS_POLICY_TOKEN != '' }}
-        run: npm run sign
+        run: yarn run sign
 
       - name: Get Plugin Metadata
         id: metadata
@@ -189,10 +189,10 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: '22'
-          cache: 'npm'
+          cache: 'yarn'
 
       - name: Install Development Dependencies
-        run: npm ci
+        run: yarn install
 
       - name: Start Grafana
         run: |
@@ -205,11 +205,11 @@ jobs:
           url: http://localhost:3000/login
 
       - name: Install Playwright Browsers
-        run: npm exec playwright install chromium --with-deps
+        run: yarn exec playwright install chromium --with-deps
 
       - name: Run Playwright Tests
         id: run-tests
-        run: npm run e2e
+        run: yarn run e2e
 
       - name: Upload E2E Test Summary
         uses: grafana/plugin-actions/playwright-gh-pages/upload-report-artifacts@upload-report-artifacts/v1.0.1
@@ -252,7 +252,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: '22'
-          cache: 'npm'
+          cache: 'yarn'
 
       - name: Setup Go
         uses: actions/setup-go@v6
@@ -260,10 +260,10 @@ jobs:
           go-version-file: go.mod
 
       - name: Install Dependencies
-        run: npm ci
+        run: yarn install
 
       - name: Build Frontend
-        run: npm run build
+        run: yarn run build
 
       - name: Build Backend
         uses: magefile/mage-action@v3
