@@ -8,7 +8,7 @@
     "test:ci": "jest --passWithNoTests --maxWorkers 4",
     "typecheck": "tsc --noEmit",
     "lint": "eslint --cache .",
-    "lint:fix": "npm run lint -- --fix && prettier --write --list-different .",
+    "lint:fix": "yarn run lint -- --fix && prettier --write --list-different .",
     "e2e": "playwright test",
     "server": "docker compose up --build",
     "sign": "npx --yes @grafana/sign-plugin@latest"
@@ -90,8 +90,8 @@
     "@grafana/i18n": "^12.4.0",
     "@grafana/llm": "^1.0.3",
     "@grafana/runtime": "^12.4.0",
-    "@grafana/scenes": "^7.1.2",
-    "@grafana/scenes-react": "^7.1.2",
+    "@grafana/scenes": "6.57.2",
+    "@grafana/scenes-react": "6.57.2",
     "@grafana/schema": "^12.4.0",
     "@grafana/ui": "^12.4.0",
     "@kubernetes/client-node": "^1.4.0",
@@ -104,5 +104,5 @@
     "rxjs": "7.8.2",
     "yaml": "^2.8.1"
   },
-  "packageManager": "npm@11.6.0"
+  "packageManager": "yarn@1.22.22"
 }

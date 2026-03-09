@@ -43,29 +43,29 @@ You'll need to have the following tools set up:
 1. Install dependencies
 
    ```bash
-   npm install
+   yarn install
    ```
 
 2. Build plugin in development mode and run in watch mode
 
    ```bash
-   npm run dev
+   yarn run dev
    ```
 
 3. Build plugin in production mode
 
    ```bash
-   npm run build
+   yarn run build
    ```
 
 4. Run the tests (using Jest)
 
    ```bash
    # Runs the tests and watches for changes, requires git init first
-   npm run test
+   yarn run test
 
    # Exits after running all the tests
-   npm run test:ci
+   yarn run test:ci
    ```
 
 5. Run the tests (using Mage)
@@ -88,30 +88,30 @@ You'll need to have the following tools set up:
 7. Spin up a Grafana instance and run the plugin inside it (using Docker)
 
    ```bash
-   npm run server
+   yarn run server
    ```
 
 8. Run the E2E tests (using Playwright)
 
    ```bash
    # Install E2E test dependencies
-   npm exec playwright install chromium
+   yarn exec playwright install chromium
 
    # Spins up a Grafana instance first that we tests against
-   npm run server
+   yarn run server
 
    # Starts the tests
-   npm run e2e
+   yarn run e2e
    ```
 
 9. Run the linter
 
    ```bash
-   npm run lint
+   yarn run lint
 
    # or
 
-   npm run lint:fix
+   yarn run lint:fix
    ```
 
 # Release
@@ -120,5 +120,5 @@ The [release workflow](./.github/workflows/release.yml) handles the creation of
 new releases. To trigger the workflow we need to push a version tag to GitHub.
 This can be achieved with the following steps:
 
-1. Run `npm version <major|minor|patch>`
+1. Run `yarn version <major|minor|patch>`
 2. Run `git push origin main --follow-tags`
