@@ -21,7 +21,11 @@ import { TimeSeriesMemoryOrCPU } from '../shared/TimeSeriesMemoryOrCPU';
 import datasourcePluginJson from '../../../datasource/plugin.json';
 import { useVizPanelMenu } from '../../../hooks/useVizPanelMenu';
 import { TimeSeriesWorkloadStatus } from '../shared/TimeSeriesWorkloadStatus';
-import { GraphDrawStyle, StackingMode } from '@grafana/schema';
+import {
+  FieldColorModeId,
+  GraphDrawStyle,
+  StackingMode,
+} from '@grafana/schema';
 
 interface Props {
   workloadType: string;
@@ -390,6 +394,10 @@ function TimeSeriesImages() {
     })
     .setCustomFieldConfig('drawStyle', GraphDrawStyle.Bars)
     .setCustomFieldConfig('stacking', { mode: StackingMode.Normal })
+    .setColor({
+      mode: FieldColorModeId.Shades,
+      fixedColor: 'green',
+    })
     .build();
 
   const menu = useVizPanelMenu({
