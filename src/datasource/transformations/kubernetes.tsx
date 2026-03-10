@@ -57,7 +57,7 @@ export const kubernetesLogsTransformation = (
     fields: [
       ...frame.fields,
       {
-        name: 'traceID',
+        name: 'Trace',
         type: FieldType.string,
         values: labels.map((labels) => {
           for (const [key, value] of Object.entries(labels)) {
@@ -73,7 +73,7 @@ export const kubernetesLogsTransformation = (
         config: {
           links: [
             {
-              title: 'Trace',
+              title: 'View Trace',
               url: `/explore?left=${tracesQuery}`,
               targetBlank: true,
             },
