@@ -1,5 +1,5 @@
 import React from 'react';
-import { VariableHide } from '@grafana/data';
+import { VariableHide, VariableRefresh } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import { Stack, useStyles2 } from '@grafana/ui';
 import {
@@ -31,6 +31,7 @@ export function NodesPage() {
         name="datasource"
         label="Cluster"
         pluginId={datasourcePluginJson.id}
+        refresh={VariableRefresh.onDashboardLoad}
       >
         <QueryVariable
           name="prometheus"
@@ -42,6 +43,7 @@ export function NodesPage() {
             setting: 'integrationsMetricsDatasourceUid',
             variableField: 'values',
           }}
+          refresh={VariableRefresh.onDashboardLoad}
           hide={VariableHide.hideVariable}
         >
           <QueryVariable
@@ -54,6 +56,7 @@ export function NodesPage() {
               setting: 'integrationsMetricsClusterLabel',
               variableField: 'values',
             }}
+            refresh={VariableRefresh.onDashboardLoad}
             hide={VariableHide.hideVariable}
           >
             <PluginPage

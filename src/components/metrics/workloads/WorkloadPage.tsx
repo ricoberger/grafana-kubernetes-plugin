@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { VariableHide, VariableSort } from '@grafana/data';
+import { VariableHide, VariableRefresh, VariableSort } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import { Alert, Stack, Tab, TabsBar, useStyles2 } from '@grafana/ui';
 import {
@@ -50,6 +50,7 @@ export function WorkloadPage() {
         label="Cluster"
         pluginId={datasourcePluginJson.id}
         hide={VariableHide.hideVariable}
+        refresh={VariableRefresh.onDashboardLoad}
       >
         <QueryVariable
           name="prometheus"
@@ -61,6 +62,7 @@ export function WorkloadPage() {
             setting: 'integrationsMetricsDatasourceUid',
             variableField: 'values',
           }}
+          refresh={VariableRefresh.onDashboardLoad}
           hide={VariableHide.hideVariable}
         >
           <QueryVariable
@@ -73,6 +75,7 @@ export function WorkloadPage() {
               setting: 'integrationsMetricsClusterLabel',
               variableField: 'values',
             }}
+            refresh={VariableRefresh.onDashboardLoad}
             hide={VariableHide.hideVariable}
           >
             <CustomVariable
@@ -116,6 +119,7 @@ export function WorkloadPage() {
                           queries.pods.labelsByClusterNamespaceWorkload,
                         ),
                       }}
+                      refresh={VariableRefresh.onTimeRangeChanged}
                       isMulti={true}
                       includeAll={true}
                       initialValue={'$__all'}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { VariableHide } from '@grafana/data';
+import { VariableHide, VariableRefresh } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import { Alert, Stack, Tab, TabsBar, useStyles2 } from '@grafana/ui';
 import {
@@ -40,6 +40,7 @@ export function PodPage() {
         name="datasource"
         label="Cluster"
         pluginId={datasourcePluginJson.id}
+        refresh={VariableRefresh.onDashboardLoad}
         hide={VariableHide.hideVariable}
       >
         <QueryVariable
@@ -52,6 +53,7 @@ export function PodPage() {
             setting: 'integrationsMetricsDatasourceUid',
             variableField: 'values',
           }}
+          refresh={VariableRefresh.onDashboardLoad}
           hide={VariableHide.hideVariable}
         >
           <QueryVariable
@@ -64,6 +66,7 @@ export function PodPage() {
               setting: 'integrationsMetricsClusterLabel',
               variableField: 'values',
             }}
+            refresh={VariableRefresh.onDashboardLoad}
             hide={VariableHide.hideVariable}
           >
             <CustomVariable
