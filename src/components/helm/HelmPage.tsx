@@ -1,5 +1,5 @@
 import React from 'react';
-import { GrafanaTheme2, VariableSort } from '@grafana/data';
+import { GrafanaTheme2, VariableRefresh, VariableSort } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import { Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -60,6 +60,7 @@ export const HelmPage = () => {
           name="datasource"
           label="Cluster"
           pluginId={datasourcePluginJson.id}
+          refresh={VariableRefresh.onDashboardLoad}
         >
           <QueryVariable
             name="namespace"
@@ -72,6 +73,7 @@ export const HelmPage = () => {
               refId: 'kubernetes-namespaces',
               queryType: 'kubernetes-namespaces',
             }}
+            refresh={VariableRefresh.onDashboardLoad}
             sort={VariableSort.alphabeticalCaseInsensitiveAsc}
             initialValue={DEFAULT_QUERIES['helm-releases'].namespace}
           >

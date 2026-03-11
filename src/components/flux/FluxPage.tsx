@@ -1,5 +1,5 @@
 import React from 'react';
-import { GrafanaTheme2, VariableSort } from '@grafana/data';
+import { GrafanaTheme2, VariableRefresh, VariableSort } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import { Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -61,6 +61,7 @@ export const FluxPage = () => {
           name="datasource"
           label="Cluster"
           pluginId={datasourcePluginJson.id}
+          refresh={VariableRefresh.onDashboardLoad}
         >
           <CustomVariable
             name="resourceId"
@@ -79,6 +80,7 @@ export const FluxPage = () => {
                 refId: 'kubernetes-namespaces',
                 queryType: 'kubernetes-namespaces',
               }}
+              refresh={VariableRefresh.onDashboardLoad}
               sort={VariableSort.alphabeticalCaseInsensitiveAsc}
               initialValue={DEFAULT_QUERIES['kubernetes-resources'].namespace}
             >

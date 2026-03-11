@@ -1,5 +1,5 @@
 import React from 'react';
-import { GrafanaTheme2, VariableSort } from '@grafana/data';
+import { GrafanaTheme2, VariableRefresh, VariableSort } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import { Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -64,6 +64,7 @@ export const ResourcesPage = () => {
           name="datasource"
           label="Cluster"
           pluginId={datasourcePluginJson.id}
+          refresh={VariableRefresh.onDashboardLoad}
         >
           <QueryVariable
             name="resourceId"
@@ -73,6 +74,7 @@ export const ResourcesPage = () => {
               refId: 'kubernetes-resourceids',
               queryType: 'kubernetes-resourceids',
             }}
+            refresh={VariableRefresh.onDashboardLoad}
             sort={VariableSort.alphabeticalCaseInsensitiveAsc}
             initialValue={DEFAULT_QUERIES['kubernetes-resources'].resourceId}
           >
@@ -87,6 +89,7 @@ export const ResourcesPage = () => {
                 refId: 'kubernetes-namespaces',
                 queryType: 'kubernetes-namespaces',
               }}
+              refresh={VariableRefresh.onDashboardLoad}
               sort={VariableSort.alphabeticalCaseInsensitiveAsc}
               initialValue={DEFAULT_QUERIES['kubernetes-resources'].namespace}
             >
