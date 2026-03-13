@@ -19,6 +19,7 @@ import datasourcePluginJson from '../../../datasource/plugin.json';
 import { PodPageOverview } from './PodPageOverview';
 import { PodPageCPU } from './PodPageCPU';
 import { PodPageMemory } from './PodPageMemory';
+import { PodPageNetwork } from './PodPageNetwork';
 
 export function PodPage() {
   const styles = useStyles2(getStyles);
@@ -154,6 +155,7 @@ export function PodPage() {
                   {activeTab === 'overview' && <PodPageOverview />}
                   {activeTab === 'cpu' && <PodPageCPU />}
                   {activeTab === 'memory' && <PodPageMemory />}
+                  {activeTab === 'network' && <PodPageNetwork />}
                 </PluginPage>
               </CustomVariable>
             </CustomVariable>

@@ -722,6 +722,150 @@ sum(
     }
   ) by(cluster,namespace,pod,container,node)
 ) by(cluster,namespace,pod,node)`,
+    networkBandwidthRx: `sum(
+  max(
+    rate(
+      windows_net_bytes_received_total{
+        cluster=~"$cluster",
+        instance=~"$node(:[0-9]{2,5})?"
+      }[$__rate_interval]
+    )
+      or
+    rate(
+      node_network_receive_bytes_total{
+        cluster=~"$cluster",
+        instance=~"$node(:[0-9]{2,5})?"
+      }[$__rate_interval]
+    )
+  ) by(cluster,instance,device)
+)`,
+    networkBandwidthTx: `-sum(
+  max(
+    rate(
+      windows_net_bytes_sent_total{
+        cluster=~"$cluster",
+        instance=~"$node(:[0-9]{2,5})?"
+      }[$__rate_interval]
+    )
+      or
+    rate(
+      node_network_transmit_bytes_total{
+        cluster=~"$cluster",
+        instance=~"$node(:[0-9]{2,5})?"
+      }[$__rate_interval]
+    )
+  ) by(cluster,instance,device)
+)`,
+    networkSaturationRx: `sum(
+  max(
+    rate(
+      node_network_receive_drop_total{
+        cluster=~"$cluster",
+        instance=~"$node(:[0-9]{2,5})?"
+      }[$__rate_interval]
+    )
+      or
+    sum(
+      rate(
+        windows_container_network_receive_packets_dropped_total{
+          cluster=~"$cluster",
+          instance=~"$node"
+        }[$__rate_interval]
+      )
+    ) by(cluster,instance,interface)
+  ) by(cluster,instance,device,interface)
+)`,
+    networkSaturationTx: `-sum(
+  max(
+    rate(
+      node_network_transmit_drop_total{
+        cluster=~"$cluster",
+        instance=~"$node(:[0-9]{2,5})?"
+      }[$__rate_interval]
+    )
+      or
+    sum(
+      rate(
+        windows_container_network_transmit_packets_dropped_total{
+          cluster=~"$cluster",
+          instance=~"$node"
+        }[$__rate_interval]
+      )
+    ) by(cluster,instance,interface)
+  ) by(cluster,instance,device,interface)
+)`,
+    networkBandwidthByPodRx: `sum(
+  max(
+    rate(
+      container_network_receive_bytes_total{cluster=~"$cluster",pod=~"$pod"}[$__rate_interval]
+    )
+      or
+    (
+      rate(
+        windows_container_network_receive_bytes_total{
+          cluster=~"$cluster",instance=~"$node"
+        }[$__rate_interval]
+      )
+        * on(container_id) group_left(pod,namespace)
+      kube_pod_container_info{cluster=~"$cluster",node=~"$node",pod=~"$pod"}
+    )
+  ) by(cluster,namespace,pod,interface)
+) by(cluster,namespace,pod)`,
+    networkBandwidthByPodTx: `-sum(
+  max(
+    rate(
+      container_network_transmit_bytes_total{cluster=~"$cluster",pod=~"$pod"}[$__rate_interval]
+    )
+      or
+    (
+      rate(
+        windows_container_network_transmit_bytes_total{
+          cluster=~"$cluster",instance=~"$node"
+        }[$__rate_interval]
+      )
+        * on(container_id) group_left(pod,namespace)
+      kube_pod_container_info{cluster=~"$cluster",node=~"$node",pod=~"$pod"}
+    )
+  ) by(cluster,namespace,pod,interface)
+) by(cluster,namespace,pod)`,
+    networkSaturationByPodRx: `sum(
+  max(
+    rate(
+      container_network_receive_packets_dropped_total{
+        cluster=~"$cluster",pod=~"$pod"
+      }[$__rate_interval]
+    )
+      or
+    (
+      rate(
+        windows_container_network_receive_packets_dropped_total{
+          cluster=~"$cluster",instance=~"$node"
+        }[$__rate_interval]
+      )
+        * on(container_id) group_left(pod,namespace)
+      kube_pod_container_info{cluster=~"$cluster",instance=~"$node",pod=~"$pod"}
+    )
+  ) by(cluster,namespace,pod,interface)
+) by(cluster,namespace,pod)`,
+    networkSaturationByPodTx: `-sum(
+  max(
+    rate(
+      container_network_transmit_packets_dropped_total{
+        cluster=~"$cluster",pod=~"$pod"
+      }[$__rate_interval]
+    )
+      or
+    (
+      rate(
+        windows_container_network_transmit_packets_dropped_total{
+          cluster=~"$cluster",instance=~"$node"
+        }[$__rate_interval]
+      )
+        * on(container_id) group_left(pod,namespace)
+      kube_pod_container_info{cluster=~"$cluster",instance=~"$node",pod=~"$pod"}
+    )
+  ) by(cluster,namespace,pod,interface)
+) by(cluster,namespace,pod)`,
   },
   namespaces: {
     labelsByCluster: `label_values(kube_namespace_status_phase{cluster=~"$cluster"}, namespace)`,
@@ -993,6 +1137,118 @@ sum(
     }
   ) by(cluster,namespace,pod,container)
 )`,
+    networkBandwidthRx: `sum(
+  max(
+    rate(
+      container_network_receive_bytes_total{
+        cluster=~"$cluster",namespace="$namespace"
+      }[$__rate_interval]
+    )
+  ) by(cluster,namespace,pod,interface)
+)`,
+    networkBandwidthTx: `-sum(
+  max(
+    rate(
+      container_network_transmit_bytes_total{
+        cluster=~"$cluster",namespace="$namespace"
+      }[$__rate_interval]
+    )
+  ) by(cluster,namespace,pod,interface)
+)`,
+    networkSaturationRx: `sum(
+  max(
+    rate(
+      container_network_receive_packets_dropped_total{
+        cluster=~"$cluster",
+        namespace="$namespace",
+        pod!=""
+      }[$__rate_interval]
+    )
+  ) by(namespace,pod,interface)
+)`,
+    networkSaturationTx: `-sum(
+  max(
+    rate(
+      container_network_transmit_packets_dropped_total{
+        cluster=~"$cluster",
+        namespace="$namespace",
+        pod!=""
+      }[$__rate_interval]
+    )
+  ) by(namespace,pod,interface)
+)`,
+    networkBandwidthByWorkloadRx: `sum(
+  max(
+    rate(
+      container_network_receive_bytes_total{
+        cluster=~"$cluster",namespace="$namespace"
+      }[$__rate_interval]
+    )
+  ) by(cluster,namespace,pod,interface)
+    * on(cluster,namespace,pod) group_left(workload,workload_type)
+  topk(
+    1,
+    group(
+      namespace_workload_pod:kube_pod_owner:relabel{
+        cluster=~"$cluster",namespace=~"$namespace"
+      }
+    ) by(cluster,namespace,workload,workload_type,pod)
+  ) by(cluster,namespace,pod)
+) by(cluster,namespace,workload,workload_type)`,
+    networkBandwidthByWorkloadTx: `-sum(
+  max(
+    rate(
+      container_network_transmit_bytes_total{
+        cluster=~"$cluster",namespace="$namespace"
+      }[$__rate_interval]
+    )
+  ) by(cluster,namespace,pod,interface)
+    * on(cluster,namespace,pod) group_left(workload,workload_type)
+  topk(
+    1,
+    group(
+      namespace_workload_pod:kube_pod_owner:relabel{
+        cluster=~"$cluster",namespace=~"$namespace"
+      }
+    ) by(cluster,namespace,workload,workload_type,pod)
+  ) by(cluster,namespace,pod)
+) by(cluster,namespace,workload,workload_type)`,
+    networkSaturationByWorkloadRx: `sum(
+  max(
+    rate(
+      container_network_receive_packets_dropped_total{
+        cluster=~"$cluster",namespace="$namespace"
+      }[$__rate_interval]
+    )
+  ) by(cluster,namespace,pod,interface)
+    * on(cluster,namespace,pod) group_left(workload,workload_type)
+  topk(
+    1,
+    group(
+      namespace_workload_pod:kube_pod_owner:relabel{
+        cluster=~"$cluster",namespace=~"$namespace"
+      }
+    ) by(cluster,namespace,workload,workload_type,pod)
+  ) by(cluster,namespace,pod)
+) by(cluster,namespace,workload,workload_type)`,
+    networkSaturationByWorkloadTx: `-sum(
+  max(
+    rate(
+      container_network_transmit_packets_dropped_total{
+        cluster=~"$cluster",namespace="$namespace"
+      }[$__rate_interval]
+    )
+  ) by(cluster,namespace,pod,interface)
+    * on(cluster,namespace,pod) group_left(workload,workload_type)
+  topk(
+    1,
+    group(
+      namespace_workload_pod:kube_pod_owner:relabel{
+        cluster=~"$cluster",namespace=~"$namespace"
+      }
+    ) by(cluster,namespace,workload,workload_type,pod)
+  ) by(cluster,namespace,pod)
+) by(cluster,namespace,workload,workload_type)`,
   },
   workloads: {
     labelsByClusterNamespace: `query_result(
@@ -2879,6 +3135,86 @@ label_join(
   "workload",
   "workload_type"
 )`,
+    networkBandwidthRx: `sum(
+  max(
+    rate(
+      container_network_receive_bytes_total{
+        cluster=~"$cluster",namespace="$namespace",pod=~"$pod"
+      }[$__rate_interval]
+    )
+  ) by(cluster,namespace,pod,interface)
+)`,
+    networkBandwidthTx: `-sum(
+  max(
+    rate(
+      container_network_transmit_bytes_total{
+        cluster=~"$cluster",namespace="$namespace",pod=~"$pod"
+      }[$__rate_interval]
+    )
+  ) by(cluster,namespace,pod,interface)
+)`,
+    networkSaturationRx: `sum(
+  max(
+    rate(
+      container_network_receive_packets_dropped_total{
+        cluster=~"$cluster",
+        namespace="$namespace",
+        pod=~"$pod"
+      }[$__rate_interval]
+    )
+  ) by(cluster,namespace,pod,interface)
+)`,
+    networkSaturationTx: `-sum(
+  max(
+    rate(
+      container_network_transmit_packets_dropped_total{
+        cluster=~"$cluster",
+        namespace="$namespace",
+        pod=~"$pod"
+      }[$__rate_interval]
+    )
+  ) by(cluster,namespace,pod,interface)
+)`,
+    networkBandwidthByPodRx: `sum(
+  max(
+    rate(
+      container_network_receive_bytes_total{
+        cluster=~"$cluster",namespace="$namespace",pod=~"$pod"
+      }[$__rate_interval]
+    )
+  ) by(cluster,namespace,pod,interface)
+) by(cluster,namespace,pod)`,
+    networkBandwidthByPodTx: `-sum(
+  max(
+    rate(
+      container_network_transmit_bytes_total{
+        cluster=~"$cluster",namespace="$namespace",pod=~"$pod"
+      }[$__rate_interval]
+    )
+  ) by(cluster,namespace,pod,interface)
+) by(cluster,namespace,pod)`,
+    networkSaturationByPodRx: `sum(
+  max(
+    rate(
+      container_network_receive_packets_dropped_total{
+        cluster=~"$cluster",
+        namespace="$namespace",
+        pod=~"$pod"
+      }[$__rate_interval]
+    )
+  ) by(cluster,namespace,pod,interface)
+) by(cluster,namespace,pod)`,
+    networkSaturationByPodTx: `-sum(
+  max(
+    rate(
+      container_network_transmit_packets_dropped_total{
+        cluster=~"$cluster",
+        namespace="$namespace",
+        pod=~"$pod"
+      }[$__rate_interval]
+    )
+  ) by(cluster,namespace,pod,interface)
+) by(cluster,namespace,pod)`,
   },
   pods: {
     count: `count(kube_pod_info{cluster=~"$cluster", namespace=~"$namespace", pod!=""})`,
@@ -3489,6 +3825,86 @@ sum(
   "pod",
   "node"
 )`,
+    networkBandwidthRx: `sum(
+  max(
+    rate(
+      container_network_receive_bytes_total{
+        cluster=~"$cluster",namespace="$namespace",pod=~"$pod"
+      }[$__rate_interval]
+    )
+  ) by(cluster,namespace,pod,interface)
+)`,
+    networkBandwidthTx: `-sum(
+  max(
+    rate(
+      container_network_transmit_bytes_total{
+        cluster=~"$cluster",namespace="$namespace",pod=~"$pod"
+      }[$__rate_interval]
+    )
+  ) by(cluster,namespace,pod,interface)
+)`,
+    networkSaturationRx: `sum(
+  max(
+    rate(
+      container_network_receive_packets_dropped_total{
+        cluster=~"$cluster",
+        namespace="$namespace",
+        pod=~"$pod"
+      }[$__rate_interval]
+    )
+  ) by(cluster,namespace,pod,interface)
+)`,
+    networkSaturationTx: `-sum(
+  max(
+    rate(
+      container_network_transmit_packets_dropped_total{
+        cluster=~"$cluster",
+        namespace="$namespace",
+        pod=~"$pod"
+      }[$__rate_interval]
+    )
+  ) by(cluster,namespace,pod,interface)
+)`,
+    networkBandwidthByInterfaceRx: `sum(
+  max(
+    rate(
+      container_network_receive_bytes_total{
+        cluster=~"$cluster",namespace="$namespace",pod=~"$pod"
+      }[$__rate_interval]
+    )
+  ) by(cluster,namespace,pod,interface)
+) by(interface)`,
+    networkBandwidthByInterfaceTx: `-sum(
+  max(
+    rate(
+      container_network_transmit_bytes_total{
+        cluster=~"$cluster",namespace="$namespace",pod=~"$pod"
+      }[$__rate_interval]
+    )
+  ) by(cluster,namespace,pod,interface)
+) by(interface)`,
+    networkSaturationByInterfaceRx: `sum(
+  max(
+    rate(
+      container_network_receive_packets_dropped_total{
+        cluster=~"$cluster",
+        namespace="$namespace",
+        pod=~"$pod"
+      }[$__rate_interval]
+    )
+  ) by(cluster,namespace,pod,interface)
+) by(interface)`,
+    networkSaturationByInterfaceTx: `-sum(
+  max(
+    rate(
+      container_network_transmit_packets_dropped_total{
+        cluster=~"$cluster",
+        namespace="$namespace",
+        pod=~"$pod"
+      }[$__rate_interval]
+    )
+  ) by(cluster,namespace,pod,interface)
+) by(interface)`,
   },
   containers: {
     info: `last_over_time(
