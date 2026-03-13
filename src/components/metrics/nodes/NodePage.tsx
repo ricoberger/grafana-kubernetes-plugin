@@ -20,6 +20,7 @@ import { queries, variableQuery } from '../queries';
 import { NodePageOverview } from './NodePageOverview';
 import { NodePageCPU } from './NodePageCPU';
 import { NodePageMemory } from './NodePageMemory';
+import { NodePageNetwork } from './NodePageNetwork';
 
 export function NodePage() {
   const styles = useStyles2(getStyles);
@@ -168,6 +169,7 @@ export function NodePage() {
                     {activeTab === 'overview' && <NodePageOverview />}
                     {activeTab === 'cpu' && <NodePageCPU />}
                     {activeTab === 'memory' && <NodePageMemory />}
+                    {activeTab === 'network' && <NodePageNetwork />}
                   </PluginPage>
                 </QueryVariable>
               </CustomVariable>

@@ -20,6 +20,7 @@ import { WorkloadPageOverview } from './WorkloadPageOverview';
 import { queries, variableQuery } from '../queries';
 import { WorkloadPageMemory } from './WorkloadPageMemory';
 import { WorkloadPageCPU } from './WorkloadPageCPU';
+import { WorkloadPageNetwork } from './WorkloadPageNetwork';
 
 export function WorkloadPage() {
   const styles = useStyles2(getStyles);
@@ -200,6 +201,7 @@ export function WorkloadPage() {
                         )}
                         {activeTab === 'cpu' && <WorkloadPageCPU />}
                         {activeTab === 'memory' && <WorkloadPageMemory />}
+                        {activeTab === 'network' && <WorkloadPageNetwork />}
                       </PluginPage>
                     </QueryVariable>
                   </CustomVariable>
