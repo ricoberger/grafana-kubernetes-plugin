@@ -46,6 +46,7 @@ export function TimeSeriesMemoryOrCPUEfficiency({
       asTable: true,
       displayMode: LegendDisplayMode.Table,
       placement: 'bottom',
+      calcs: ['p95'],
     })
     .setColor({
       mode: FieldColorModeId.Shades,

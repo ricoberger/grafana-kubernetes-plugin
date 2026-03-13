@@ -20,6 +20,7 @@ import { PodPageOverview } from './PodPageOverview';
 import { PodPageCPU } from './PodPageCPU';
 import { PodPageMemory } from './PodPageMemory';
 import { PodPageNetwork } from './PodPageNetwork';
+import { PodPageStorage } from './PodPageStorage';
 
 export function PodPage() {
   const styles = useStyles2(getStyles);
@@ -73,90 +74,99 @@ export function PodPage() {
             hide={VariableHide.hideVariable}
           >
             <CustomVariable
-              name="namespace"
-              label="Namespace"
-              query={namespace}
-              initialValue={namespace}
+              name="node"
+              label="Node"
+              query=".+"
+              initialValue=".+"
               hide={VariableHide.hideVariable}
             >
               <CustomVariable
-                name="pod"
-                label="Pod"
-                query={pod}
-                initialValue={pod}
+                name="namespace"
+                label="Namespace"
+                query={namespace}
+                initialValue={namespace}
                 hide={VariableHide.hideVariable}
               >
-                <PluginPage
-                  renderTitle={() => (
-                    <Stack gap={0} alignItems="center" direction="row">
-                      <img
-                        className={styles.pluginPage.title.image}
-                        alt={pod}
-                        src={resourcesImg}
-                      />
-                      <h1>{pod}</h1>
-                      <Badge
-                        className={styles.pluginPage.title.badge}
-                        color="blue"
-                        text="pod"
-                      />
-                    </Stack>
-                  )}
-                  subTitle={pluginJson.info.description}
-                  actions={
-                    <>
-                      <TimeRangePicker />
-                      <RefreshPicker />
-                    </>
-                  }
+                <CustomVariable
+                  name="pod"
+                  label="Pod"
+                  query={pod}
+                  initialValue={pod}
+                  hide={VariableHide.hideVariable}
                 >
-                  <TabsBar className={styles.dashboard.tabsBar}>
-                    <Tab
-                      label="Overview"
-                      active={activeTab === 'overview'}
-                      onChangeTab={(ev) => {
-                        ev?.preventDefault();
-                        setActiveTab('overview');
-                      }}
-                    />
-                    <Tab
-                      label="CPU"
-                      active={activeTab === 'cpu'}
-                      onChangeTab={(ev) => {
-                        ev?.preventDefault();
-                        setActiveTab('cpu');
-                      }}
-                    />
-                    <Tab
-                      label="Memory"
-                      active={activeTab === 'memory'}
-                      onChangeTab={(ev) => {
-                        ev?.preventDefault();
-                        setActiveTab('memory');
-                      }}
-                    />
-                    <Tab
-                      label="Network"
-                      active={activeTab === 'network'}
-                      onChangeTab={(ev) => {
-                        ev?.preventDefault();
-                        setActiveTab('network');
-                      }}
-                    />
-                    <Tab
-                      label="Storage"
-                      active={activeTab === 'storage'}
-                      onChangeTab={(ev) => {
-                        ev?.preventDefault();
-                        setActiveTab('storage');
-                      }}
-                    />
-                  </TabsBar>
-                  {activeTab === 'overview' && <PodPageOverview />}
-                  {activeTab === 'cpu' && <PodPageCPU />}
-                  {activeTab === 'memory' && <PodPageMemory />}
-                  {activeTab === 'network' && <PodPageNetwork />}
-                </PluginPage>
+                  <PluginPage
+                    renderTitle={() => (
+                      <Stack gap={0} alignItems="center" direction="row">
+                        <img
+                          className={styles.pluginPage.title.image}
+                          alt={pod}
+                          src={resourcesImg}
+                        />
+                        <h1>{pod}</h1>
+                        <Badge
+                          className={styles.pluginPage.title.badge}
+                          color="blue"
+                          text="pod"
+                        />
+                      </Stack>
+                    )}
+                    subTitle={pluginJson.info.description}
+                    actions={
+                      <>
+                        <TimeRangePicker />
+                        <RefreshPicker />
+                      </>
+                    }
+                  >
+                    <TabsBar className={styles.dashboard.tabsBar}>
+                      <Tab
+                        label="Overview"
+                        active={activeTab === 'overview'}
+                        onChangeTab={(ev) => {
+                          ev?.preventDefault();
+                          setActiveTab('overview');
+                        }}
+                      />
+                      <Tab
+                        label="CPU"
+                        active={activeTab === 'cpu'}
+                        onChangeTab={(ev) => {
+                          ev?.preventDefault();
+                          setActiveTab('cpu');
+                        }}
+                      />
+                      <Tab
+                        label="Memory"
+                        active={activeTab === 'memory'}
+                        onChangeTab={(ev) => {
+                          ev?.preventDefault();
+                          setActiveTab('memory');
+                        }}
+                      />
+                      <Tab
+                        label="Network"
+                        active={activeTab === 'network'}
+                        onChangeTab={(ev) => {
+                          ev?.preventDefault();
+                          setActiveTab('network');
+                        }}
+                      />
+                      <Tab
+                        label="Storage"
+                        active={activeTab === 'storage'}
+                        onChangeTab={(ev) => {
+                          ev?.preventDefault();
+                          setActiveTab('storage');
+                        }}
+                      />
+                    </TabsBar>
+                    {activeTab === 'overview' && <PodPageOverview />}
+                    {activeTab === 'cpu' && <PodPageCPU />}
+                    {activeTab === 'memory' && <PodPageMemory />}
+                    {activeTab === 'network' && <PodPageNetwork />}
+                    {activeTab === 'storage' && <PodPageStorage />}
+                  </PluginPage>
+                </CustomVariable>
               </CustomVariable>
             </CustomVariable>
           </QueryVariable>

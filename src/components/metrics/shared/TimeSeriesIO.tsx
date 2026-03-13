@@ -7,35 +7,35 @@ import { useVizPanelMenu } from '../../../hooks/useVizPanelMenu';
 
 interface Props {
   title: string;
-  unit: 'binBps' | 'pps';
-  color: 'blue' | 'red';
-  rxExpr: string;
-  txExpr: string;
-  rxLegend: string;
-  txLegend: string;
+  unit: 'Bps' | 'iops' | 'binBps' | 'pps';
+  color: 'blue' | 'purple' | 'red';
+  inExpr: string;
+  outExpr: string;
+  inLegend: string;
+  outLegend: string;
 }
 
-export function TimeSeriesNetwork({
+export function TimeSeriesIO({
   title,
   unit,
   color,
-  rxExpr,
-  txExpr,
-  rxLegend,
-  txLegend,
+  inExpr,
+  outExpr,
+  inLegend,
+  outLegend,
 }: Props) {
   const queries: SceneDataQuery[] = [
     {
-      refId: 'rx',
+      refId: 'in',
       format: 'time_series',
-      expr: rxExpr,
-      legendFormat: rxLegend,
+      expr: inExpr,
+      legendFormat: inLegend,
     },
     {
-      refId: 'tx',
+      refId: 'out',
       format: 'time_series',
-      expr: txExpr,
-      legendFormat: txLegend,
+      expr: outExpr,
+      legendFormat: outLegend,
     },
   ];
 
@@ -53,12 +53,13 @@ export function TimeSeriesNetwork({
       asTable: true,
       displayMode: LegendDisplayMode.Table,
       placement: 'bottom',
+      calcs: ['lastNotNull'],
     })
     .setCustomFieldConfig('axisSoftMin', -100)
     .setCustomFieldConfig('axisSoftMax', 100)
     .setOverrides((b) =>
       b
-        .matchFieldsByQuery('rx')
+        .matchFieldsByQuery('in')
         .overrideColor({
           mode: 'shades',
           fixedColor: `super-light-${color}`,
@@ -67,7 +68,7 @@ export function TimeSeriesNetwork({
     )
     .setOverrides((b) =>
       b
-        .matchFieldsByQuery('tx')
+        .matchFieldsByQuery('out')
         .overrideColor({
           mode: 'shades',
           fixedColor: `dark-${color}`,

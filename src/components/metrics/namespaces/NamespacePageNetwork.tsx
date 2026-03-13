@@ -4,7 +4,7 @@ import { VariableControl } from '@grafana/scenes-react';
 
 import { getStyles } from '../../../utils/utils.styles';
 import { queries } from '../queries';
-import { TimeSeriesNetwork } from '../shared/TimeSeriesNetwork';
+import { TimeSeriesIO } from '../shared/TimeSeriesIO';
 
 export function NamespacePageNetwork() {
   const styles = useStyles2(getStyles);
@@ -21,43 +21,43 @@ export function NamespacePageNetwork() {
       </div>
 
       <div className={styles.dashboard.row.height400px}>
-        <TimeSeriesNetwork
+        <TimeSeriesIO
           title="Network Bandwidth"
           unit="binBps"
           color="blue"
-          rxExpr={queries.namespaces.networkBandwidthRx}
-          txExpr={queries.namespaces.networkBandwidthTx}
-          rxLegend="Rx"
-          txLegend="Tx"
+          inExpr={queries.namespaces.networkBandwidthRx}
+          outExpr={queries.namespaces.networkBandwidthTx}
+          inLegend="Rx"
+          outLegend="Tx"
         />
-        <TimeSeriesNetwork
+        <TimeSeriesIO
           title="Network Saturation"
           unit="pps"
           color="red"
-          rxExpr={queries.namespaces.networkSaturationRx}
-          txExpr={queries.namespaces.networkSaturationTx}
-          rxLegend="Rx dropped packets"
-          txLegend="Tx dropped packets"
+          inExpr={queries.namespaces.networkSaturationRx}
+          outExpr={queries.namespaces.networkSaturationTx}
+          inLegend="Rx dropped packets"
+          outLegend="Tx dropped packets"
         />
       </div>
       <div className={styles.dashboard.row.height400px}>
-        <TimeSeriesNetwork
+        <TimeSeriesIO
           title="Network Bandwidth by Workload"
           unit="binBps"
           color="blue"
-          rxExpr={queries.namespaces.networkBandwidthByWorkloadRx}
-          txExpr={queries.namespaces.networkBandwidthByWorkloadTx}
-          rxLegend="Rx ({{workload_type}}/{{workload}})"
-          txLegend="Tx ({{workload_type}}/{{workload}})"
+          inExpr={queries.namespaces.networkBandwidthByWorkloadRx}
+          outExpr={queries.namespaces.networkBandwidthByWorkloadTx}
+          inLegend="Rx ({{workload_type}}/{{workload}})"
+          outLegend="Tx ({{workload_type}}/{{workload}})"
         />
-        <TimeSeriesNetwork
+        <TimeSeriesIO
           title="Network Saturation by Workload"
           unit="pps"
           color="red"
-          rxExpr={queries.namespaces.networkSaturationByWorkloadRx}
-          txExpr={queries.namespaces.networkSaturationByWorkloadTx}
-          rxLegend="Rx dropped packets ({{workload_type}}/{{workload}})"
-          txLegend="Tx dropped packets ({{workload_type}}/{{workload}})"
+          inExpr={queries.namespaces.networkSaturationByWorkloadRx}
+          outExpr={queries.namespaces.networkSaturationByWorkloadTx}
+          inLegend="Rx dropped packets ({{workload_type}}/{{workload}})"
+          outLegend="Tx dropped packets ({{workload_type}}/{{workload}})"
         />
       </div>
     </Stack>

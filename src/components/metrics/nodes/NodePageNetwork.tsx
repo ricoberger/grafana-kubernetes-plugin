@@ -4,7 +4,7 @@ import { VariableControl } from '@grafana/scenes-react';
 
 import { getStyles } from '../../../utils/utils.styles';
 import { queries } from '../queries';
-import { TimeSeriesNetwork } from '../shared/TimeSeriesNetwork';
+import { TimeSeriesIO } from '../shared/TimeSeriesIO';
 
 export function NodePageNetwork() {
   const styles = useStyles2(getStyles);
@@ -22,43 +22,43 @@ export function NodePageNetwork() {
       </div>
 
       <div className={styles.dashboard.row.height400px}>
-        <TimeSeriesNetwork
+        <TimeSeriesIO
           title="Network Bandwidth"
           unit="binBps"
           color="blue"
-          rxExpr={queries.nodes.networkBandwidthRx}
-          txExpr={queries.nodes.networkBandwidthTx}
-          rxLegend="Rx"
-          txLegend="Tx"
+          inExpr={queries.nodes.networkBandwidthRx}
+          outExpr={queries.nodes.networkBandwidthTx}
+          inLegend="Rx"
+          outLegend="Tx"
         />
-        <TimeSeriesNetwork
+        <TimeSeriesIO
           title="Network Saturation"
           unit="pps"
           color="red"
-          rxExpr={queries.nodes.networkSaturationRx}
-          txExpr={queries.nodes.networkSaturationTx}
-          rxLegend="Rx dropped packets"
-          txLegend="Tx dropped packets"
+          inExpr={queries.nodes.networkSaturationRx}
+          outExpr={queries.nodes.networkSaturationTx}
+          inLegend="Rx dropped packets"
+          outLegend="Tx dropped packets"
         />
       </div>
       <div className={styles.dashboard.row.height400px}>
-        <TimeSeriesNetwork
+        <TimeSeriesIO
           title="Network Bandwidth by Pod"
           unit="binBps"
           color="blue"
-          rxExpr={queries.nodes.networkBandwidthByPodRx}
-          txExpr={queries.nodes.networkBandwidthByPodTx}
-          rxLegend="Rx ({{namespace}}/{{pod}})"
-          txLegend="Tx ({{namespace}}/{{pod}})"
+          inExpr={queries.nodes.networkBandwidthByPodRx}
+          outExpr={queries.nodes.networkBandwidthByPodTx}
+          inLegend="Rx ({{namespace}}/{{pod}})"
+          outLegend="Tx ({{namespace}}/{{pod}})"
         />
-        <TimeSeriesNetwork
+        <TimeSeriesIO
           title="Network Saturation by Pod"
           unit="pps"
           color="red"
-          rxExpr={queries.nodes.networkSaturationByPodRx}
-          txExpr={queries.nodes.networkSaturationByPodTx}
-          rxLegend="Rx dropped packets ({{namespace}}/{{pod}})"
-          txLegend="Tx dropped packets ({{namespace}}/{{pod}})"
+          inExpr={queries.nodes.networkSaturationByPodRx}
+          outExpr={queries.nodes.networkSaturationByPodTx}
+          inLegend="Rx dropped packets ({{namespace}}/{{pod}})"
+          outLegend="Tx dropped packets ({{namespace}}/{{pod}})"
         />
       </div>
     </Stack>

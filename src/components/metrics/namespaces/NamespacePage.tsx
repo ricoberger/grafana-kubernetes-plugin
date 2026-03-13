@@ -21,6 +21,7 @@ import { NamespacePageOverview } from './NamespacePageOverview';
 import { NamespacePageCPU } from './NamespacePageCPU';
 import { NamespacePageMemory } from './NamespacePageMemory';
 import { NamespacePageNetwork } from './NamespacePageNetwork';
+import { NamespacePageStorage } from './NamespacePageStorage';
 
 export function NamespacePage() {
   const styles = useStyles2(getStyles);
@@ -167,6 +168,7 @@ export function NamespacePage() {
                   {activeTab === 'cpu' && <NamespacePageCPU />}
                   {activeTab === 'memory' && <NamespacePageMemory />}
                   {activeTab === 'network' && <NamespacePageNetwork />}
+                  {activeTab === 'storage' && <NamespacePageStorage />}
                 </PluginPage>
               </QueryVariable>
             </CustomVariable>
