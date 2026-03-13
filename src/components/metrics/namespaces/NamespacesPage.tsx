@@ -79,7 +79,7 @@ export function NamespacesPage() {
             >
               <PluginPage
                 renderTitle={() => (
-                  <Stack gap={0}>
+                  <Stack gap={0} alignItems="center" direction="row">
                     <img
                       className={styles.pluginPage.title.image}
                       alt="Namespaces"

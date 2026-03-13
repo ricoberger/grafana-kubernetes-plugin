@@ -211,7 +211,7 @@ export function TableResourceUsage({
             ['workload']: infoContainerExpr ? false : true,
             ['workload_type']: infoContainerExpr ? false : true,
             ['pod']: infoContainerExpr ? false : true,
-            ['container']: true,
+            ['container']: infoContainerExpr ? true : false,
             ['phase']: true,
             ['image_spec']: true,
             ['Value #info_namespace']: true,

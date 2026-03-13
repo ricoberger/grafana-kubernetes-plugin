@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { VariableHide, VariableRefresh, VariableSort } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
-import { Alert, Stack, Tab, TabsBar, useStyles2 } from '@grafana/ui';
+import { Alert, Badge, Stack, Tab, TabsBar, useStyles2 } from '@grafana/ui';
 import {
   SceneContextProvider,
   DataSourceVariable,
@@ -18,6 +18,8 @@ import { getStyles } from '../../../utils/utils.styles';
 import datasourcePluginJson from '../../../datasource/plugin.json';
 import { queries, variableQuery } from '../queries';
 import { NamespacePageOverview } from './NamespacePageOverview';
+import { NamespacePageCPU } from './NamespacePageCPU';
+import { NamespacePageMemory } from './NamespacePageMemory';
 
 export function NamespacePage() {
   const styles = useStyles2(getStyles);
@@ -96,13 +98,18 @@ export function NamespacePage() {
               >
                 <PluginPage
                   renderTitle={() => (
-                    <Stack gap={0}>
+                    <Stack gap={0} alignItems="center" direction="row">
                       <img
                         className={styles.pluginPage.title.image}
                         alt={namespace}
                         src={resourcesImg}
                       />
                       <h1>{namespace}</h1>
+                      <Badge
+                        className={styles.pluginPage.title.badge}
+                        color="blue"
+                        text="namespace"
+                      />
                     </Stack>
                   )}
                   subTitle={pluginJson.info.description}
@@ -156,6 +163,8 @@ export function NamespacePage() {
                     />
                   </TabsBar>
                   {activeTab === 'overview' && <NamespacePageOverview />}
+                  {activeTab === 'cpu' && <NamespacePageCPU />}
+                  {activeTab === 'memory' && <NamespacePageMemory />}
                 </PluginPage>
               </QueryVariable>
             </CustomVariable>
