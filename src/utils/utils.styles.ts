@@ -10,6 +10,9 @@ export function getStyles(theme: GrafanaTheme2) {
           height: '32px',
           marginRight: '16px',
         }),
+        badge: css({
+          marginLeft: theme.spacing(2),
+        }),
       },
       section: css({
         marginTop: theme.spacing(4),

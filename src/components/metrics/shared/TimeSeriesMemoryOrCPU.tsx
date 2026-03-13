@@ -111,7 +111,7 @@ export function TimeSeriesMemoryOrCPU({
           fixedColor: 'red',
         })
         .overrideCustomFieldConfig('lineStyle', {
-          dash: [1, 1],
+          dash: [10, 10],
           fill: 'dash',
         }),
     )
@@ -123,7 +123,7 @@ export function TimeSeriesMemoryOrCPU({
           fixedColor: 'orange',
         })
         .overrideCustomFieldConfig('lineStyle', {
-          dash: [1, 1],
+          dash: [10, 10],
           fill: 'dash',
         }),
     )

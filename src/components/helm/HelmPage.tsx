@@ -45,7 +45,7 @@ export const HelmPage = () => {
   return (
     <PluginPage
       renderTitle={() => (
-        <Stack gap={0}>
+        <Stack gap={0} alignItems="center" direction="row">
           <img className={styles.title.image} alt="Helm" src={helmImg} />
           <h1>Helm</h1>
         </Stack>

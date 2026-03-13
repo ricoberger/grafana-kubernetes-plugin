@@ -628,6 +628,100 @@ sum(
   ",",
   "instance"
 )`,
+    cpuDistribution: `(
+  sum(
+    max(
+      node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{
+        cluster=~"$cluster",
+        node=~"$node",
+        pod=~"$pod"
+      }
+    ) by(cluster,namespace,pod,container,node)
+  ) by(cluster,namespace,pod,node)
+    * on(cluster,namespace,pod) group_left(workload,workload_type)
+  group(
+    namespace_workload_pod:kube_pod_owner:relabel{
+      cluster=~"$cluster",
+      pod=~"$pod"
+    }
+  ) by(cluster,namespace,pod,workload,workload_type)
+)
+  / on(cluster,node) group_left()
+sum(
+  max(
+    kube_node_status_capacity{
+      cluster=~"$cluster",
+      resource=~"cpu",
+      node=~"$node"
+    }
+  ) by(cluster,node)
+) by(cluster,node)`,
+    cpuEfficiency: `sum(
+  max(
+    node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{
+      cluster=~"$cluster",
+      node=~"$node",
+      pod=~"$pod"
+    }
+  ) by(cluster,namespace,pod,container,node)
+) by(cluster,namespace,pod,node)
+  /
+sum(
+  max(
+    cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{
+      cluster=~"$cluster",
+      node=~"$node",
+      pod=~"$pod"
+    }
+  ) by(cluster,namespace,pod,container,node)
+) by(cluster,namespace,pod,node)`,
+    memoryDistribution: `(
+  sum(
+    max(
+      node_namespace_pod_container:container_memory_working_set_bytes{
+        cluster=~"$cluster",
+        node=~"$node",
+        pod=~"$pod"
+      }
+    ) by(cluster,namespace,pod,container,node)
+  ) by(cluster,namespace,pod,node)
+    * on(cluster,namespace,pod) group_left(workload,workload_type)
+  group(
+    namespace_workload_pod:kube_pod_owner:relabel{
+      cluster=~"$cluster",
+      pod=~"$pod"
+    }
+  ) by(cluster,namespace,pod,workload,workload_type)
+)
+  / on(cluster,node) group_left()
+sum(
+  max(
+    kube_node_status_capacity{
+      cluster=~"$cluster",
+      resource=~"memory",
+      node=~"$node"
+    }
+  ) by(cluster,node)
+) by(cluster,node)`,
+    memoryEfficiency: `sum(
+  max(
+    node_namespace_pod_container:container_memory_working_set_bytes{
+      cluster=~"$cluster",
+      node=~"$node",
+      pod=~"$pod"
+    }
+  ) by(cluster,namespace,pod,container,node)
+) by(cluster,namespace,pod,node)
+  /
+sum(
+  max(
+    cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{
+      cluster=~"$cluster",
+      node=~"$node",
+      pod=~"$pod"
+    }
+  ) by(cluster,namespace,pod,container,node)
+) by(cluster,namespace,pod,node)`,
   },
   namespaces: {
     labelsByCluster: `label_values(kube_namespace_status_phase{cluster=~"$cluster"}, namespace)`,
@@ -2184,6 +2278,607 @@ sum(
     cluster=~"$cluster",namespace=~"$namespace",job_name=~"$workload"
   }
 )`,
+    cpuDistribution: `sum(
+  sum(
+    max(
+      node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{
+        container!="POD",
+        container!="",
+        cluster=~"$cluster",
+        namespace=~"$namespace"
+      }
+    ) by(cluster,namespace,pod,container)
+  ) by(cluster,namespace,pod)
+    * on(cluster,namespace,pod) group_left(workload,workload_type)
+  group(
+    namespace_workload_pod:kube_pod_owner:relabel{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      workload=~"$workload"
+    }
+  ) by(cluster,namespace,pod,workload,workload_type)
+) by(cluster,namespace,workload,workload_type)`,
+    cpuEfficiency: `sum(
+  sum(
+    max(
+      node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{
+        cluster=~"$cluster",
+        namespace=~"$namespace"
+      }
+    ) by(cluster,namespace,pod,container)
+  ) by(cluster,namespace,pod)
+    * on(cluster,namespace,pod) group_left(workload,workload_type)
+  group(
+    namespace_workload_pod:kube_pod_owner:relabel{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      workload=~"$workload"
+    }
+  ) by(cluster,namespace,pod,workload,workload_type)
+) by(cluster,namespace,workload,workload_type)
+  / on(cluster,namespace,workload,workload_type) group_left()
+sum(
+  max(
+    cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{
+      container!="POD",
+      container!="",
+      cluster=~"$cluster",
+      namespace=~"$namespace"
+    }
+  ) by(cluster,namespace,pod,container)
+    * on(cluster,namespace,pod) group_left(workload,workload_type)
+  group(
+    namespace_workload_pod:kube_pod_owner:relabel{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      workload=~"$workload"
+    }
+  ) by(cluster,namespace,pod,workload,workload_type)
+) by(cluster,namespace,workload,workload_type)`,
+    memoryDistribution: `sum(
+  sum(
+    max(
+      node_namespace_pod_container:container_memory_working_set_bytes{
+        container!="POD",
+        container!="",
+        cluster=~"$cluster",
+        namespace=~"$namespace"
+      }
+    ) by(cluster,namespace,pod,container)
+  ) by(cluster,namespace,pod)
+    * on(cluster,namespace,pod) group_left(workload,workload_type)
+  group(
+    namespace_workload_pod:kube_pod_owner:relabel{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      workload=~"$workload"
+    }
+  ) by(cluster,namespace,pod,workload,workload_type)
+) by(cluster,namespace,workload,workload_type)`,
+    memoryEfficiency: `sum(
+  sum(
+    max(
+      node_namespace_pod_container:container_memory_working_set_bytes{
+        cluster=~"$cluster",
+        namespace=~"$namespace"
+      }
+    ) by(cluster,namespace,pod,container)
+  ) by(cluster,namespace,pod)
+    * on(cluster,namespace,pod) group_left(workload,workload_type)
+  group(
+    namespace_workload_pod:kube_pod_owner:relabel{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      workload=~"$workload"
+    }
+  ) by(cluster,namespace,pod,workload,workload_type)
+) by(cluster,namespace,workload,workload_type)
+  / on(cluster,namespace,workload,workload_type) group_left()
+sum(
+  max(
+    cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{
+      container!="POD",
+      container!="",
+      cluster=~"$cluster",
+      namespace=~"$namespace"
+    }
+  ) by(cluster,namespace,pod,container)
+    * on(cluster,namespace,pod) group_left(workload,workload_type)
+  group(
+    namespace_workload_pod:kube_pod_owner:relabel{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      workload=~"$workload"
+    }
+  ) by(cluster,namespace,pod,workload,workload_type)
+) by(cluster,namespace,workload,workload_type)`,
+    cpuPressureWaiting: `sum(
+  sum(
+    sum(
+      rate(
+        container_pressure_cpu_waiting_seconds_total{
+          cluster=~"$cluster",
+          namespace=~"$namespace",
+          container!="",
+          container!="POD"
+        }[$__rate_interval]
+      )
+    ) by(cluster,namespace,pod)
+      >
+    0
+  ) by(cluster,namespace,pod)
+    * on(cluster,namespace,pod) group_left(workload,workload_type)
+  group(
+    namespace_workload_pod:kube_pod_owner:relabel{
+      cluster=~"$cluster",namespace=~"$namespace",workload=~"$workload"
+    }
+  ) by(cluster,namespace,pod,workload,workload_type)
+) by(cluster,namespace,workload,workload_type)`,
+    cpuPressureStalled: `sum(
+  sum(
+    sum(
+      rate(
+        container_pressure_cpu_stalled_seconds_total{
+          cluster=~"$cluster",
+          namespace=~"$namespace",
+          container!="",
+          container!="POD"
+        }[$__rate_interval]
+      )
+    ) by(cluster,namespace,pod)
+      >
+    0
+  ) by(cluster,namespace,pod)
+    * on(cluster,namespace,pod) group_left(workload,workload_type)
+  group(
+    namespace_workload_pod:kube_pod_owner:relabel{
+      cluster=~"$cluster",namespace=~"$namespace",workload=~"$workload"
+    }
+  ) by(cluster,namespace,pod,workload,workload_type)
+) by(cluster,namespace,workload,workload_type)`,
+    memoryPressureWaiting: `sum(
+  sum(
+    sum(
+      rate(
+        container_pressure_memory_waiting_seconds_total{
+          cluster=~"$cluster",
+          namespace=~"$namespace",
+          container!="",
+          container!="POD"
+        }[$__rate_interval]
+      )
+    ) by(cluster,namespace,pod)
+      >
+    0
+  ) by(cluster,namespace,pod)
+    * on(cluster,namespace,pod) group_left(workload,workload_type)
+  group(
+    namespace_workload_pod:kube_pod_owner:relabel{
+      cluster=~"$cluster",namespace=~"$namespace",workload=~"$workload"
+    }
+  ) by(cluster,namespace,pod,workload,workload_type)
+) by(cluster,namespace,workload,workload_type)`,
+    memoryPressureStalled: `sum(
+  sum(
+    sum(
+      rate(
+        container_pressure_memory_stalled_seconds_total{
+          cluster=~"$cluster",
+          namespace=~"$namespace",
+          container!="",
+          container!="POD"
+        }[$__rate_interval]
+      )
+    ) by(cluster,namespace,pod)
+      >
+    0
+  ) by(cluster,namespace,pod)
+    * on(cluster,namespace,pod) group_left(workload,workload_type)
+  group(
+    namespace_workload_pod:kube_pod_owner:relabel{
+      cluster=~"$cluster",namespace=~"$namespace",workload=~"$workload"
+    }
+  ) by(cluster,namespace,pod,workload,workload_type)
+) by(cluster,namespace,workload,workload_type)`,
+    ioPressureWaiting: `sum(
+  sum(
+    sum(
+      rate(
+        container_pressure_io_waiting_seconds_total{
+          cluster=~"$cluster",
+          namespace=~"$namespace",
+          container!="",
+          container!="POD"
+        }[100m]
+      )
+    ) by(cluster,namespace,pod)
+      >
+    0
+  ) by(cluster,namespace,pod)
+    * on(cluster,namespace,pod) group_left(workload,workload_type)
+  group(
+    namespace_workload_pod:kube_pod_owner:relabel{
+      cluster=~"$cluster",namespace=~"$namespace",workload=~"$workload"
+    }
+  ) by(cluster,namespace,pod,workload,workload_type)
+) by(cluster,namespace,workload,workload_type)`,
+    ioPressureStalled: `sum(
+  sum(
+    sum(
+      rate(
+        container_pressure_io_stalled_seconds_total{
+          cluster=~"$cluster",
+          namespace=~"$namespace",
+          container!="",
+          container!="POD"
+        }[$__rate_interval]
+      )
+    ) by(cluster,namespace,pod)
+      >
+    0
+  ) by(cluster,namespace,pod)
+    * on(cluster,namespace,pod) group_left(workload,workload_type)
+  group(
+    namespace_workload_pod:kube_pod_owner:relabel{
+      cluster=~"$cluster",namespace=~"$namespace",workload=~"$workload"
+    }
+  ) by(cluster,namespace,pod,workload,workload_type)
+) by(cluster,namespace,workload,workload_type)`,
+    infoJoinKey: `label_join(
+  group(
+    namespace_workload_pod:kube_pod_owner:relabel{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      workload=~"$workload"
+    }
+  ) by(cluster,namespace,workload,workload_type),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "workload",
+  "workload_type"
+)`,
+    cpuUsageJoinKey: `label_join(
+  sum(
+    max(
+      node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{
+        container!="POD",
+        container!="",
+        cluster=~"$cluster",
+        namespace=~"$namespace"
+      }
+    ) by(cluster,namespace,pod,container)
+      * on(cluster,namespace,pod) group_left(workload,workload_type)
+    group(
+      namespace_workload_pod:kube_pod_owner:relabel{
+        cluster=~"$cluster",namespace=~"$namespace",workload=~"$workload"
+      }
+    ) by(cluster,namespace,pod,workload,workload_type)
+  ) by(cluster,namespace,workload,workload_type),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "workload",
+  "workload_type"
+)`,
+    cpuRequestsJoinKey: `label_join(
+  sum(
+    max(
+      cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{
+        container!="POD",
+        container!="",
+        cluster=~"$cluster",
+        namespace=~"$namespace"
+      }
+    ) by(cluster,namespace,pod,container)
+      * on(cluster,namespace,pod) group_left(workload,workload_type)
+    group(
+      namespace_workload_pod:kube_pod_owner:relabel{
+        cluster=~"$cluster",namespace=~"$namespace",workload=~"$workload"
+      }
+    ) by(cluster,namespace,pod,workload,workload_type)
+  ) by(cluster,namespace,workload,workload_type),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "workload",
+  "workload_type"
+)`,
+    cpuRequestsPercentJoinKey: `label_join(
+  sum(
+    max(
+      node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{
+        container!="POD",
+        container!="",
+        cluster=~"$cluster",
+        namespace=~"$namespace"
+      }
+    ) by(cluster,namespace,pod,container)
+      * on(cluster,namespace,pod) group_left(workload,workload_type)
+    group(
+      namespace_workload_pod:kube_pod_owner:relabel{
+        cluster=~"$cluster",namespace=~"$namespace",workload=~"$workload"
+      }
+    ) by(cluster,namespace,pod,workload,workload_type)
+  ) by(cluster,namespace,workload,workload_type),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "workload",
+  "workload_type"
+)
+  /
+label_join(
+  sum(
+    max(
+      cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{
+        container!="POD",
+        container!="",
+        cluster=~"$cluster",
+        namespace=~"$namespace"
+      }
+    ) by(cluster,namespace,pod,container)
+      * on(cluster,namespace,pod) group_left(workload,workload_type)
+    group(
+      namespace_workload_pod:kube_pod_owner:relabel{
+        cluster=~"$cluster",namespace=~"$namespace",workload=~"$workload"
+      }
+    ) by(cluster,namespace,pod,workload,workload_type)
+  ) by(cluster,namespace,workload,workload_type),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "workload",
+  "workload_type"
+)`,
+    cpuLimitsJoinKey: `label_join(
+  sum(
+    max(
+      cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits{
+        container!="POD",
+        container!="",
+        cluster=~"$cluster",
+        namespace=~"$namespace"
+      }
+    ) by(cluster,namespace,pod,container)
+      * on(cluster,namespace,pod) group_left(workload,workload_type)
+    group(
+      namespace_workload_pod:kube_pod_owner:relabel{
+        cluster=~"$cluster",namespace=~"$namespace",workload=~"$workload"
+      }
+    ) by(cluster,namespace,pod,workload,workload_type)
+  ) by(cluster,namespace,workload,workload_type),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "workload",
+  "workload_type"
+)`,
+    cpuLimitsPercentJoinKey: `label_join(
+  sum(
+    max(
+      node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{
+        container!="POD",
+        container!="",
+        cluster=~"$cluster",
+        namespace=~"$namespace"
+      }
+    ) by(cluster,namespace,pod,container)
+      * on(cluster,namespace,pod) group_left(workload,workload_type)
+    group(
+      namespace_workload_pod:kube_pod_owner:relabel{
+        cluster=~"$cluster",namespace=~"$namespace",workload=~"$workload"
+      }
+    ) by(cluster,namespace,pod,workload,workload_type)
+  ) by(cluster,namespace,workload,workload_type),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "workload",
+  "workload_type"
+)
+  /
+label_join(
+  sum(
+    max(
+      cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits{
+        container!="POD",
+        container!="",
+        cluster=~"$cluster",
+        namespace=~"$namespace"
+      }
+    ) by(cluster,namespace,pod,container)
+      * on(cluster,namespace,pod) group_left(workload,workload_type)
+    group(
+      namespace_workload_pod:kube_pod_owner:relabel{
+        cluster=~"$cluster",namespace=~"$namespace",workload=~"$workload"
+      }
+    ) by(cluster,namespace,pod,workload,workload_type)
+  ) by(cluster,namespace,workload,workload_type),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "workload",
+  "workload_type"
+)`,
+    memoryUsageJoinKey: `label_join(
+  sum(
+    max(
+      node_namespace_pod_container:container_memory_working_set_bytes{
+        container!="POD",
+        container!="",
+        cluster=~"$cluster",
+        namespace=~"$namespace"
+      }
+    ) by(cluster,namespace,pod,container)
+      * on(cluster,namespace,pod) group_left(workload,workload_type)
+    group(
+      namespace_workload_pod:kube_pod_owner:relabel{
+        cluster=~"$cluster",namespace=~"$namespace",workload=~"$workload"
+      }
+    ) by(cluster,namespace,pod,workload,workload_type)
+  ) by(cluster,namespace,workload,workload_type),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "workload",
+  "workload_type"
+)`,
+    memoryRequestsJoinKey: `label_join(
+  sum(
+    max(
+      cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{
+        container!="POD",
+        container!="",
+        cluster=~"$cluster",
+        namespace=~"$namespace"
+      }
+    ) by(cluster,namespace,pod,container)
+      * on(cluster,namespace,pod) group_left(workload,workload_type)
+    group(
+      namespace_workload_pod:kube_pod_owner:relabel{
+        cluster=~"$cluster",namespace=~"$namespace",workload=~"$workload"
+      }
+    ) by(cluster,namespace,pod,workload,workload_type)
+  ) by(cluster,namespace,workload,workload_type),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "workload",
+  "workload_type"
+)`,
+    memoryRequestsPercentJoinKey: `label_join(
+  sum(
+    max(
+      node_namespace_pod_container:container_memory_working_set_bytes{
+        container!="POD",
+        container!="",
+        cluster=~"$cluster",
+        namespace=~"$namespace"
+      }
+    ) by(cluster,namespace,pod,container)
+      * on(cluster,namespace,pod) group_left(workload,workload_type)
+    group(
+      namespace_workload_pod:kube_pod_owner:relabel{
+        cluster=~"$cluster",namespace=~"$namespace",workload=~"$workload"
+      }
+    ) by(cluster,namespace,pod,workload,workload_type)
+  ) by(cluster,namespace,workload,workload_type),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "workload",
+  "workload_type"
+)
+  /
+label_join(
+  sum(
+    max(
+      cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{
+        container!="POD",
+        container!="",
+        cluster=~"$cluster",
+        namespace=~"$namespace"
+      }
+    ) by(cluster,namespace,pod,container)
+      * on(cluster,namespace,pod) group_left(workload,workload_type)
+    group(
+      namespace_workload_pod:kube_pod_owner:relabel{
+        cluster=~"$cluster",namespace=~"$namespace",workload=~"$workload"
+      }
+    ) by(cluster,namespace,pod,workload,workload_type)
+  ) by(cluster,namespace,workload,workload_type),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "workload",
+  "workload_type"
+)`,
+    memoryLimitsJoinKey: `label_join(
+  sum(
+    max(
+      cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{
+        container!="POD",
+        container!="",
+        cluster=~"$cluster",
+        namespace=~"$namespace"
+      }
+    ) by(cluster,namespace,pod,container)
+      * on(cluster,namespace,pod) group_left(workload,workload_type)
+    group(
+      namespace_workload_pod:kube_pod_owner:relabel{
+        cluster=~"$cluster",namespace=~"$namespace",workload=~"$workload"
+      }
+    ) by(cluster,namespace,pod,workload,workload_type)
+  ) by(cluster,namespace,workload,workload_type),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "workload",
+  "workload_type"
+)`,
+    memoryLimitsPercentJoinKey: `label_join(
+  sum(
+    max(
+      node_namespace_pod_container:container_memory_working_set_bytes{
+        container!="POD",
+        container!="",
+        cluster=~"$cluster",
+        namespace=~"$namespace"
+      }
+    ) by(cluster,namespace,pod,container)
+      * on(cluster,namespace,pod) group_left(workload,workload_type)
+    group(
+      namespace_workload_pod:kube_pod_owner:relabel{
+        cluster=~"$cluster",namespace=~"$namespace",workload=~"$workload"
+      }
+    ) by(cluster,namespace,pod,workload,workload_type)
+  ) by(cluster,namespace,workload,workload_type),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "workload",
+  "workload_type"
+)
+  /
+label_join(
+  sum(
+    max(
+      cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{
+        container!="POD",
+        container!="",
+        cluster=~"$cluster",
+        namespace=~"$namespace"
+      }
+    ) by(cluster,namespace,pod,container)
+      * on(cluster,namespace,pod) group_left(workload,workload_type)
+    group(
+      namespace_workload_pod:kube_pod_owner:relabel{
+        cluster=~"$cluster",namespace=~"$namespace",workload=~"$workload"
+      }
+    ) by(cluster,namespace,pod,workload,workload_type)
+  ) by(cluster,namespace,workload,workload_type),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "workload",
+  "workload_type"
+)`,
   },
   pods: {
     count: `count(kube_pod_info{cluster=~"$cluster", namespace=~"$namespace", pod!=""})`,
@@ -2520,6 +3215,280 @@ sum(
     }
   ) by(cluster,node,namespace,pod,container,image)
 ) by(pod)`,
+    cpuPressureWaiting: `sum(
+  rate(
+    container_pressure_cpu_waiting_seconds_total{
+      cluster=~"$cluster",
+      node=~"$node",
+      namespace=~"$namespace",
+      pod=~"$pod",
+      container!="",
+      container!="POD"
+    }[$__rate_interval]
+  )
+) by(pod,namespace,node)
+  >
+0`,
+    cpuPressureStalled: `sum(
+  rate(
+    container_pressure_cpu_stalled_seconds_total{
+      cluster=~"$cluster",
+      node=~"$node",
+      namespace=~"$namespace",
+      pod=~"$pod",
+      container!="",
+      container!="POD"
+    }[$__rate_interval]
+  )
+) by(pod,namespace,node)
+  >
+0`,
+    memoryPressureWaiting: `sum(
+  rate(
+    container_pressure_memory_waiting_seconds_total{
+      cluster=~"$cluster",
+      node=~"$node",
+      namespace=~"$namespace",
+      pod=~"$pod",
+      container!="",
+      container!="POD"
+    }[$__rate_interval]
+  )
+) by(pod,namespace,node)
+  >
+0`,
+    memoryPressureStalled: `sum(
+  rate(
+    container_pressure_memory_stalled_seconds_total{
+      cluster=~"$cluster",
+      node=~"$node",
+      namespace=~"$namespace",
+      pod=~"$pod",
+      container!="",
+      container!="POD"
+    }[$__rate_interval]
+  )
+) by(pod,namespace,node)
+  >
+0`,
+    ioPressureWaiting: `sum(
+  rate(
+    container_pressure_io_waiting_seconds_total{
+      cluster=~"$cluster",
+      node=~"$node",
+      namespace=~"$namespace",
+      pod=~"$pod",
+      container!="",
+      container!="POD"
+    }[$__rate_interval]
+  )
+) by(pod,namespace,node)
+  >
+0`,
+    ioPressureStalled: `sum(
+  rate(
+    container_pressure_io_stalled_seconds_total{
+      cluster=~"$cluster",
+      node=~"$node",
+      namespace=~"$namespace",
+      pod=~"$pod",
+      container!="",
+      container!="POD"
+    }[$__rate_interval]
+  )
+) by(pod,namespace,node)
+  >
+0`,
+    infoJoinKey: `label_join(
+  max(
+    kube_pod_info{
+      cluster=~"$cluster",
+      node=~"$node",
+      namespace=~"$namespace",
+      pod=~"$pod"
+    }
+  ) by(cluster,namespace,pod,node)
+    * on(cluster,namespace,pod) group_left(workload,workload_type)
+  group(
+    namespace_workload_pod:kube_pod_owner:relabel{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod"
+    }
+  ) by(cluster,namespace,pod,workload,workload_type),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "pod",
+  "node"
+)`,
+    cpuUsageJoinKey: `label_join(
+  sum(
+    node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{
+      cluster=~"$cluster",
+      node=~"$node",
+      pod=~"$pod"
+    }
+  ) by(cluster,namespace,pod,node),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "pod",
+  "node"
+)`,
+    cpuRequestsJoinKey: `label_join(
+  sum(
+    cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{
+      cluster=~"$cluster",
+      node=~"$node",
+      pod=~"$pod"
+    }
+  ) by(cluster,namespace,pod,node),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "pod",
+  "node"
+)`,
+    cpuRequestsPercentJoinKey: `label_join(
+  sum(
+    node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{
+      cluster=~"$cluster",node=~"$node",pod=~"$pod"
+    }
+  ) by(cluster,namespace,pod,node)
+    /
+  sum(
+    cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{
+      cluster=~"$cluster",node=~"$node",pod=~"$pod"
+    }
+  ) by(cluster,namespace,pod,node),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "pod",
+  "node"
+)`,
+    cpuLimitsJoinKey: `label_join(
+  sum(
+    cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits{
+      cluster=~"$cluster",
+      node=~"$node",
+      pod=~"$pod"
+    }
+  ) by(cluster,namespace,pod,node),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "pod",
+  "node"
+)`,
+    cpuLimitsPercentJoinKey: `label_join(
+  sum(
+    node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{
+      cluster=~"$cluster",node=~"$node",pod=~"$pod"
+    }
+  ) by(cluster,namespace,pod,node)
+    /
+  sum(
+    cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits{
+      cluster=~"$cluster",node=~"$node",pod=~"$pod"
+    }
+  ) by(cluster,namespace,pod,node),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "pod",
+  "node"
+)`,
+    memoryUsageJoinKey: `label_join(
+  sum(
+    node_namespace_pod_container:container_memory_working_set_bytes{
+      cluster=~"$cluster",
+      node=~"$node",
+      pod=~"$pod"
+    }
+  ) by(cluster,namespace,pod,node),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "pod",
+  "node"
+)`,
+    memoryRequestsJoinKey: `label_join(
+  sum(
+    cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{
+      cluster=~"$cluster",
+      node=~"$node",
+      pod=~"$pod"
+    }
+  ) by(cluster,namespace,pod,node),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "pod",
+  "node"
+)`,
+    memoryRequestsPercentJoinKey: `label_join(
+  sum(
+    node_namespace_pod_container:container_memory_working_set_bytes{
+      cluster=~"$cluster",node=~"$node",pod=~"$pod"
+    }
+  ) by(cluster,namespace,pod,node)
+    /
+  sum(
+    cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{
+      cluster=~"$cluster",node=~"$node",pod=~"$pod"
+    }
+  ) by(cluster,namespace,pod,node),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "pod",
+  "node"
+)`,
+    memoryLimitsJoinKey: `label_join(
+  sum(
+    cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{
+      cluster=~"$cluster",
+      node=~"$node",
+      pod=~"$pod"
+    }
+  ) by(cluster,namespace,pod,node),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "pod",
+  "node"
+)`,
+    memoryLimitsPercentJoinKey: `label_join(
+  sum(
+    node_namespace_pod_container:container_memory_working_set_bytes{
+      cluster=~"$cluster",node=~"$node",pod=~"$pod"
+    }
+  ) by(cluster,namespace,pod,node)
+    /
+  sum(
+    cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{
+      cluster=~"$cluster",node=~"$node",pod=~"$pod"
+    }
+  ) by(cluster,namespace,pod,node),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "pod",
+  "node"
+)`,
   },
   containers: {
     info: `last_over_time(
@@ -2681,6 +3650,375 @@ sum(
     resource="memory"
   }
 ) by(container)`,
+    cpuDistribution: `sum(
+  max(
+    node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{
+      container!="POD",
+      container!="",
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod"
+    }
+  ) by(cluster,namespace,pod,container)
+) by(cluster,namespace,pod,container)`,
+    cpuEfficiency: `sum(
+  sum(
+    max(
+      node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{
+        cluster=~"$cluster",
+        namespace=~"$namespace",
+        pod=~"$pod"
+      }
+    ) by(cluster,namespace,pod,container)
+  ) by(cluster,namespace,pod,container)
+) by(cluster,namespace,pod,container)
+  /
+sum(
+  max(
+    cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{
+      container!="POD",
+      container!="",
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod"
+    }
+  ) by(cluster,namespace,pod,container)
+) by(cluster,namespace,pod,container)`,
+    memoryDistribution: `sum(
+  max(
+    node_namespace_pod_container:container_memory_working_set_bytes{
+      container!="POD",
+      container!="",
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod"
+    }
+  ) by(cluster,namespace,pod,container)
+) by(cluster,namespace,pod,container)`,
+    memoryEfficiency: `sum(
+  sum(
+    max(
+      node_namespace_pod_container:container_memory_working_set_bytes{
+        cluster=~"$cluster",
+        namespace=~"$namespace",
+        pod=~"$pod"
+      }
+    ) by(cluster,namespace,pod,container)
+  ) by(cluster,namespace,pod,container)
+) by(cluster,namespace,pod,container)
+  /
+sum(
+  max(
+    cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{
+      container!="POD",
+      container!="",
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod"
+    }
+  ) by(cluster,namespace,pod,container)
+) by(cluster,namespace,pod,container)`,
+    cpuPressureWaiting: `sum(
+  rate(
+    container_pressure_cpu_waiting_seconds_total{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod",
+      container!="",
+      container!="POD"
+    }[$__rate_interval]
+  )
+) by(cluster,namespace,pod,container)
+  >
+0`,
+    cpuPressureStalled: `sum(
+  rate(
+    container_pressure_cpu_stalled_seconds_total{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod",
+      container!="",
+      container!="POD"
+    }[$__rate_interval]
+  )
+) by(cluster,namespace,pod,container)
+  >
+0`,
+    memoryPressureWaiting: `sum(
+  rate(
+    container_pressure_memory_waiting_seconds_total{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod",
+      container!="",
+      container!="POD"
+    }[$__rate_interval]
+  )
+) by(cluster,namespace,pod,container)
+  >
+0`,
+    memoryPressureStalled: `sum(
+  rate(
+    container_pressure_memory_stalled_seconds_total{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod",
+      container!="",
+      container!="POD"
+    }[$__rate_interval]
+  )
+) by(cluster,namespace,pod,container)
+  >
+0`,
+    ioPressureWaiting: `sum(
+  rate(
+    container_pressure_io_waiting_seconds_total{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod",
+      container!="",
+      container!="POD"
+    }[$__rate_interval]
+  )
+) by(cluster,namespace,pod,container)
+  >
+0`,
+    ioPressureStalled: `sum(
+  rate(
+    container_pressure_io_stalled_seconds_total{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod",
+      container!="",
+      container!="POD"
+    }[$__rate_interval]
+  )
+) by(cluster,namespace,pod,container)
+  >
+0`,
+    infoJoinKey: `label_join(
+  max(
+    kube_pod_container_info{
+      cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod"
+    }
+  ) by(cluster,namespace,pod,container),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "pod",
+  "container"
+)`,
+    cpuUsageJoinKey: `label_join(
+  sum(
+    node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod",
+      container!="",
+      container!="POD"
+    }
+  ) by(cluster,namespace,pod,container),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "pod",
+  "container"
+)`,
+    cpuRequestsJoinKey: `label_join(
+  sum(
+    cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod",
+      container!="",
+      container!="POD"
+    }
+  ) by(cluster,namespace,pod,container),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "pod",
+  "container"
+)`,
+    cpuRequestsPercentJoinKey: `label_join(
+  sum(
+    node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod",
+      container!="",
+      container!="POD"
+    }
+  ) by(cluster,namespace,pod,container)
+    /
+  sum(
+    cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod",
+      container!="",
+      container!="POD"
+    }
+  ) by(cluster,namespace,pod,container),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "pod",
+  "container"
+)`,
+    cpuLimitsJoinKey: `label_join(
+  sum(
+    cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod",
+      container!="",
+      container!="POD"
+    }
+  ) by(cluster,namespace,pod,container),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "pod",
+  "container"
+)`,
+    cpuLimitsPercentJoinKey: `label_join(
+  sum(
+    node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod",
+      container!="",
+      container!="POD"
+    }
+  ) by(cluster,namespace,pod,container)
+    /
+  sum(
+    cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod",
+      container!="",
+      container!="POD"
+    }
+  ) by(cluster,namespace,pod,container),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "pod",
+  "container"
+)`,
+    memoryUsageJoinKey: `label_join(
+  sum(
+    node_namespace_pod_container:container_memory_working_set_bytes{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod",
+      container!="",
+      container!="POD"
+    }
+  ) by(cluster,namespace,pod,container),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "pod",
+  "container"
+)`,
+    memoryRequestsJoinKey: `label_join(
+  sum(
+    cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod",
+      container!="",
+      container!="POD"
+    }
+  ) by(cluster,namespace,pod,container),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "pod",
+  "container"
+)`,
+    memoryRequestsPercentJoinKey: `label_join(
+  sum(
+    node_namespace_pod_container:container_memory_working_set_bytes{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod",
+      container!="",
+      container!="POD"
+    }
+  ) by(cluster,namespace,pod,container)
+    /
+  sum(
+    cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod",
+      container!="",
+      container!="POD"
+    }
+  ) by(cluster,namespace,pod,container),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "pod",
+  "container"
+)`,
+    memoryLimitsJoinKey: `label_join(
+  sum(
+    cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod",
+      container!="",
+      container!="POD"
+    }
+  ) by(cluster,namespace,pod,container),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "pod",
+  "container"
+)`,
+    memoryLimitsPercentJoinKey: `label_join(
+  sum(
+    node_namespace_pod_container:container_memory_working_set_bytes{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod",
+      container!="",
+      container!="POD"
+    }
+  ) by(cluster,namespace,pod,container)
+    /
+  sum(
+    cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      pod=~"$pod",
+      container!="",
+      container!="POD"
+    }
+  ) by(cluster,namespace,pod,container),
+  "join_key",
+  ".",
+  "cluster",
+  "namespace",
+  "pod",
+  "container"
+)`,
   },
   persistentVolumeClaims: {
     count: `count(

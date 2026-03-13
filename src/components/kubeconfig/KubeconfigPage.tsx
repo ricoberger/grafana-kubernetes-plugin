@@ -39,7 +39,7 @@ export const KubeconfigPage = () => {
   return (
     <PluginPage
       renderTitle={() => (
-        <Stack gap={0}>
+        <Stack gap={0} alignItems="center" direction="row">
           <img
             className={styles.title.image}
             alt="Kubeconfig"

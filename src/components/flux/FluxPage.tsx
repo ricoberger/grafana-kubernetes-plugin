@@ -46,7 +46,7 @@ export const FluxPage = () => {
   return (
     <PluginPage
       renderTitle={() => (
-        <Stack gap={0}>
+        <Stack gap={0} alignItems="center" direction="row">
           <img className={styles.title.image} alt="Flux" src={fluxImg} />
           <h1>Flux</h1>
         </Stack>

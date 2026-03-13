@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { VariableHide, VariableRefresh, VariableSort } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
-import { Alert, Stack, Tab, TabsBar, useStyles2 } from '@grafana/ui';
+import { Alert, Badge, Stack, Tab, TabsBar, useStyles2 } from '@grafana/ui';
 import {
   SceneContextProvider,
   DataSourceVariable,
@@ -18,6 +18,8 @@ import { getStyles } from '../../../utils/utils.styles';
 import datasourcePluginJson from '../../../datasource/plugin.json';
 import { WorkloadPageOverview } from './WorkloadPageOverview';
 import { queries, variableQuery } from '../queries';
+import { WorkloadPageMemory } from './WorkloadPageMemory';
+import { WorkloadPageCPU } from './WorkloadPageCPU';
 
 export function WorkloadPage() {
   const styles = useStyles2(getStyles);
@@ -127,13 +129,18 @@ export function WorkloadPage() {
                     >
                       <PluginPage
                         renderTitle={() => (
-                          <Stack gap={0}>
+                          <Stack gap={0} alignItems="center" direction="row">
                             <img
                               className={styles.pluginPage.title.image}
                               alt={workload}
                               src={resourcesImg}
                             />
                             <h1>{workload}</h1>
+                            <Badge
+                              className={styles.pluginPage.title.badge}
+                              color="blue"
+                              text={workloadType.toLowerCase()}
+                            />
                           </Stack>
                         )}
                         subTitle={pluginJson.info.description}
@@ -191,6 +198,8 @@ export function WorkloadPage() {
                             workloadType={workloadType.toLowerCase()}
                           />
                         )}
+                        {activeTab === 'cpu' && <WorkloadPageCPU />}
+                        {activeTab === 'memory' && <WorkloadPageMemory />}
                       </PluginPage>
                     </QueryVariable>
                   </CustomVariable>

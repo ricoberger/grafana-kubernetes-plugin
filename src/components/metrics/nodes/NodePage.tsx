@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { VariableHide, VariableRefresh, VariableSort } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
-import { Alert, Stack, Tab, TabsBar, useStyles2 } from '@grafana/ui';
+import { Alert, Badge, Stack, Tab, TabsBar, useStyles2 } from '@grafana/ui';
 import {
   SceneContextProvider,
   DataSourceVariable,
@@ -18,6 +18,8 @@ import { getStyles } from '../../../utils/utils.styles';
 import datasourcePluginJson from '../../../datasource/plugin.json';
 import { queries, variableQuery } from '../queries';
 import { NodePageOverview } from './NodePageOverview';
+import { NodePageCPU } from './NodePageCPU';
+import { NodePageMemory } from './NodePageMemory';
 
 export function NodePage() {
   const styles = useStyles2(getStyles);
@@ -99,13 +101,18 @@ export function NodePage() {
                 >
                   <PluginPage
                     renderTitle={() => (
-                      <Stack gap={0}>
+                      <Stack gap={0} alignItems="center" direction="row">
                         <img
                           className={styles.pluginPage.title.image}
                           alt={node}
                           src={resourcesImg}
                         />
                         <h1>{node}</h1>
+                        <Badge
+                          className={styles.pluginPage.title.badge}
+                          color="blue"
+                          text="node"
+                        />
                       </Stack>
                     )}
                     subTitle={pluginJson.info.description}
@@ -159,6 +166,8 @@ export function NodePage() {
                       />
                     </TabsBar>
                     {activeTab === 'overview' && <NodePageOverview />}
+                    {activeTab === 'cpu' && <NodePageCPU />}
+                    {activeTab === 'memory' && <NodePageMemory />}
                   </PluginPage>
                 </QueryVariable>
               </CustomVariable>
