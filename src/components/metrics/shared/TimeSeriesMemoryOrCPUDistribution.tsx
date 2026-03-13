@@ -45,6 +45,7 @@ export function TimeSeriesMemoryOrCPUDistribution({
       asTable: true,
       displayMode: LegendDisplayMode.Table,
       placement: 'bottom',
+      calcs: ['p95'],
     })
     .setCustomFieldConfig('stacking', { mode: StackingMode.Normal })
     .setCustomFieldConfig('fillOpacity', 100)

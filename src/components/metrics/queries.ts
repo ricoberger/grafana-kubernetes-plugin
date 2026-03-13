@@ -866,6 +866,50 @@ sum(
     )
   ) by(cluster,namespace,pod,interface)
 ) by(cluster,namespace,pod)`,
+    throughputRead: `sum(
+  rate(
+    container_fs_reads_bytes_total{
+      container!="POD",
+      container!="",
+      cluster=~"$cluster",
+      device=~"(/dev.+)|mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+",
+      node=~"$node"
+    }[$__rate_interval]
+  )
+) by(node)`,
+    throughputWrite: `-sum(
+  rate(
+    container_fs_writes_bytes_total{
+      container!="POD",
+      container!="",
+      cluster=~"$cluster",
+      device=~"(/dev.+)|mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+",
+      node=~"$node"
+    }[$__rate_interval]
+  )
+) by(node)`,
+    iopsRead: `sum(
+  rate(
+    container_fs_reads_total{
+      container!="POD",
+      container!="",
+      cluster=~"$cluster",
+      device=~"(/dev.+)|mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+",
+      node=~"$node"
+    }[$__rate_interval]
+  )
+) by(node)`,
+    iopsWrite: `-sum(
+  rate(
+    container_fs_writes_total{
+      container!="POD",
+      container!="",
+      cluster=~"$cluster",
+      device=~"(/dev.+)|mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+",
+      node=~"$node"
+    }[$__rate_interval]
+  )
+) by(node)`,
   },
   namespaces: {
     labelsByCluster: `label_values(kube_namespace_status_phase{cluster=~"$cluster"}, namespace)`,
@@ -1249,6 +1293,50 @@ sum(
     ) by(cluster,namespace,workload,workload_type,pod)
   ) by(cluster,namespace,pod)
 ) by(cluster,namespace,workload,workload_type)`,
+    throughputRead: `sum(
+  rate(
+    container_fs_reads_bytes_total{
+      container!="POD",
+      container!="",
+      cluster=~"$cluster",
+      device=~"(/dev.+)|mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+",
+      namespace=~"$namespace"
+    }[$__rate_interval]
+  )
+) by(namespace)`,
+    throughputWrite: `-sum(
+  rate(
+    container_fs_writes_bytes_total{
+      container!="POD",
+      container!="",
+      cluster=~"$cluster",
+      device=~"(/dev.+)|mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+",
+      namespace=~"$namespace"
+    }[$__rate_interval]
+  )
+) by(namespace)`,
+    iopsRead: `sum(
+  rate(
+    container_fs_reads_total{
+      container!="POD",
+      container!="",
+      cluster=~"$cluster",
+      device=~"(/dev.+)|mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+",
+      namespace=~"$namespace"
+    }[$__rate_interval]
+  )
+) by(namespace)`,
+    iopsWrite: `-sum(
+  rate(
+    container_fs_writes_total{
+      container!="POD",
+      container!="",
+      cluster=~"$cluster",
+      device=~"(/dev.+)|mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+",
+      namespace=~"$namespace"
+    }[$__rate_interval]
+  )
+) by(namespace)`,
   },
   workloads: {
     labelsByClusterNamespace: `query_result(
@@ -3215,6 +3303,110 @@ label_join(
     )
   ) by(cluster,namespace,pod,interface)
 ) by(cluster,namespace,pod)`,
+    throughputRead: `sum(
+  sum(
+    sum(
+      rate(
+        container_fs_reads_bytes_total{
+          container!="POD",
+          container!="",
+          cluster=~"$cluster",
+          namespace=~"$namespace",
+          device=~"(/dev.+)|mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+"
+        }[$__rate_interval]
+      )
+    ) by(cluster,namespace,pod)
+      * on(cluster,namespace,pod) group_left(workload,workload_type)
+    topk(
+      1,
+      group(
+        namespace_workload_pod:kube_pod_owner:relabel{
+          cluster=~"$cluster",
+          namespace=~"$namespace",
+          workload=~"$workload"
+        }
+      ) by(cluster,namespace,workload,workload_type,pod)
+    ) by(cluster,namespace,pod)
+  ) by(cluster,namespace,pod,workload,workload_type)
+) by(workload,workload_type)`,
+    throughputWrite: `-sum(
+  sum(
+    sum(
+      rate(
+        container_fs_writes_bytes_total{
+          container!="POD",
+          container!="",
+          cluster=~"$cluster",
+          namespace=~"$namespace",
+          device=~"(/dev.+)|mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+"
+        }[$__rate_interval]
+      )
+    ) by(cluster,namespace,pod)
+      * on(cluster,namespace,pod) group_left(workload,workload_type)
+    topk(
+      1,
+      group(
+        namespace_workload_pod:kube_pod_owner:relabel{
+          cluster=~"$cluster",
+          namespace=~"$namespace",
+          workload=~"$workload"
+        }
+      ) by(cluster,namespace,workload,workload_type,pod)
+    ) by(cluster,namespace,pod)
+  ) by(cluster,namespace,pod,workload,workload_type)
+) by(workload,workload_type)`,
+    iopsRead: `sum(
+  sum(
+    sum(
+      rate(
+        container_fs_reads_total{
+          container!="POD",
+          container!="",
+          cluster=~"$cluster",
+          device=~"(/dev.+)|mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+",
+          namespace=~"$namespace"
+        }[$__rate_interval]
+      )
+    ) by(cluster,namespace,pod)
+      * on(cluster,namespace,pod) group_left(workload,workload_type)
+    topk(
+      1,
+      group(
+        namespace_workload_pod:kube_pod_owner:relabel{
+          cluster=~"$cluster",
+          namespace=~"$namespace",
+          workload=~"$workload"
+        }
+      ) by(cluster,namespace,workload,workload_type,pod)
+    ) by(cluster,namespace,pod)
+  ) by(cluster,namespace,pod,workload,workload_type)
+) by(workload,workload_type)`,
+    iopsWrite: `-sum(
+  sum(
+    sum(
+      rate(
+        container_fs_writes_total{
+          container!="POD",
+          container!="",
+          cluster=~"$cluster",
+          device=~"(/dev.+)|mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+",
+          namespace=~"$namespace"
+        }[$__rate_interval]
+      )
+    ) by(cluster,namespace,pod)
+      * on(cluster,namespace,pod) group_left(workload,workload_type)
+    topk(
+      1,
+      group(
+        namespace_workload_pod:kube_pod_owner:relabel{
+          cluster=~"$cluster",
+          namespace=~"$namespace",
+          workload=~"$workload"
+        }
+      ) by(cluster,namespace,workload,workload_type,pod)
+    ) by(cluster,namespace,pod)
+  ) by(cluster,namespace,pod,workload,workload_type)
+) by(workload,workload_type)`,
   },
   pods: {
     count: `count(kube_pod_info{cluster=~"$cluster", namespace=~"$namespace", pod!=""})`,
@@ -3905,6 +4097,58 @@ sum(
     )
   ) by(cluster,namespace,pod,interface)
 ) by(interface)`,
+    throughputRead: `sum(
+  rate(
+    container_fs_reads_bytes_total{
+      container!="POD",
+      container!="",
+      cluster=~"$cluster",
+      device=~"(/dev.+)|mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+",
+      node=~"$node",
+      namespace=~"$namespace",
+      pod=~"$pod"
+    }[$__rate_interval]
+  )
+) by(namespace,pod)`,
+    throughputWrite: `-sum(
+  rate(
+    container_fs_writes_bytes_total{
+      container!="POD",
+      container!="",
+      cluster=~"$cluster",
+      device=~"(/dev.+)|mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+",
+      node=~"$node",
+      namespace=~"$namespace",
+      pod=~"$pod"
+    }[$__rate_interval]
+  )
+) by(namespace,pod)`,
+    iopsRead: `sum(
+  rate(
+    container_fs_reads_total{
+      container!="POD",
+      container!="",
+      cluster=~"$cluster",
+      device=~"(/dev.+)|mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+",
+      node=~"$node",
+      namespace=~"$namespace",
+      pod=~"$pod"
+    }[$__rate_interval]
+  )
+) by(namespace,pod)`,
+    iopsWrite: `-sum(
+  rate(
+    container_fs_writes_total{
+      container!="POD",
+      container!="",
+      cluster=~"$cluster",
+      device=~"(/dev.+)|mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+",
+      node=~"$node",
+      namespace=~"$namespace",
+      pod=~"$pod"
+    }[$__rate_interval]
+  )
+) by(namespace,pod)`,
   },
   containers: {
     info: `last_over_time(
@@ -4435,6 +4679,58 @@ sum(
   "pod",
   "container"
 )`,
+    throughputRead: `sum(
+  rate(
+    container_fs_reads_bytes_total{
+      container!="POD",
+      container!="",
+      cluster=~"$cluster",
+      device=~"(/dev.+)|mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+",
+      node=~"$node",
+      namespace=~"$namespace",
+      pod=~"$pod"
+    }[$__rate_interval]
+  )
+) by(namespace,pod,container)`,
+    throughputWrite: `-sum(
+  rate(
+    container_fs_writes_bytes_total{
+      container!="POD",
+      container!="",
+      cluster=~"$cluster",
+      device=~"(/dev.+)|mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+",
+      node=~"$node",
+      namespace=~"$namespace",
+      pod=~"$pod"
+    }[$__rate_interval]
+  )
+) by(namespace,pod,container)`,
+    iopsRead: `sum(
+  rate(
+    container_fs_reads_total{
+      container!="POD",
+      container!="",
+      cluster=~"$cluster",
+      device=~"(/dev.+)|mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+",
+      node=~"$node",
+      namespace=~"$namespace",
+      pod=~"$pod"
+    }[$__rate_interval]
+  )
+) by(namespace,pod,container)`,
+    iopsWrite: `-sum(
+  rate(
+    container_fs_writes_total{
+      container!="POD",
+      container!="",
+      cluster=~"$cluster",
+      device=~"(/dev.+)|mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+",
+      node=~"$node",
+      namespace=~"$namespace",
+      pod=~"$pod"
+    }[$__rate_interval]
+  )
+) by(namespace,pod,container)`,
   },
   persistentVolumeClaims: {
     count: `count(
