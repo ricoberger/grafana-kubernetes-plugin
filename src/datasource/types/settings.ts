@@ -26,6 +26,7 @@ export interface DataSourceOptions extends DataSourceJsonData {
   generateKubeconfigRedirectUrls?: string[];
   integrationsMetricsDatasourceUid?: string;
   integrationsMetricsClusterLabel?: string;
+  integrationsMetricsLogs?: string;
   integrationsTracesQuery?: string;
 }
 

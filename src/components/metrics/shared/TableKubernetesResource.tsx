@@ -7,7 +7,7 @@ import datasourcePluginJson from '../../../datasource/plugin.json';
 import { useVizPanelMenu } from '../../../hooks/useVizPanelMenu';
 import { getStyles } from '../../../utils/utils.styles';
 
-function getResourceInfo(resource: string):
+export function getResourceInfo(resource: string):
   | {
     title: string;
     resourceId: string;

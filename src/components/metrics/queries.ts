@@ -4151,6 +4151,14 @@ sum(
 ) by(namespace,pod)`,
   },
   containers: {
+    labelsByClusterNamespacePod: `label_values(
+  kube_pod_container_info{
+    cluster=~"$cluster",
+    namespace=~"$namespace",
+    pod=~"$pod"
+  },
+  container
+)`,
     info: `last_over_time(
   (
     max(
