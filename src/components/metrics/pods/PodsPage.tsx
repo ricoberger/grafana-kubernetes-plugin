@@ -103,6 +103,9 @@ export function PodsPage() {
                   sort={VariableSort.alphabeticalCaseInsensitiveAsc}
                 >
                   <PluginPage
+                    pageNav={{
+                      text: 'Pods',
+                    }}
                     renderTitle={() => (
                       <Stack gap={0} alignItems="center" direction="row">
                         <img

@@ -99,6 +99,9 @@ export function WorkloadsPage() {
                 sort={VariableSort.alphabeticalCaseInsensitiveAsc}
               >
                 <PluginPage
+                  pageNav={{
+                    text: 'Workloads',
+                  }}
                   renderTitle={() => (
                     <Stack gap={0} alignItems="center" direction="row">
                       <img

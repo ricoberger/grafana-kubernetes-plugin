@@ -22,6 +22,8 @@ import { NamespacePageCPU } from './NamespacePageCPU';
 import { NamespacePageMemory } from './NamespacePageMemory';
 import { NamespacePageNetwork } from './NamespacePageNetwork';
 import { NamespacePageStorage } from './NamespacePageStorage';
+import { ROUTES } from '../../../constants';
+import { prefixRoute } from '../../../utils/utils.routing';
 
 export function NamespacePage() {
   const styles = useStyles2(getStyles);
@@ -99,6 +101,13 @@ export function NamespacePage() {
                 sort={VariableSort.alphabeticalCaseInsensitiveAsc}
               >
                 <PluginPage
+                  pageNav={{
+                    text: namespace,
+                    parentItem: {
+                      text: 'Namespaces',
+                      url: prefixRoute(ROUTES.MetricsNamespaces),
+                    },
+                  }}
                   renderTitle={() => (
                     <Stack gap={0} alignItems="center" direction="row">
                       <img

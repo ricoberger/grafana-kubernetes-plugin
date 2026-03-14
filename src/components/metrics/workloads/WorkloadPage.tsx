@@ -22,6 +22,8 @@ import { WorkloadPageMemory } from './WorkloadPageMemory';
 import { WorkloadPageCPU } from './WorkloadPageCPU';
 import { WorkloadPageNetwork } from './WorkloadPageNetwork';
 import { WorkloadPageStorage } from './WorkloadPageStorage';
+import { ROUTES } from '../../../constants';
+import { prefixRoute } from '../../../utils/utils.routing';
 
 export function WorkloadPage() {
   const styles = useStyles2(getStyles);
@@ -130,6 +132,17 @@ export function WorkloadPage() {
                       sort={VariableSort.alphabeticalCaseInsensitiveAsc}
                     >
                       <PluginPage
+                        pageNav={{
+                          text: workload,
+                          parentItem: {
+                            text: namespace,
+                            url: prefixRoute(ROUTES.MetricsNamespaces),
+                            parentItem: {
+                              text: 'Workloads',
+                              url: prefixRoute(ROUTES.MetricsWorkloads),
+                            },
+                          },
+                        }}
                         renderTitle={() => (
                           <Stack gap={0} alignItems="center" direction="row">
                             <img

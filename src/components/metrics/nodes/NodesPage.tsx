@@ -60,6 +60,9 @@ export function NodesPage() {
             hide={VariableHide.hideVariable}
           >
             <PluginPage
+              pageNav={{
+                text: 'Nodes',
+              }}
               renderTitle={() => (
                 <Stack gap={0} alignItems="center" direction="row">
                   <img
