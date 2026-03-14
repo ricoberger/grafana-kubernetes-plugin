@@ -128,7 +128,7 @@ export function PersistentVolumeClaimPage() {
                         text: pvc,
                         parentItem: {
                           text: namespace,
-                          url: prefixRoute(ROUTES.MetricsNamespaces),
+                          url: `${prefixRoute(ROUTES.MetricsNamespaces)}/${namespace}`,
                           parentItem: {
                             text: 'PersistentVolumeClaims',
                             url: prefixRoute(

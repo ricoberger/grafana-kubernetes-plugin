@@ -156,7 +156,7 @@ export function WorkloadPage() {
                             text: workload,
                             parentItem: {
                               text: namespace,
-                              url: prefixRoute(ROUTES.MetricsNamespaces),
+                              url: `${prefixRoute(ROUTES.MetricsNamespaces)}/${namespace}`,
                               parentItem: {
                                 text: 'Workloads',
                                 url: prefixRoute(ROUTES.MetricsWorkloads),

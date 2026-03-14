@@ -122,7 +122,7 @@ export function PodPage() {
                         text: pod,
                         parentItem: {
                           text: namespace,
-                          url: prefixRoute(ROUTES.MetricsNamespaces),
+                          url: `${prefixRoute(ROUTES.MetricsNamespaces)}/${namespace}`,
                           parentItem: {
                             text: 'Pods',
                             url: prefixRoute(ROUTES.MetricsPods),
