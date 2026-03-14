@@ -18,6 +18,7 @@ import { getStyles } from '../../utils/utils.styles';
 import datasourcePluginJson from '../../datasource/plugin.json';
 import { StatWithFixedColorAndLink } from './shared/StatWithFixedColorAndLink';
 import { queries, variableQuery } from './queries';
+import { TimeSeriesMemoryOrCPU } from './shared/TimeSeriesMemoryOrCPU';
 
 export function MetricsPage() {
   const styles = useStyles2(getStyles);
@@ -130,6 +131,24 @@ export function MetricsPage() {
                         title="PersistentVolumeClaims"
                         expr={queries.persistentVolumeClaims.count}
                         route={ROUTES.MetricsPersistentVolumeClaims}
+                      />
+                    </div>
+                    <div className={styles.dashboard.row.height400px}>
+                      <TimeSeriesMemoryOrCPU
+                        title="Cluster CPU"
+                        unit="cores"
+                        capacityExpr={queries.cluster.cpuCapacity}
+                        limitsExpr={queries.cluster.cpuLimits}
+                        requestsExpr={queries.cluster.cpuRequests}
+                        usageExpr={queries.cluster.cpuUsage}
+                      />
+                      <TimeSeriesMemoryOrCPU
+                        title="Cluster Memory"
+                        unit="bytes"
+                        capacityExpr={queries.cluster.memoryCapacity}
+                        limitsExpr={queries.cluster.memoryLimits}
+                        requestsExpr={queries.cluster.memoryRequests}
+                        usageExpr={queries.cluster.memoryUsage}
                       />
                     </div>
                   </Stack>
