@@ -21,6 +21,8 @@ import { PodPageCPU } from './PodPageCPU';
 import { PodPageMemory } from './PodPageMemory';
 import { PodPageNetwork } from './PodPageNetwork';
 import { PodPageStorage } from './PodPageStorage';
+import { ROUTES } from '../../../constants';
+import { prefixRoute } from '../../../utils/utils.routing';
 
 export function PodPage() {
   const styles = useStyles2(getStyles);
@@ -95,6 +97,17 @@ export function PodPage() {
                   hide={VariableHide.hideVariable}
                 >
                   <PluginPage
+                    pageNav={{
+                      text: pod,
+                      parentItem: {
+                        text: namespace,
+                        url: prefixRoute(ROUTES.MetricsNamespaces),
+                        parentItem: {
+                          text: 'Pods',
+                          url: prefixRoute(ROUTES.MetricsPods),
+                        },
+                      },
+                    }}
                     renderTitle={() => (
                       <Stack gap={0} alignItems="center" direction="row">
                         <img

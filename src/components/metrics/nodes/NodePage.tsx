@@ -22,6 +22,8 @@ import { NodePageCPU } from './NodePageCPU';
 import { NodePageMemory } from './NodePageMemory';
 import { NodePageNetwork } from './NodePageNetwork';
 import { NodePageStorage } from './NodePageStorage';
+import { ROUTES } from '../../../constants';
+import { prefixRoute } from '../../../utils/utils.routing';
 
 export function NodePage() {
   const styles = useStyles2(getStyles);
@@ -102,6 +104,13 @@ export function NodePage() {
                   sort={VariableSort.alphabeticalCaseInsensitiveAsc}
                 >
                   <PluginPage
+                    pageNav={{
+                      text: node,
+                      parentItem: {
+                        text: 'Nodes',
+                        url: prefixRoute(ROUTES.MetricsNodes),
+                      },
+                    }}
                     renderTitle={() => (
                       <Stack gap={0} alignItems="center" direction="row">
                         <img

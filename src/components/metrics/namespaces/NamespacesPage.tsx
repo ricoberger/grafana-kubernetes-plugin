@@ -78,6 +78,9 @@ export function NamespacesPage() {
               sort={VariableSort.alphabeticalCaseInsensitiveAsc}
             >
               <PluginPage
+                pageNav={{
+                  text: 'Namespaces',
+                }}
                 renderTitle={() => (
                   <Stack gap={0} alignItems="center" direction="row">
                     <img
