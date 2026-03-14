@@ -22,15 +22,86 @@ datasources:
       generateKubeconfigPort: 11716
       generateKubeconfigRedirectUrls:
         - http://localhost:11716
-      integrationsMetricsDatasourceUid: prometheus
+      integrationsMetricsDatasourceUid: victoriametrics
       integrationsMetricsClusterLabel: '.*'
+      integrationsMetricsLogs: |
+        {
+          "pod": {
+            "datasource": {
+              "type": "victoriametrics-logs-datasource",
+              "uid": "victorialogs"
+            },
+            "queries": [
+              {
+                "refId": "A",
+                "expr": "k8s.pod.name:=\"$${pod}\" | sort by (_time) desc",
+                "queryType": "instant",
+                "maxLines": 1000
+              }
+            ]
+          },
+          "workload": {
+            "datasource": {
+              "type": "victoriametrics-logs-datasource",
+              "uid": "victorialogs"
+            },
+            "queries": [
+              {
+                "refId": "A",
+                "expr": "k8s.pod.name:in($${pod}) | sort by (_time) desc",
+                "queryType": "instant",
+                "maxLines": 1000
+              }
+            ]
+          },
+          "namespace": {
+            "datasource": {
+              "type": "victoriametrics-logs-datasource",
+              "uid": "victorialogs"
+            },
+            "queries": [
+              {
+                "refId": "A",
+                "expr": "k8s.namespace.name:=\"$${namespace}\" | sort by (_time) desc",
+                "queryType": "instant",
+                "maxLines": 1000
+              }
+            ]
+          },
+          "node": {
+            "datasource": {
+              "type": "victoriametrics-logs-datasource",
+              "uid": "victorialogs"
+            },
+            "queries": [
+              {
+                "refId": "A",
+                "expr": "k8s.node.name:=\"$${node}\" | sort by (_time) desc",
+                "queryType": "instant",
+                "maxLines": 1000
+              }
+            ]
+          }
+        }
       integrationsTracesQuery: '{"datasource":"jaeger","queries":[{"query":"$${__value.raw}","refId":"A"}]}'
     secureJsonData:
       clusterKubeconfig:
       grafanaPassword: admin
 
-  - name: Prometheus
+  - name: VictoriaMetrics
     type: prometheus
-    uid: prometheus
+    uid: victoriametrics
     url: http://host.docker.internal:8481/select/0/prometheus
+    access: proxy
+
+  - name: VictoriaLogs
+    type: victoriametrics-logs-datasource
+    uid: victorialogs
+    url: http://host.docker.internal:9471
+    access: proxy
+
+  - name: VictoriaTraces
+    type: jaeger
+    uid: victoriatraces
+    url: http://host.docker.internal:10471/select/jaeger
     access: proxy

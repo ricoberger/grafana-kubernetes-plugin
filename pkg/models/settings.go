@@ -27,6 +27,7 @@ type PluginSettings struct {
 	GenerateKubeconfigRedirectUrls   []string              `json:"generateKubeconfigRedirectUrls"`
 	IntegrationsMetricsDatasourceUid string                `json:"integrationsMetricsDatasourceUid"`
 	IntegrationsMetricsClusterLabel  string                `json:"integrationsMetricsClusterLabel"`
+	IntegrationsMetricsLogs          string                `json:"integrationsMetricsLogs"`
 	IntegrationsTracesQuery          string                `json:"integrationsTracesQuery"`
 	Secrets                          *SecretPluginSettings `json:"-"`
 }

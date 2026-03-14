@@ -1,5 +1,5 @@
 import React, { ChangeEvent } from 'react';
-import { InlineField, Input, useStyles2 } from '@grafana/ui';
+import { InlineField, Input, TextArea, useStyles2 } from '@grafana/ui';
 import {
   DataSourcePluginOptionsEditorProps,
   GrafanaTheme2,
@@ -57,6 +57,22 @@ export function Integrations({ options, onOptionsChange }: Props) {
           }}
           value={options.jsonData.integrationsMetricsClusterLabel}
           width={65}
+        />
+      </InlineField>
+      <InlineField label="Metrics logs queries" labelWidth={30} interactive>
+        <TextArea
+          rows={3}
+          cols={56}
+          onChange={(event: ChangeEvent<HTMLTextAreaElement>) => {
+            onOptionsChange({
+              ...options,
+              jsonData: {
+                ...options.jsonData,
+                integrationsMetricsLogs: event.target.value,
+              },
+            });
+          }}
+          value={options.jsonData.integrationsMetricsLogs}
         />
       </InlineField>
       <InlineField label="Traces query" labelWidth={30} interactive>

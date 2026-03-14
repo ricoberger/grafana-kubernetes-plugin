@@ -24,6 +24,8 @@ import { NodePageNetwork } from './NodePageNetwork';
 import { NodePageStorage } from './NodePageStorage';
 import { ROUTES } from '../../../constants';
 import { prefixRoute } from '../../../utils/utils.routing';
+import { TabLogsContent } from '../shared/TabLogsContent';
+import { TabLogs } from '../shared/TabLogs';
 
 export function NodePage() {
   const styles = useStyles2(getStyles);
@@ -72,119 +74,144 @@ export function NodePage() {
             refresh={VariableRefresh.onDashboardLoad}
             hide={VariableHide.hideVariable}
           >
-            <CustomVariable
-              name="node"
-              label="Node"
-              query={node}
-              initialValue={node}
+            <QueryVariable
+              name="logs"
+              label="Logs"
+              datasource={{ type: datasourcePluginJson.id, uid: '$datasource' }}
+              query={{
+                refId: 'settings',
+                queryType: 'settings',
+                setting: 'integrationsMetricsLogs',
+                variableField: 'values',
+              }}
+              refresh={VariableRefresh.onDashboardLoad}
               hide={VariableHide.hideVariable}
             >
               <CustomVariable
-                name="namespace"
-                label="Namespace"
-                query=".+"
-                initialValue=".+"
+                name="node"
+                label="Node"
+                query={node}
+                initialValue={node}
                 hide={VariableHide.hideVariable}
               >
-                <QueryVariable
-                  name="pod"
-                  label="Pod"
-                  datasource={{
-                    type: 'prometheus',
-                    uid: '$prometheus',
-                  }}
-                  query={{
-                    refId: 'pods',
-                    query: variableQuery(queries.pods.labelsByClusterNode),
-                  }}
-                  refresh={VariableRefresh.onTimeRangeChanged}
-                  isMulti={true}
-                  includeAll={true}
-                  initialValue={'$__all'}
-                  sort={VariableSort.alphabeticalCaseInsensitiveAsc}
+                <CustomVariable
+                  name="namespace"
+                  label="Namespace"
+                  query=".+"
+                  initialValue=".+"
+                  hide={VariableHide.hideVariable}
                 >
-                  <PluginPage
-                    pageNav={{
-                      text: node,
-                      parentItem: {
-                        text: 'Nodes',
-                        url: prefixRoute(ROUTES.MetricsNodes),
-                      },
+                  <QueryVariable
+                    name="pod"
+                    label="Pod"
+                    datasource={{
+                      type: 'prometheus',
+                      uid: '$prometheus',
                     }}
-                    renderTitle={() => (
-                      <Stack gap={0} alignItems="center" direction="row">
-                        <img
-                          className={styles.pluginPage.title.image}
-                          alt={node}
-                          src={resourcesImg}
-                        />
-                        <h1>{node}</h1>
-                        <Badge
-                          className={styles.pluginPage.title.badge}
-                          color="blue"
-                          text="node"
-                        />
-                      </Stack>
-                    )}
-                    subTitle={pluginJson.info.description}
-                    actions={
-                      <>
-                        <TimeRangePicker />
-                        <RefreshPicker />
-                      </>
-                    }
+                    query={{
+                      refId: 'pods',
+                      query: variableQuery(queries.pods.labelsByClusterNode),
+                    }}
+                    refresh={VariableRefresh.onTimeRangeChanged}
+                    isMulti={true}
+                    includeAll={true}
+                    initialValue={'$__all'}
+                    sort={VariableSort.alphabeticalCaseInsensitiveAsc}
                   >
-                    <TabsBar className={styles.dashboard.tabsBar}>
-                      <Tab
-                        label="Overview"
-                        active={activeTab === 'overview'}
-                        onChangeTab={(ev) => {
-                          ev?.preventDefault();
-                          setActiveTab('overview');
-                        }}
-                      />
-                      <Tab
-                        label="CPU"
-                        active={activeTab === 'cpu'}
-                        onChangeTab={(ev) => {
-                          ev?.preventDefault();
-                          setActiveTab('cpu');
-                        }}
-                      />
-                      <Tab
-                        label="Memory"
-                        active={activeTab === 'memory'}
-                        onChangeTab={(ev) => {
-                          ev?.preventDefault();
-                          setActiveTab('memory');
-                        }}
-                      />
-                      <Tab
-                        label="Network"
-                        active={activeTab === 'network'}
-                        onChangeTab={(ev) => {
-                          ev?.preventDefault();
-                          setActiveTab('network');
-                        }}
-                      />
-                      <Tab
-                        label="Storage"
-                        active={activeTab === 'storage'}
-                        onChangeTab={(ev) => {
-                          ev?.preventDefault();
-                          setActiveTab('storage');
-                        }}
-                      />
-                    </TabsBar>
-                    {activeTab === 'overview' && <NodePageOverview />}
-                    {activeTab === 'cpu' && <NodePageCPU />}
-                    {activeTab === 'memory' && <NodePageMemory />}
-                    {activeTab === 'network' && <NodePageNetwork />}
-                    {activeTab === 'storage' && <NodePageStorage />}
-                  </PluginPage>
-                </QueryVariable>
+                    <PluginPage
+                      pageNav={{
+                        text: node,
+                        parentItem: {
+                          text: 'Nodes',
+                          url: prefixRoute(ROUTES.MetricsNodes),
+                        },
+                      }}
+                      renderTitle={() => (
+                        <Stack gap={0} alignItems="center" direction="row">
+                          <img
+                            className={styles.pluginPage.title.image}
+                            alt={node}
+                            src={resourcesImg}
+                          />
+                          <h1>{node}</h1>
+                          <Badge
+                            className={styles.pluginPage.title.badge}
+                            color="blue"
+                            text="node"
+                          />
+                        </Stack>
+                      )}
+                      subTitle={pluginJson.info.description}
+                      actions={
+                        <>
+                          <TimeRangePicker />
+                          <RefreshPicker />
+                        </>
+                      }
+                    >
+                      <TabsBar className={styles.dashboard.tabsBar}>
+                        <Tab
+                          label="Overview"
+                          active={activeTab === 'overview'}
+                          onChangeTab={(ev) => {
+                            ev?.preventDefault();
+                            setActiveTab('overview');
+                          }}
+                        />
+                        <Tab
+                          label="CPU"
+                          active={activeTab === 'cpu'}
+                          onChangeTab={(ev) => {
+                            ev?.preventDefault();
+                            setActiveTab('cpu');
+                          }}
+                        />
+                        <Tab
+                          label="Memory"
+                          active={activeTab === 'memory'}
+                          onChangeTab={(ev) => {
+                            ev?.preventDefault();
+                            setActiveTab('memory');
+                          }}
+                        />
+                        <Tab
+                          label="Network"
+                          active={activeTab === 'network'}
+                          onChangeTab={(ev) => {
+                            ev?.preventDefault();
+                            setActiveTab('network');
+                          }}
+                        />
+                        <Tab
+                          label="Storage"
+                          active={activeTab === 'storage'}
+                          onChangeTab={(ev) => {
+                            ev?.preventDefault();
+                            setActiveTab('storage');
+                          }}
+                        />
+                        <TabLogs
+                          resource="node"
+                          active={activeTab === 'logs'}
+                          onChangeTab={(ev) => {
+                            ev?.preventDefault();
+                            setActiveTab('logs');
+                          }}
+                        />
+                      </TabsBar>
+                      {activeTab === 'overview' && <NodePageOverview />}
+                      {activeTab === 'cpu' && <NodePageCPU />}
+                      {activeTab === 'memory' && <NodePageMemory />}
+                      {activeTab === 'network' && <NodePageNetwork />}
+                      {activeTab === 'storage' && <NodePageStorage />}
+                      {activeTab === 'logs' && (
+                        <TabLogsContent page="node" resource="node" />
+                      )}
+                    </PluginPage>
+                  </QueryVariable>
+                </CustomVariable>
               </CustomVariable>
-            </CustomVariable>
+            </QueryVariable>
           </QueryVariable>
         </QueryVariable>
       </DataSourceVariable>

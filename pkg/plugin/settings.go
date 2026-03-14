@@ -47,6 +47,8 @@ func (d *Datasource) handleSettings(ctx context.Context, query concurrent.Query)
 		setting = config.IntegrationsMetricsDatasourceUid
 	case "integrationsMetricsClusterLabel":
 		setting = config.IntegrationsMetricsClusterLabel
+	case "integrationsMetricsLogs":
+		setting = config.IntegrationsMetricsLogs
 	default:
 	}
 

@@ -12,6 +12,7 @@ services:
       GF_LOG_FILTERS: plugin.ricoberger-kubernetes-datasource:debug
       GF_LOG_LEVEL: error
       GF_AUTH_BASIC_ENABLED: true
+      GF_PLUGINS_PREINSTALL_SYNC: victoriametrics-logs-datasource
     volumes:
       - ./kubeconfig.yaml:/kubeconfig.yaml
     extra_hosts:
