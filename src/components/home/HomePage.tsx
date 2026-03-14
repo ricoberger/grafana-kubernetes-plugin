@@ -1,7 +1,7 @@
 import React from 'react';
 import { VariableHide, VariableRefresh, VariableSort } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
-import { Card, Stack, useStyles2 } from '@grafana/ui';
+import { Card, LinkButton, Stack, useStyles2 } from '@grafana/ui';
 import {
   SceneContextProvider,
   DataSourceVariable,
@@ -142,6 +142,15 @@ export function HomePage() {
                     <VariableControl name="cluster" />
                     <VariableControl name="namespace" />
                     <div className={styles.dashboard.header.spacer} />
+                    <LinkButton
+                      href={prefixRoute(ROUTES.Metrics)}
+                      size="md"
+                      variant="secondary"
+                      fill="outline"
+                      icon="apps"
+                    >
+                      Details
+                    </LinkButton>
                   </div>
                   <Stack direction="column" gap={2}>
                     <div className={styles.dashboard.row.height100px}>
