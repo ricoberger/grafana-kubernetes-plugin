@@ -20,6 +20,8 @@ import { NodePage } from './metrics/nodes/NodePage';
 import { NamespacePage } from './metrics/namespaces/NamespacePage';
 import { WorkloadPage } from './metrics/workloads/WorkloadPage';
 import { PodPage } from './metrics/pods/PodPage';
+import { PersistentVolumeClaimsPage } from './metrics/persistentcolumeclaims/PersistentVolumeClaimsPage';
+import { PersistentVolumeClaimPage } from './metrics/persistentcolumeclaims/PersistentVolumeClaimPage';
 
 function App(props: AppRootProps) {
   return (
@@ -43,6 +45,14 @@ function App(props: AppRootProps) {
         <Route
           path={`${ROUTES.MetricsPods}/:namespace/:pod`}
           element={<PodPage />}
+        />
+        <Route
+          path={ROUTES.MetricsPersistentVolumeClaims}
+          element={<PersistentVolumeClaimsPage />}
+        />
+        <Route
+          path={`${ROUTES.MetricsPersistentVolumeClaims}/:namespace/:pvc`}
+          element={<PersistentVolumeClaimPage />}
         />
         <Route path={ROUTES.Resources} element={<ResourcesPage />} />
         <Route path={ROUTES.Helm} element={<HelmPage />} />

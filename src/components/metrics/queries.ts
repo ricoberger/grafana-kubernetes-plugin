@@ -2833,7 +2833,7 @@ sum(
           namespace=~"$namespace",
           container!="",
           container!="POD"
-        }[100m]
+        }[$__rate_interval]
       )
     ) by(cluster,namespace,pod)
       >
@@ -4733,10 +4733,161 @@ sum(
 ) by(namespace,pod,container)`,
   },
   persistentVolumeClaims: {
+    labelsByClusterNamespace: `label_values(kube_persistentvolumeclaim_info{cluster=~"$cluster", namespace=~"$namespace"}, persistentvolumeclaim)`,
+    labelsByClusterNamespacePod: `label_values(kube_pod_spec_volumes_persistentvolumeclaims_info{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",volume!=""}, persistentvolumeclaim)`,
+    labelsPodsByClusterNamespacePersistentVolumeClaim: `label_values(kube_pod_spec_volumes_persistentvolumeclaims_info{cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc",volume!=""}, pod)`,
     count: `count(
   kube_persistentvolumeclaim_info{
     cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim!=""
   }
 )`,
+    aboveWarningThreshold: `count(
+  max(
+    kubelet_volume_stats_used_bytes{cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"}
+  ) by(persistentvolumeclaim,namespace)
+    and
+  (
+    (
+      max(
+        kubelet_volume_stats_used_bytes{cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"}
+      ) by(persistentvolumeclaim,namespace)
+        /
+      max(
+        kubelet_volume_stats_capacity_bytes{cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"}
+      ) by(persistentvolumeclaim,namespace)
+    )
+      >=
+    (80 / 100)
+  )
+)
+  or
+vector(0)`,
+    fullIn5Days: `count(
+  kubelet_volume_stats_available_bytes{cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"}
+    and
+  (
+    predict_linear(
+      kubelet_volume_stats_available_bytes{cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"}[1d],
+      ((5 * 24) * 60) * 60
+    )
+      <
+    0
+  )
+)
+  or
+vector(0)`,
+    fullIn2Days: `count(
+  kubelet_volume_stats_available_bytes{cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"}
+    and
+  (
+    predict_linear(
+      kubelet_volume_stats_available_bytes{cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"}[1d],
+      ((2 * 24) * 60) * 60
+    )
+      <
+    0
+  )
+)
+  or
+vector(0)`,
+    unused: `sum(
+  count(
+    kube_persistentvolumeclaim_info{cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"}
+  ) by(persistentvolumeclaim,namespace)
+    unless
+  count(
+    kubelet_volume_stats_available_bytes{cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"}
+  ) by(persistentvolumeclaim,namespace)
+)
+  or
+vector(0)`,
+    lostState: `count(
+  kube_persistentvolumeclaim_status_phase{cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc",phase="Lost"}
+    ==
+  1
+)
+  or
+vector(0)`,
+    pendingState: `count(
+  kube_persistentvolumeclaim_status_phase{cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc",phase="Pending"}
+    ==
+  1
+)
+  or
+vector(0)`,
+    info: `sum(
+  kube_persistentvolumeclaim_info{cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"}
+) by(persistentvolumeclaim,namespace,storageclass,volumename)`,
+    capacity: `sum(
+  kubelet_volume_stats_capacity_bytes{
+    cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"
+  }
+) by(persistentvolumeclaim,namespace)`,
+    requested: `sum(
+  kube_persistentvolumeclaim_resource_requests_storage_bytes{
+    cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"
+  }
+) by(persistentvolumeclaim,namespace)`,
+    used: `sum(
+  kubelet_volume_stats_used_bytes{
+    cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"
+  }
+) by(persistentvolumeclaim,namespace)`,
+    available: `sum(
+  kubelet_volume_stats_available_bytes{
+    cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"
+  }
+) by(persistentvolumeclaim,namespace)`,
+    phase: `sum(
+  kube_persistentvolumeclaim_status_phase{
+    cluster=~"$cluster",namespace=~"$namespace",phase=~"(Pending|Lost)",persistentvolumeclaim=~"$pvc"
+  }
+) by(persistentvolumeclaim,namespace)
+  +
+sum(
+  kube_persistentvolumeclaim_status_phase{
+    cluster=~"$cluster",namespace=~"$namespace",phase=~"(Lost)",persistentvolumeclaim=~"$pvc"
+  }
+) by(persistentvolumeclaim,namespace)`,
+    usedPercent: `sum(
+  kubelet_volume_stats_used_bytes{
+    cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"
+  }
+    /
+  kubelet_volume_stats_capacity_bytes{
+    cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"
+  }
+) by(persistentvolumeclaim,namespace)`,
+    inodesCapacity: `sum(
+  kubelet_volume_stats_inodes{
+    cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"
+  }
+) by(persistentvolumeclaim,namespace)`,
+    inodesUsed: `sum(
+  kubelet_volume_stats_inodes_used{
+    cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"
+  }
+) by(persistentvolumeclaim,namespace)`,
+    hourlyUsageRage: `sum(
+  rate(
+    kubelet_volume_stats_used_bytes{
+      cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"
+    }[1h]
+  )
+) by(namespace,persistentvolumeclaim)`,
+    dailyUsageRage: `sum(
+  rate(
+    kubelet_volume_stats_used_bytes{
+      cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"
+    }[1d]
+  )
+) by(namespace,persistentvolumeclaim)`,
+    weeklyUsageRage: `sum(
+  rate(
+    kubelet_volume_stats_used_bytes{
+      cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"
+    }[1w]
+  )
+) by(namespace,persistentvolumeclaim)`,
   },
 };
