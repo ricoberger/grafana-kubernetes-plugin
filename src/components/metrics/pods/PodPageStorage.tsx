@@ -6,6 +6,7 @@ import { getStyles } from '../../../utils/utils.styles';
 import { queries } from '../queries';
 import { TimeSeriesIO } from '../shared/TimeSeriesIO';
 import { TimeSeriesMemoryOrCPUDistribution } from '../shared/TimeSeriesMemoryOrCPUDistribution';
+import { SectionPersistentVolumeClaimsForPods } from '../shared/SectionPersistenVolumeClaimsForPods';
 
 export function PodPageStorage() {
   const styles = useStyles2(getStyles);
@@ -74,6 +75,8 @@ export function PodPageStorage() {
           legend="{{ container }}"
         />
       </div>
+
+      <SectionPersistentVolumeClaimsForPods />
     </Stack>
   );
 }

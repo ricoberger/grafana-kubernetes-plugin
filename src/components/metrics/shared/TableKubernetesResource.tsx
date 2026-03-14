@@ -79,6 +79,13 @@ function getResourceInfo(resource: string):
         parameterName: 'fieldSelector',
         parameterValue: `metadata.name=$pod`,
       };
+    case 'persistentvolumeclaim':
+      return {
+        title: 'PersistentVolumeClaim',
+        resourceId: 'persistentvolumeclaim',
+        parameterName: 'fieldSelector',
+        parameterValue: `metadata.name=$pvc`,
+      };
     /**
      * The following resource types are none default Kubernetes resources, but
      * we want to support them as well, when the corresponding project is well

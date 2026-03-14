@@ -6,6 +6,7 @@ import { getStyles } from '../../../utils/utils.styles';
 import { queries } from '../queries';
 import { TimeSeriesIO } from '../shared/TimeSeriesIO';
 import { TimeSeriesMemoryOrCPUDistribution } from '../shared/TimeSeriesMemoryOrCPUDistribution';
+import { SectionPersistentVolumeClaimsForPods } from '../shared/SectionPersistenVolumeClaimsForPods';
 
 export function NamespacePageStorage() {
   const styles = useStyles2(getStyles);
@@ -75,6 +76,8 @@ export function NamespacePageStorage() {
           legend="{{ workload_type }}/{{ workload }}"
         />
       </div>
+
+      <SectionPersistentVolumeClaimsForPods />
     </Stack>
   );
 }

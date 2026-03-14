@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { VariableHide, VariableRefresh } from '@grafana/data';
+import { VariableHide, VariableRefresh, VariableSort } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import { Alert, Badge, Stack, Tab, TabsBar, useStyles2 } from '@grafana/ui';
 import {
@@ -23,6 +23,7 @@ import { PodPageNetwork } from './PodPageNetwork';
 import { PodPageStorage } from './PodPageStorage';
 import { ROUTES } from '../../../constants';
 import { prefixRoute } from '../../../utils/utils.routing';
+import { queries, variableQuery } from '../queries';
 
 export function PodPage() {
   const styles = useStyles2(getStyles);
@@ -96,89 +97,110 @@ export function PodPage() {
                   initialValue={pod}
                   hide={VariableHide.hideVariable}
                 >
-                  <PluginPage
-                    pageNav={{
-                      text: pod,
-                      parentItem: {
-                        text: namespace,
-                        url: prefixRoute(ROUTES.MetricsNamespaces),
-                        parentItem: {
-                          text: 'Pods',
-                          url: prefixRoute(ROUTES.MetricsPods),
-                        },
-                      },
+                  <QueryVariable
+                    name="pvc"
+                    label="PersistentVolumeClaim"
+                    datasource={{
+                      type: 'prometheus',
+                      uid: '$prometheus',
                     }}
-                    renderTitle={() => (
-                      <Stack gap={0} alignItems="center" direction="row">
-                        <img
-                          className={styles.pluginPage.title.image}
-                          alt={pod}
-                          src={resourcesImg}
-                        />
-                        <h1>{pod}</h1>
-                        <Badge
-                          className={styles.pluginPage.title.badge}
-                          color="blue"
-                          text="pod"
-                        />
-                      </Stack>
-                    )}
-                    subTitle={pluginJson.info.description}
-                    actions={
-                      <>
-                        <TimeRangePicker />
-                        <RefreshPicker />
-                      </>
-                    }
+                    query={{
+                      refId: 'pvcs',
+                      query: variableQuery(
+                        queries.persistentVolumeClaims
+                          .labelsByClusterNamespacePod,
+                      ),
+                    }}
+                    refresh={VariableRefresh.onTimeRangeChanged}
+                    isMulti={true}
+                    includeAll={true}
+                    initialValue={'$__all'}
+                    sort={VariableSort.alphabeticalCaseInsensitiveAsc}
                   >
-                    <TabsBar className={styles.dashboard.tabsBar}>
-                      <Tab
-                        label="Overview"
-                        active={activeTab === 'overview'}
-                        onChangeTab={(ev) => {
-                          ev?.preventDefault();
-                          setActiveTab('overview');
-                        }}
-                      />
-                      <Tab
-                        label="CPU"
-                        active={activeTab === 'cpu'}
-                        onChangeTab={(ev) => {
-                          ev?.preventDefault();
-                          setActiveTab('cpu');
-                        }}
-                      />
-                      <Tab
-                        label="Memory"
-                        active={activeTab === 'memory'}
-                        onChangeTab={(ev) => {
-                          ev?.preventDefault();
-                          setActiveTab('memory');
-                        }}
-                      />
-                      <Tab
-                        label="Network"
-                        active={activeTab === 'network'}
-                        onChangeTab={(ev) => {
-                          ev?.preventDefault();
-                          setActiveTab('network');
-                        }}
-                      />
-                      <Tab
-                        label="Storage"
-                        active={activeTab === 'storage'}
-                        onChangeTab={(ev) => {
-                          ev?.preventDefault();
-                          setActiveTab('storage');
-                        }}
-                      />
-                    </TabsBar>
-                    {activeTab === 'overview' && <PodPageOverview />}
-                    {activeTab === 'cpu' && <PodPageCPU />}
-                    {activeTab === 'memory' && <PodPageMemory />}
-                    {activeTab === 'network' && <PodPageNetwork />}
-                    {activeTab === 'storage' && <PodPageStorage />}
-                  </PluginPage>
+                    <PluginPage
+                      pageNav={{
+                        text: pod,
+                        parentItem: {
+                          text: namespace,
+                          url: prefixRoute(ROUTES.MetricsNamespaces),
+                          parentItem: {
+                            text: 'Pods',
+                            url: prefixRoute(ROUTES.MetricsPods),
+                          },
+                        },
+                      }}
+                      renderTitle={() => (
+                        <Stack gap={0} alignItems="center" direction="row">
+                          <img
+                            className={styles.pluginPage.title.image}
+                            alt={pod}
+                            src={resourcesImg}
+                          />
+                          <h1>{pod}</h1>
+                          <Badge
+                            className={styles.pluginPage.title.badge}
+                            color="blue"
+                            text="pod"
+                          />
+                        </Stack>
+                      )}
+                      subTitle={pluginJson.info.description}
+                      actions={
+                        <>
+                          <TimeRangePicker />
+                          <RefreshPicker />
+                        </>
+                      }
+                    >
+                      <TabsBar className={styles.dashboard.tabsBar}>
+                        <Tab
+                          label="Overview"
+                          active={activeTab === 'overview'}
+                          onChangeTab={(ev) => {
+                            ev?.preventDefault();
+                            setActiveTab('overview');
+                          }}
+                        />
+                        <Tab
+                          label="CPU"
+                          active={activeTab === 'cpu'}
+                          onChangeTab={(ev) => {
+                            ev?.preventDefault();
+                            setActiveTab('cpu');
+                          }}
+                        />
+                        <Tab
+                          label="Memory"
+                          active={activeTab === 'memory'}
+                          onChangeTab={(ev) => {
+                            ev?.preventDefault();
+                            setActiveTab('memory');
+                          }}
+                        />
+                        <Tab
+                          label="Network"
+                          active={activeTab === 'network'}
+                          onChangeTab={(ev) => {
+                            ev?.preventDefault();
+                            setActiveTab('network');
+                          }}
+                        />
+                        <Tab
+                          label="Storage"
+                          active={activeTab === 'storage'}
+                          onChangeTab={(ev) => {
+                            ev?.preventDefault();
+                            setActiveTab('storage');
+                          }}
+                        />
+                      </TabsBar>
+                      {activeTab === 'overview' && <PodPageOverview />}
+                      {activeTab === 'cpu' && <PodPageCPU />}
+                      {activeTab === 'memory' && <PodPageMemory />}
+                      {activeTab === 'network' && <PodPageNetwork />}
+                      {activeTab === 'storage' && <PodPageStorage />}
+                    </PluginPage>
+                  </QueryVariable>
                 </CustomVariable>
               </CustomVariable>
             </CustomVariable>
