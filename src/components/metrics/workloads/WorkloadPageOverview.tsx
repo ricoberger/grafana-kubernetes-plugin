@@ -9,8 +9,14 @@ import {
   VariableControl,
   useQueryRunner,
   VizPanel,
+  DataLayerControl,
 } from '@grafana/scenes-react';
 import { VizConfigBuilders } from '@grafana/scenes';
+import {
+  FieldColorModeId,
+  GraphDrawStyle,
+  StackingMode,
+} from '@grafana/schema';
 
 import { getStyles } from '../../../utils/utils.styles';
 import { queries } from '../queries';
@@ -21,11 +27,6 @@ import { TimeSeriesMemoryOrCPU } from '../shared/TimeSeriesMemoryOrCPU';
 import datasourcePluginJson from '../../../datasource/plugin.json';
 import { useVizPanelMenu } from '../../../hooks/useVizPanelMenu';
 import { TimeSeriesWorkloadStatus } from '../shared/TimeSeriesWorkloadStatus';
-import {
-  FieldColorModeId,
-  GraphDrawStyle,
-  StackingMode,
-} from '@grafana/schema';
 
 interface Props {
   workloadType: string;
@@ -45,6 +46,7 @@ export function WorkloadPageOverview({ workloadType }: Props) {
         <VariableControl name="workloadtype" />
         <VariableControl name="workload" />
         <VariableControl name="pod" />
+        <DataLayerControl name="Restarts" />
         <div className={styles.dashboard.header.spacer} />
       </div>
 
