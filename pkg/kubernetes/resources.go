@@ -81,9 +81,24 @@ func createResourcesDataFrame(resource Resource, resources [][]byte, resourcesJS
 	// column definition and rows from the responses.
 	for _, r := range resources {
 		var tmpTable metav1.Table
+		var hasNameColumn bool
 
 		if err := json.Unmarshal(r, &tmpTable); err != nil {
 			return nil, err
+		}
+
+		// Check if the column definition includes a "Name" column. If not, we
+		// need to add the "Name" column in the table, because we need te name
+		// of the resource to be able to show the details of the resource in the
+		// frontend.
+		for _, column := range tmpTable.ColumnDefinitions {
+			if column.Name == "Name" {
+				if wide {
+					hasNameColumn = true
+				} else if column.Priority == 0 {
+					hasNameColumn = true
+				}
+			}
 		}
 
 		// If the resource is a namespaced resource, we need to add the
@@ -95,9 +110,28 @@ func createResourcesDataFrame(resource Resource, resources [][]byte, resourcesJS
 				Type:     "string",
 				Priority: 0,
 			}
-			table.ColumnDefinitions = append([]metav1.TableColumnDefinition{namespaceColumnDefinition}, tmpTable.ColumnDefinitions...)
+
+			if !hasNameColumn {
+				nameColumnDefinition := metav1.TableColumnDefinition{
+					Name:     "Name",
+					Type:     "string",
+					Priority: 0,
+				}
+				table.ColumnDefinitions = append([]metav1.TableColumnDefinition{namespaceColumnDefinition, nameColumnDefinition}, tmpTable.ColumnDefinitions...)
+			} else {
+				table.ColumnDefinitions = append([]metav1.TableColumnDefinition{namespaceColumnDefinition}, tmpTable.ColumnDefinitions...)
+			}
 		} else {
-			table.ColumnDefinitions = tmpTable.ColumnDefinitions
+			if !hasNameColumn {
+				nameColumnDefinition := metav1.TableColumnDefinition{
+					Name:     "Name",
+					Type:     "string",
+					Priority: 0,
+				}
+				table.ColumnDefinitions = append([]metav1.TableColumnDefinition{nameColumnDefinition}, tmpTable.ColumnDefinitions...)
+			} else {
+				table.ColumnDefinitions = tmpTable.ColumnDefinitions
+			}
 		}
 
 		for _, row := range tmpTable.Rows {
@@ -122,10 +156,20 @@ func createResourcesDataFrame(resource Resource, resources [][]byte, resourcesJS
 			// as first cell in the row, because the Kubernetes API does not
 			// include the namespace in the row cells.
 			if resource.Namespaced {
-				row.Cells = append([]any{metadata.Namespace}, row.Cells...)
-				table.Rows = append(table.Rows, row)
+				if !hasNameColumn {
+					row.Cells = append([]any{metadata.Namespace, metadata.Name}, row.Cells...)
+					table.Rows = append(table.Rows, row)
+				} else {
+					row.Cells = append([]any{metadata.Namespace}, row.Cells...)
+					table.Rows = append(table.Rows, row)
+				}
 			} else {
-				table.Rows = append(table.Rows, row)
+				if !hasNameColumn {
+					row.Cells = append([]any{metadata.Name}, row.Cells...)
+					table.Rows = append(table.Rows, row)
+				} else {
+					table.Rows = append(table.Rows, row)
+				}
 			}
 		}
 	}
