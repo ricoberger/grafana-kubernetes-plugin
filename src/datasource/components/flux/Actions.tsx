@@ -7,6 +7,8 @@ import { Reconcile } from './Reconcile';
 import { Details } from './Details';
 import { Suspend } from './Suspend';
 import { Resume } from './Resume';
+import { Delete } from '../kubernetes/Delete';
+import { Edit } from '../kubernetes/Edit';
 
 interface Props {
   query: Query;
@@ -82,6 +84,8 @@ export function Actions({ query, frame, rowIndex }: Props) {
               ].includes(resourceId) && (
                 <Menu.Item label="Resume" onClick={() => setOpen('resume')} />
               )}
+            <Menu.Item label="Edit" onClick={() => setOpen('edit')} />
+            <Menu.Item label="Delete" onClick={() => setOpen('delete')} />
           </Menu.Group>
         )}
       >
@@ -124,6 +128,25 @@ export function Actions({ query, frame, rowIndex }: Props) {
         namespace={namespace}
         name={name}
         isOpen={open === 'resume'}
+        onClose={() => setOpen('')}
+      />
+
+      {open === 'edit' && (
+        <Edit
+          datasource={datasource}
+          resourceId={resourceId}
+          namespace={namespace}
+          name={name}
+          onClose={() => setOpen('')}
+        />
+      )}
+
+      <Delete
+        datasource={datasource}
+        resourceId={resourceId}
+        namespace={namespace}
+        name={name}
+        isOpen={open === 'delete'}
         onClose={() => setOpen('')}
       />
     </>

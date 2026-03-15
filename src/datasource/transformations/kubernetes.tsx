@@ -4,6 +4,8 @@ import { DataFrame, FieldType } from '@grafana/data';
 
 import { Query } from '../types/query';
 import { Actions } from '../components/kubernetes/Actions';
+import { Actions as FluxActions } from '../components/flux/Actions';
+import { Actions as CertManagerActions } from '../components/certmanager/Actions';
 
 export const kubernetesResourcesTransformation = (
   query: Query,
@@ -23,6 +25,48 @@ export const kubernetesResourcesTransformation = (
             cellOptions: {
               type: TableCellDisplayMode.Custom,
               cellComponent: (props: CustomCellRendererProps) => {
+                if (
+                  [
+                    'bucket.source.toolkit.fluxcd.io',
+                    'gitrepository.source.toolkit.fluxcd.io',
+                    'helmchart.source.toolkit.fluxcd.io',
+                    'helmrepository.source.toolkit.fluxcd.io',
+                    'ocirepository.source.toolkit.fluxcd.io',
+                    'kustomization.kustomize.toolkit.fluxcd.io',
+                    'helmrelease.helm.toolkit.fluxcd.io',
+                    'imagerepository.image.toolkit.fluxcd.io',
+                    'imageupdateautomation.image.toolkit.fluxcd.io',
+                    'receiver.notification.toolkit.fluxcd.io',
+                  ].includes(query.resourceId || '')
+                ) {
+                  return (
+                    <FluxActions
+                      query={query}
+                      frame={props.frame}
+                      rowIndex={props.rowIndex}
+                    />
+                  );
+                }
+
+                if (
+                  [
+                    'issuer.cert-manager.io',
+                    'order.acme.cert-manager.io',
+                    'challenge.acme.cert-manager.io',
+                    'clusterissuer.cert-manager.io',
+                    'certificaterequest.cert-manager.io',
+                    'certificate.cert-manager.io',
+                  ].includes(query.resourceId || '')
+                ) {
+                  return (
+                    <CertManagerActions
+                      query={query}
+                      frame={props.frame}
+                      rowIndex={props.rowIndex}
+                    />
+                  );
+                }
+
                 return (
                   <Actions
                     query={query}
