@@ -4,6 +4,7 @@ import {
   VariableControl,
   useQueryRunner,
   VizPanel,
+  useVariables,
 } from '@grafana/scenes-react';
 import { VizConfigBuilders } from '@grafana/scenes';
 
@@ -15,6 +16,15 @@ import { TablePersistentVolumeClaimsUsage } from './TablePersistentVolumeClaimsU
 export function SectionPersistentVolumeClaimsForPods() {
   const styles = useStyles2(getStyles);
   const [selected, setSelected] = useState('usage');
+
+  const variables = useVariables();
+  const pvcVariable = variables.find((v) => v.state.name === 'pvc');
+  // @ts-expect-error
+  const pvcOptions = pvcVariable?.state.options;
+
+  if (!pvcOptions || pvcOptions.length === 0) {
+    return <></>;
+  }
 
   return (
     <div className={styles.pluginPage.section}>
