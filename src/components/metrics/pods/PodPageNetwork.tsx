@@ -1,6 +1,6 @@
 import React from 'react';
 import { Stack, useStyles2 } from '@grafana/ui';
-import { VariableControl } from '@grafana/scenes-react';
+import { DataLayerControl, VariableControl } from '@grafana/scenes-react';
 
 import { getStyles } from '../../../utils/utils.styles';
 import { queries } from '../queries';
@@ -16,6 +16,7 @@ export function PodPageNetwork() {
         <VariableControl name="prometheus" />
         <VariableControl name="cluster" />
         <VariableControl name="namespace" />
+        <DataLayerControl name="Restarts" />
         <div className={styles.dashboard.header.spacer} />
       </div>
 

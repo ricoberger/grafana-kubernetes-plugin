@@ -4149,6 +4149,13 @@ sum(
     }[$__rate_interval]
   )
 ) by(namespace,pod)`,
+    restarts: `sum(
+  changes(
+    kube_pod_container_status_restarts_total{
+      cluster=~"$cluster",namespace="$namespace",pod=~"$pod"
+    }[$__interval]
+  )
+) by(pod)`,
   },
   containers: {
     labelsByClusterNamespacePod: `label_values(

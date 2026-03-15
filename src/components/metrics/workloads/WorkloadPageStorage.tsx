@@ -1,6 +1,6 @@
 import React from 'react';
 import { Stack, useStyles2 } from '@grafana/ui';
-import { VariableControl } from '@grafana/scenes-react';
+import { DataLayerControl, VariableControl } from '@grafana/scenes-react';
 
 import { getStyles } from '../../../utils/utils.styles';
 import { queries } from '../queries';
@@ -20,6 +20,7 @@ export function WorkloadPageStorage() {
         <VariableControl name="node" />
         <VariableControl name="namespace" />
         <VariableControl name="pod" />
+        <DataLayerControl name="Restarts" />
         <div className={styles.dashboard.header.spacer} />
       </div>
 
