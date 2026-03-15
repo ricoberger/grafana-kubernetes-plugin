@@ -14,7 +14,7 @@ import { getStyles } from '../../../utils/utils.styles';
 import { useVizPanelMenu } from 'hooks/useVizPanelMenu';
 import { queries, variableQuery } from '../queries';
 import { VariableRefresh, VariableSort } from '@grafana/data';
-import { getResourceInfo } from './TableKubernetesResource';
+import { prometheusResourceToKubernetesResourceInfo } from '../../../utils/utils.resource';
 
 interface Props {
   page: string;
@@ -59,7 +59,7 @@ function LogsCustomDatasource({
 
 function LogsKubernetesDatasource({ resource }: { resource: string }) {
   const styles = useStyles2(getStyles);
-  const info = getResourceInfo(resource);
+  const info = prometheusResourceToKubernetesResourceInfo(resource);
 
   if (!info) {
     return <></>;

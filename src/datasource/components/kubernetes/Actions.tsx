@@ -16,6 +16,7 @@ import { CSRDeny } from './CSRDeny';
 import { EvictPod } from './EvictPod';
 import { NodeUncordon } from './NodeUncordon';
 import { NodeCordon } from './NodeCordon';
+import { resourceIdToPrometheusLink } from '../../../utils/utils.resource';
 
 interface Props {
   query: Query;
@@ -32,6 +33,7 @@ export function Actions({ query, frame, rowIndex }: Props) {
     rowIndex
   ];
   const name = frame.fields.find((f) => f.name === 'Name')?.values[rowIndex];
+  const metricsLink = resourceIdToPrometheusLink(resourceId, namespace, name);
 
   return (
     <>
@@ -97,6 +99,9 @@ export function Actions({ query, frame, rowIndex }: Props) {
             )}
             {resourceId && ['node'].includes(resourceId) && (
               <Menu.Item label="Uncordon" onClick={() => setOpen('uncordon')} />
+            )}
+            {metricsLink && (
+              <Menu.Item label="Metrics" target="_blank" url={metricsLink} />
             )}
             {resourceId &&
               [
