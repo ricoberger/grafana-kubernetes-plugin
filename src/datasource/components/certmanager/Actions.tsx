@@ -7,6 +7,8 @@ import { Renew } from './Renew';
 import { Details } from './Details';
 import { CRApprove } from './CRApprove';
 import { CRDeny } from './CRDeny';
+import { Delete } from '../kubernetes/Delete';
+import { Edit } from '../kubernetes/Edit';
 
 interface Props {
   query: Query;
@@ -39,6 +41,8 @@ export function Actions({ query, frame, rowIndex }: Props) {
             {resourceId === 'certificaterequest.cert-manager.io' && (
               <Menu.Item label="Deny" onClick={() => setOpen('crdeny')} />
             )}
+            <Menu.Item label="Edit" onClick={() => setOpen('edit')} />
+            <Menu.Item label="Delete" onClick={() => setOpen('delete')} />
           </Menu.Group>
         )}
       >
@@ -79,6 +83,25 @@ export function Actions({ query, frame, rowIndex }: Props) {
         resourceId={resourceId}
         name={name}
         isOpen={open === 'crdeny'}
+        onClose={() => setOpen('')}
+      />
+
+      {open === 'edit' && (
+        <Edit
+          datasource={datasource}
+          resourceId={resourceId}
+          namespace={namespace}
+          name={name}
+          onClose={() => setOpen('')}
+        />
+      )}
+
+      <Delete
+        datasource={datasource}
+        resourceId={resourceId}
+        namespace={namespace}
+        name={name}
+        isOpen={open === 'delete'}
         onClose={() => setOpen('')}
       />
     </>
