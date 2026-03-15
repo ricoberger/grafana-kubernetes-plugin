@@ -28,7 +28,14 @@ export function useVizPanelMenu({
   variables,
 }: UseVizPanelMenuProps): VizPanelMenu {
   const [timeRange] = useTimeRange();
-  const vars = variables || ['job', 'probe', 'instance'];
+  const vars = variables || [
+    'cluster',
+    'node',
+    'namespace',
+    'pod',
+    'container',
+    'pvc',
+  ];
   const { from, to } = currentTimeRange || timeRange;
 
   const interpolator = useVariableInterpolator({
@@ -40,6 +47,21 @@ export function useVizPanelMenu({
   queries = queries.map((q: SceneDataQuery) => ({
     ...q,
     expr: correctSceneVariableInterpolation(interpolator(q.expr)),
+    resourceId: q.resourceId
+      ? correctSceneVariableInterpolation(interpolator(q.resourceId))
+      : undefined,
+    namespace: q.namespace
+      ? correctSceneVariableInterpolation(interpolator(q.namespace))
+      : undefined,
+    parameterValue: q.parameterValue
+      ? correctSceneVariableInterpolation(interpolator(q.parameterValue))
+      : undefined,
+    name: q.name
+      ? correctSceneVariableInterpolation(interpolator(q.name))
+      : undefined,
+    container: q.container
+      ? correctSceneVariableInterpolation(interpolator(q.container))
+      : undefined,
   }));
   const datasource = interpolator(data.datasource?.uid || '');
 
