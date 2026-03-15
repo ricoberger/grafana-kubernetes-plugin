@@ -161,7 +161,7 @@ export function Kustomization({ datasource, namespace, manifest }: Props) {
             title={selectedResource.kind}
             datasource={datasource}
             resourceId={selectedResource.resourceId}
-            namespace={namespace || '*'}
+            namespace={selectedResource.namespace || '*'}
             parameterName="fieldSelector"
             parameterValue={`metadata.name=${selectedResource.name}`}
             onClose={() => setSelectedResource(undefined)}
