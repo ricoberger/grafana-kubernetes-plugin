@@ -53,7 +53,7 @@ export function TimeSeriesIO({
       asTable: true,
       displayMode: LegendDisplayMode.Table,
       placement: 'bottom',
-      calcs: ['lastNotNull'],
+      calcs: ['min', 'mean', 'max', 'lastNotNull'],
     })
     .setCustomFieldConfig('axisSoftMin', -100)
     .setCustomFieldConfig('axisSoftMax', 100)
