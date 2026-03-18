@@ -96,6 +96,145 @@ export const queries = {
     "instance"
   )
 )`,
+    costsCPUAllocation: `sum_over_time(
+  sum(
+    max(
+      kube_node_status_capacity{
+        cluster=~"$cluster",resource=~"cpu"
+      }
+    ) by(cluster,node,resource)
+      * on(cluster,node) group_left()
+    max(
+      node_cpu_hourly_cost{cluster=~"$cluster"}
+    ) by(cluster,node)
+  )[$__range:1h]
+)`,
+    costsMemoryAllocation: `sum_over_time(
+  sum(
+    (
+      (
+        (
+          max(
+            kube_node_status_capacity{
+              cluster=~"$cluster",resource=~"memory"
+            }
+          ) by(cluster,node,resource)
+            /
+          1024
+        )
+          /
+        1024
+      )
+        /
+      1024
+    )
+      * on(cluster,node) group_left()
+    max(
+      node_ram_hourly_cost{cluster=~"$cluster"}
+    ) by(cluster,node)
+  )[$__range:1h]
+)`,
+    costsCPUIdle: `sum_over_time(
+  sum(
+    label_replace(
+      sum(
+        label_join(
+          (
+            sum(
+              max(
+                (
+                  1
+                    -
+                  rate(
+                    node_cpu_seconds_total{
+                      cluster=~"$cluster",mode=~"idle"
+                    }[$__rate_interval]
+                  )
+                )
+                  >=
+                0
+              ) by(cluster,instance,cpu,core)
+            ) by(cluster,instance)
+              or
+            sum(
+              rate(
+                node_cpu_usage_seconds_total{
+                  cluster=~"$cluster"
+                }[$__rate_interval]
+              )
+                >=
+              0
+            ) by(cluster,instance)
+          )
+            or
+          sum(
+            label_join(
+              label_join(
+                rate(
+                  k8s_node_cpu_time_seconds_total{
+                    k8s_cluster_name=~"$cluster"
+                  }[$__rate_interval]
+                ),
+                "cluster",
+                ",",
+                "k8s_cluster_name"
+              ),
+              "instance",
+              ",",
+              "k8s_node_name"
+            )
+          ) by(cluster,instance),
+          "node",
+          ",",
+          "instance"
+        )
+      ) by(cluster,instance),
+      "node",
+      "$1",
+      "instance",
+      "([^:]+).*"
+    )
+      * on(cluster,node) group_left()
+    max(
+      node_cpu_hourly_cost{cluster=~"$cluster"}
+    ) by(cluster,node)
+  )[$__range:1h]
+)`,
+    costsMemoryIdle: `sum_over_time(
+  sum(
+    (
+      (
+        (
+          max(
+            label_replace(
+              windows_memory_available_bytes{
+                cluster=~"$cluster"
+              }
+                or
+              node_memory_MemAvailable_bytes{
+                cluster=~"$cluster"
+              },
+              "node",
+              "$1",
+              "instance",
+              "([^:]+).*"
+            )
+          ) by(cluster,node)
+            /
+          1024
+        )
+          /
+        1024
+      )
+        /
+      1024
+    )
+      * on(cluster,node) group_left()
+    max(
+      node_ram_hourly_cost{cluster=~"$cluster"}
+    ) by(cluster,node)
+  )[$__range:1h]
+)`,
   },
   nodes: {
     info: `avg_over_time(
@@ -910,6 +1049,227 @@ sum(
     }[$__rate_interval]
   )
 ) by(node)`,
+    costsCPUAllocation: `sum_over_time(
+  (
+    max(
+      max(
+        kube_node_status_capacity{
+          cluster=~"$cluster",
+          node=~"$node(:[0-9]{2,5})?",
+          resource=~"cpu"
+        }
+      ) by(cluster,node,resource)
+    )
+      *
+    sum(
+      max(
+        node_cpu_hourly_cost{
+          cluster=~"$cluster",
+          node=~"$node(:[0-9]{2,5})?"
+        }
+      ) by(cluster,node)
+    )
+  )[$__range:1h]
+)`,
+    costsMemoryAllocation: `sum_over_time(
+  (
+    (
+      (
+        (
+          max(
+            max(
+              kube_node_status_capacity{
+                cluster=~"$cluster",
+                node=~"$node(:[0-9]{2,5})?",
+                resource=~"memory"
+              }
+            ) by(cluster,node,resource)
+          )
+            /
+          1024
+        )
+          /
+        1024
+      )
+        /
+      1024
+    )
+      *
+    sum(
+      node_ram_hourly_cost{
+        cluster=~"$cluster",
+        node=~"$node(:[0-9]{2,5})?"
+      }
+    )
+  )[$__range:1h]
+)`,
+    costsCPUIdle: `sum_over_time(
+  sum(
+    label_replace(
+      sum(
+        label_join(
+          (
+            sum(
+              max(
+                (
+                  1
+                    -
+                  rate(
+                    node_cpu_seconds_total{
+                      cluster=~"$cluster",
+                      instance=~"$node(:[0-9]{2,5})?",
+                      mode=~"idle"
+                    }[$__rate_interval]
+                  )
+                )
+                  >=
+                0
+              ) by(cluster,instance,cpu,core)
+            ) by(cluster,instance)
+              or
+            sum(
+              rate(
+                node_cpu_usage_seconds_total{
+                  cluster=~"$cluster",
+                  instance=~"$node(:[0-9]{2,5})?"
+                }[$__rate_interval]
+              )
+                >=
+              0
+            ) by(cluster,instance)
+          )
+            or
+          sum(
+            label_join(
+              label_join(
+                rate(
+                  k8s_node_cpu_time_seconds_total{
+                    k8s_cluster_name=~"$cluster"
+                  }[$__rate_interval]
+                ),
+                "cluster",
+                ",",
+                "k8s_cluster_name"
+              ),
+              "instance",
+              ",",
+              "k8s_node_name"
+            )
+          ) by(cluster,instance),
+          "node",
+          ",",
+          "instance"
+        )
+          or
+        label_join(
+          (
+            sum(
+              max(
+                (
+                  1
+                    -
+                  rate(
+                    node_cpu_seconds_total{
+                      cluster=~"$cluster",
+                      node=~"$node(:[0-9]{2,5})?",
+                      mode=~"idle"
+                    }[$__rate_interval]
+                  )
+                )
+                  >=
+                0
+              ) by(cluster,instance,cpu,core)
+            ) by(cluster,instance)
+              or
+            sum(
+              rate(
+                node_cpu_usage_seconds_total{
+                  cluster=~"$cluster",
+                  node=~"$node(:[0-9]{2,5})?"
+                }[$__rate_interval]
+              )
+                >=
+              0
+            ) by(cluster,instance)
+          )
+            or
+          sum(
+            label_join(
+              label_join(
+                rate(
+                  k8s_node_cpu_time_seconds_total{
+                    k8s_cluster_name=~"$cluster",
+                    k8s_node_name=~"$node(:[0-9]{2,5})?"
+                  }[$__rate_interval]
+                ),
+                "cluster",
+                ",",
+                "k8s_cluster_name"
+              ),
+              "instance",
+              ",",
+              "k8s_node_name"
+            )
+          ) by(cluster,instance),
+          "node",
+          ",",
+          "instance"
+        )
+      ) by(cluster,node,instance),
+      "node",
+      "$1",
+      "instance",
+      "([^:]+).*"
+    )
+      * on(cluster,node) group_left()
+    max(
+      node_cpu_hourly_cost{
+        cluster=~"$cluster",
+        node=~"$node(:[0-9]{2,5})?"
+      }
+    ) by(cluster,node)
+  )[$__range:1h]
+)`,
+    costsMemoryIdle: `sum_over_time(
+  sum(
+    (
+      (
+        (
+          max(
+            label_replace(
+              windows_memory_available_bytes{
+                cluster=~"$cluster",
+                instance=~"$node(:[0-9]{2,5})?"
+              }
+                or
+              node_memory_MemAvailable_bytes{
+                cluster=~"$cluster",
+                instance=~"$node(:[0-9]{2,5})?"
+              },
+              "node",
+              "$1",
+              "instance",
+              "([^:]+).*"
+            )
+          ) by(cluster,node)
+            /
+          1024
+        )
+          /
+        1024
+      )
+        /
+      1024
+    )
+      * on(cluster,node) group_left()
+    max(
+      node_ram_hourly_cost{
+        cluster=~"$cluster",
+        node=~"$node(:[0-9]{2,5})?"
+      }
+    ) by(cluster,node)
+  )[$__range:1h]
+)`,
   },
   namespaces: {
     labelsByCluster: `label_values(kube_namespace_status_phase{cluster=~"$cluster"}, namespace)`,
@@ -1337,6 +1697,218 @@ sum(
     }[$__rate_interval]
   )
 ) by(namespace)`,
+    costsCPUAllocation: `sum_over_time(
+  sum(
+    max(
+      sum(
+        kube_pod_container_resource_requests{
+          cluster=~"$cluster",
+          namespace="$namespace",
+          container!="POD",
+          container!="",
+          resource="cpu"
+        }
+      ) by(cluster,namespace,node,resource)
+        or
+      sum(
+        max(
+          rate(
+            container_cpu_usage_seconds_total{
+              cluster=~"$cluster",
+              namespace="$namespace",
+              node!="",
+              container!="POD",
+              container!=""
+            }[$__rate_interval]
+          )
+            or
+          label_replace(
+            rate(
+              container_cpu_usage_seconds_total{
+                cluster=~"$cluster",
+                namespace="$namespace",
+                node="",
+                container!="POD",
+                container!=""
+              }[$__rate_interval]
+            ),
+            "node",
+            "$1",
+            "instance",
+            "([^:]+).*"
+          )
+        ) by(cluster,namespace,node,pod,container)
+      ) by(cluster,namespace,node)
+    ) by(cluster,namespace,node)
+      * on(cluster,node) group_left()
+    max(
+      node_cpu_hourly_cost{cluster=~"$cluster"}
+    ) by(cluster,node)
+  )[$__range:1h]
+)`,
+    costsMemoryAllocation: `sum_over_time(
+  sum(
+    (
+      (
+        (
+          max(
+            sum(
+              kube_pod_container_resource_requests{
+                cluster=~"$cluster",
+                namespace="$namespace",
+                container!="POD",
+                container!="",
+                resource="memory"
+              }
+            ) by(cluster,node,resource)
+              or
+            sum(
+              max(
+                container_memory_working_set_bytes{
+                  cluster=~"$cluster",
+                  namespace="$namespace",
+                  node!="",
+                  container!="POD",
+                  container!=""
+                }
+                  or
+                label_replace(
+                  container_memory_working_set_bytes{
+                    cluster=~"$cluster",
+                    namespace="$namespace",
+                    node="",
+                    container!="POD",
+                    container!=""
+                  },
+                  "node",
+                  "$1",
+                  "instance",
+                  "([^:]+).*"
+                )
+              ) by(cluster,namespace,node,pod,container)
+            ) by(cluster,node)
+          ) by(cluster,node)
+            /
+          1024
+        )
+          /
+        1024
+      )
+        /
+      1024
+    )
+      * on(cluster,node) group_left()
+    max(
+      node_ram_hourly_cost{cluster=~"$cluster"}
+    ) by(cluster,node)
+  )[$__range:1h]
+)`,
+    costsCPUIdle: `sum_over_time(
+  sum(
+    (
+      sum(
+        kube_pod_container_resource_requests{
+          cluster=~"$cluster",
+          namespace="$namespace",
+          container!="POD",
+          container!="",
+          resource="cpu"
+        }
+      ) by(cluster,node,resource)
+        - on(cluster,node) group_left()
+      sum(
+        max(
+          rate(
+            container_cpu_usage_seconds_total{
+              cluster=~"$cluster",
+              namespace="$namespace",
+              node!="",
+              container!="POD",
+              container!=""
+            }[$__rate_interval]
+          )
+            or
+          label_replace(
+            rate(
+              container_cpu_usage_seconds_total{
+                cluster=~"$cluster",
+                namespace="$namespace",
+                node="",
+                container!="POD",
+                container!=""
+              }[$__rate_interval]
+            ),
+            "node",
+            "$1",
+            "instance",
+            "([^:]+).*"
+          )
+        ) by(cluster,namespace,node,pod,container)
+      ) by(cluster,node)
+    )
+      * on(cluster,node) group_left()
+    max(
+      node_cpu_hourly_cost{cluster=~"$cluster"}
+    ) by(cluster,node)
+  )[$__range:1h]
+)`,
+    costsMemoryIdle: `sum_over_time(
+  sum(
+    (
+      (
+        (
+          (
+            sum(
+              kube_pod_container_resource_requests{
+                cluster=~"$cluster",
+                namespace="$namespace",
+                container!="POD",
+                container!="",
+                resource="memory"
+              }
+            ) by(cluster,node)
+              - on(cluster,node) group_left()
+            sum(
+              max(
+                container_memory_working_set_bytes{
+                  cluster=~"$cluster",
+                  namespace="$namespace",
+                  node!="",
+                  container!="POD",
+                  container!=""
+                }
+                  or
+                label_replace(
+                  container_memory_working_set_bytes{
+                    cluster=~"$cluster",
+                    namespace="$namespace",
+                    node="",
+                    container!="POD",
+                    container!=""
+                  },
+                  "node",
+                  "$1",
+                  "instance",
+                  "([^:]+).*"
+                )
+              ) by(cluster,namespace,node,pod,container)
+            ) by(cluster,node)
+          )
+            /
+          1024
+        )
+          /
+        1024
+      )
+        /
+      1024
+    )
+      * on(cluster,node) group_left()
+    max(
+      node_ram_hourly_cost{cluster=~"$cluster"}
+    ) by(cluster,node)
+  )[$__range:1h]
+)`,
   },
   workloads: {
     labelsByClusterNamespace: `query_result(
@@ -3407,6 +3979,214 @@ label_join(
     ) by(cluster,namespace,pod)
   ) by(cluster,namespace,pod,workload,workload_type)
 ) by(workload,workload_type)`,
+    costsCPUAllocation: `sum_over_time(
+  sum(
+    max(
+      sum(
+        max(
+          kube_pod_container_resource_requests{
+            container!="POD",
+            container!="",
+            cluster=~"$cluster",
+            namespace=~"$namespace",
+            resource=~"cpu"
+          }
+        ) by(cluster,node,namespace,pod,container,resource)
+          * on(namespace,pod) group_left()
+        namespace_workload_pod:kube_pod_owner:relabel{
+          cluster=~"$cluster",
+          namespace=~"$namespace",
+          workload=~"$workload",
+          workload_type=~"$workloadtype"
+        }
+      ) by(cluster,namespace,node,resource)
+        or
+      sum(
+        max(
+          node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{
+            container!="POD",
+            container!="",
+            cluster=~"$cluster",
+            namespace=~"$namespace"
+          }
+        ) by(cluster,namespace,node,pod,container)
+          * on(namespace,pod) group_left()
+        namespace_workload_pod:kube_pod_owner:relabel{
+          cluster=~"$cluster",
+          namespace=~"$namespace",
+          workload=~"$workload",
+          workload_type=~"$workloadtype"
+        }
+      ) by(cluster,namespace,node)
+    ) by(cluster,namespace,node)
+      * on(cluster,node) group_left()
+    max(
+      node_cpu_hourly_cost{cluster=~"$cluster"}
+    ) by(cluster,node)
+  )[$__range:1h]
+)`,
+    costsMemoryAllocation: `sum_over_time(
+  sum(
+    (
+      (
+        (
+          max(
+            sum(
+              max(
+                kube_pod_container_resource_requests{
+                  container!="POD",
+                  container!="",
+                  cluster=~"$cluster",
+                  namespace=~"$namespace",
+                  resource=~"memory"
+                }
+              ) by(cluster,node,namespace,pod,container,resource)
+                * on(namespace,pod) group_left()
+              namespace_workload_pod:kube_pod_owner:relabel{
+                cluster=~"$cluster",
+                namespace=~"$namespace",
+                workload=~"$workload",
+                workload_type=~"$workloadtype"
+              }
+            ) by(cluster,namespace,node,resource)
+              or
+            sum(
+              max(
+                node_namespace_pod_container:container_memory_working_set_bytes{
+                  container!="POD",
+                  container!="",
+                  cluster=~"$cluster",
+                  namespace=~"$namespace"
+                }
+              ) by(cluster,node,namespace,pod,container,image)
+                * on(namespace,pod) group_left()
+              namespace_workload_pod:kube_pod_owner:relabel{
+                cluster=~"$cluster",
+                namespace=~"$namespace",
+                workload=~"$workload",
+                workload_type=~"$workloadtype"
+              }
+            ) by(cluster,namespace,node)
+          ) by(cluster,namespace,node)
+            /
+          1024
+        )
+          /
+        1024
+      )
+        /
+      1024
+    )
+      * on(cluster,node) group_left()
+    max(
+      node_ram_hourly_cost{cluster=~"$cluster"}
+    ) by(cluster,node)
+  )[$__range:1h]
+)`,
+    costsCPUIdle: `sum_over_time(
+  sum(
+    (
+      sum(
+        max(
+          kube_pod_container_resource_requests{
+            container!="POD",
+            container!="",
+            cluster=~"$cluster",
+            namespace=~"$namespace",
+            resource=~"cpu"
+          }
+        ) by(cluster,node,namespace,pod,container,resource)
+          * on(namespace,pod) group_left()
+        namespace_workload_pod:kube_pod_owner:relabel{
+          cluster=~"$cluster",
+          namespace=~"$namespace",
+          workload=~"$workload",
+          workload_type=~"$workloadtype"
+        }
+      ) by(cluster,namespace,node)
+        - on(cluster,namespace,node) group_left()
+      sum(
+        max(
+          node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{
+            container!="POD",
+            container!="",
+            cluster=~"$cluster",
+            namespace=~"$namespace"
+          }
+        ) by(cluster,namespace,node,pod,container)
+          * on(namespace,pod) group_left()
+        namespace_workload_pod:kube_pod_owner:relabel{
+          cluster=~"$cluster",
+          namespace=~"$namespace",
+          workload=~"$workload",
+          workload_type=~"$workloadtype"
+        }
+      ) by(cluster,namespace,node)
+    )
+      * on(cluster,node) group_left()
+    max(
+      node_cpu_hourly_cost{cluster=~"$cluster"}
+    ) by(cluster,node)
+  )[$__range:1h]
+)`,
+    costsMemoryIdle: `sum_over_time(
+  sum(
+    (
+      (
+        (
+          (
+            sum(
+              max(
+                kube_pod_container_resource_requests{
+                  container!="POD",
+                  container!="",
+                  cluster=~"$cluster",
+                  namespace=~"$namespace",
+                  resource=~"memory"
+                }
+              ) by(cluster,node,namespace,pod,container,resource)
+                * on(namespace,pod) group_left()
+              namespace_workload_pod:kube_pod_owner:relabel{
+                cluster=~"$cluster",
+                namespace=~"$namespace",
+                workload=~"$workload",
+                workload_type=~"$workloadtype"
+              }
+            ) by(cluster,namespace,node)
+              - on(cluster,namespace,node) group_left()
+            sum(
+              max(
+                node_namespace_pod_container:container_memory_working_set_bytes{
+                  container!="POD",
+                  container!="",
+                  cluster=~"$cluster",
+                  namespace=~"$namespace"
+                }
+              ) by(cluster,node,namespace,pod,container,image)
+                * on(namespace,pod) group_left()
+              namespace_workload_pod:kube_pod_owner:relabel{
+                cluster=~"$cluster",
+                namespace=~"$namespace",
+                workload=~"$workload",
+                workload_type=~"$workloadtype"
+              }
+            ) by(cluster,namespace,node)
+          )
+            /
+          1024
+        )
+          /
+        1024
+      )
+        /
+      1024
+    )
+      * on(cluster,node) group_left()
+    max(
+      node_ram_hourly_cost{cluster=~"$cluster"}
+    ) by(cluster,node)
+  )[$__range:1h]
+)`,
   },
   pods: {
     count: `count(kube_pod_info{cluster=~"$cluster", namespace=~"$namespace", pod!=""})`,
@@ -4156,6 +4936,228 @@ sum(
     }[$__interval]
   )
 ) by(pod)`,
+    costsCPUAllocation: `sum_over_time(
+  sum(
+    max(
+      sum(
+        kube_pod_container_resource_requests{
+          cluster=~"$cluster",
+          namespace="$namespace",
+          pod="$pod",
+          container=~".+",
+          resource="cpu"
+        }
+      ) by(cluster,node,pod,resource)
+        or
+      sum(
+        max(
+          rate(
+            container_cpu_usage_seconds_total{
+              cluster=~"$cluster",
+              namespace="$namespace",
+              pod="$pod",
+              container=~".+",
+              node!=""
+            }[$__rate_interval]
+          )
+            or
+          label_replace(
+            rate(
+              container_cpu_usage_seconds_total{
+                cluster=~"$cluster",
+                namespace="$namespace",
+                pod="$pod",
+                container=~".+",
+                node=""
+              }[$__rate_interval]
+            ),
+            "node",
+            "$1",
+            "instance",
+            "([^:]+).*"
+          )
+        ) by(cluster,node,namespace,pod,container)
+      ) by(cluster,node,pod)
+    ) by(cluster,node,pod)
+      * on(cluster,node) group_left()
+    max(
+      node_cpu_hourly_cost{cluster=~"$cluster"}
+    ) by(cluster,node)
+  )[$__range:1h]
+)`,
+    costsMemoryAllocation: `sum_over_time(
+  sum(
+    (
+      (
+        (
+          max(
+            sum(
+              kube_pod_container_resource_requests{
+                cluster=~"$cluster",
+                namespace="$namespace",
+                pod="$pod",
+                container=~".+",
+                resource="memory"
+              }
+            ) by(cluster,node,pod,resource)
+              or
+            sum(
+              max(
+                container_memory_working_set_bytes{
+                  cluster=~"$cluster",
+                  namespace="$namespace",
+                  pod="$pod",
+                  container=~".+",
+                  node!=""
+                }
+                  or
+                label_replace(
+                  container_memory_working_set_bytes{
+                    cluster=~"$cluster",
+                    namespace="$namespace",
+                    pod="$pod",
+                    container=~".+",
+                    node=""
+                  },
+                  "node",
+                  "$1",
+                  "instance",
+                  "([^:]+).*"
+                )
+              ) by(cluster,node,namespace,pod,container)
+            ) by(cluster,node,pod)
+          ) by(cluster,node,pod)
+            /
+          1024
+        )
+          /
+        1024
+      )
+        /
+      1024
+    )
+      * on(cluster,node) group_left()
+    max(
+      node_ram_hourly_cost{cluster=~"$cluster"}
+    ) by(cluster,node)
+  )[$__range:1h]
+)`,
+    costsCPUIdle: `sum_over_time(
+  sum(
+    (
+      (
+        (
+          (
+            sum(
+              kube_pod_container_resource_requests{
+                cluster=~"$cluster",
+                namespace="$namespace",
+                pod="$pod",
+                container=~".+",
+                resource="memory"
+              }
+            ) by(cluster,pod)
+              - on(cluster,pod) group_left(node)
+            sum(
+              max(
+                rate(
+                  container_cpu_usage_seconds_total{
+                    cluster=~"$cluster",
+                    namespace="$namespace",
+                    pod="$pod",
+                    container=~".+",
+                    node!=""
+                  }[$__rate_interval]
+                )
+                  or
+                label_replace(
+                  rate(
+                    container_cpu_usage_seconds_total{
+                      cluster=~"$cluster",
+                      namespace="$namespace",
+                      pod="$pod",
+                      container=~".+",
+                      node=""
+                    }[$__rate_interval]
+                  ),
+                  "node",
+                  "$1",
+                  "instance",
+                  "([^:]+).*"
+                )
+              ) by(cluster,node,namespace,pod,container)
+            ) by(cluster,node,pod)
+          )
+            /
+          1024
+        )
+          /
+        1024
+      )
+        /
+      1024
+    )
+      * on(cluster,node) group_left()
+    max(node_ram_hourly_cost{cluster=~"$cluster"}) by(cluster,node)
+  )[$__range:1h]
+)`,
+    costsMemoryIdle: `sum_over_time(
+  sum(
+    (
+      (
+        (
+          (
+            sum(
+              kube_pod_container_resource_requests{
+                cluster=~"$cluster",
+                namespace="$namespace",
+                pod="$pod",
+                container=~".+",
+                resource="memory"
+              }
+            ) by(cluster,pod)
+              - on(cluster,pod) group_left(node)
+            sum(
+              max(
+                container_memory_working_set_bytes{
+                  cluster=~"$cluster",
+                  namespace="$namespace",
+                  pod="$pod",
+                  container=~".+",
+                  node!=""
+                }
+                  or
+                label_replace(
+                  container_memory_working_set_bytes{
+                    cluster=~"$cluster",
+                    namespace="$namespace",
+                    pod="$pod",
+                    container=~".+",
+                    node=""
+                  },
+                  "node",
+                  "$1",
+                  "instance",
+                  "([^:]+).*"
+                )
+              ) by(cluster,node,namespace,pod,container)
+            ) by(cluster,node,pod)
+          )
+            /
+          1024
+        )
+          /
+        1024
+      )
+        /
+      1024
+    )
+      * on(cluster,node) group_left()
+    max(
+      node_ram_hourly_cost{cluster=~"$cluster"}
+    ) by(cluster,node)
+  )[$__range:1h]
+)`,
   },
   containers: {
     labelsByClusterNamespacePod: `label_values(

@@ -8,6 +8,7 @@ import { TableResourceUsage } from '../shared/TableResourceUsage';
 import { LegendResourceUsage } from '../shared/LegendResourceUsage';
 import { TableKubernetesResource } from '../shared/TableKubernetesResource';
 import { TimeSeriesMemoryOrCPU } from '../shared/TimeSeriesMemoryOrCPU';
+import { RowCosts } from '../shared/RowCosts';
 
 export function PodPageOverview() {
   const styles = useStyles2(getStyles);
@@ -43,6 +44,13 @@ export function PodPageOverview() {
           usageExpr={queries.pods.memoryUsage}
         />
       </div>
+
+      <RowCosts
+        costsCPUAllocation={queries.pods.costsCPUAllocation}
+        costsMemoryAllocation={queries.pods.costsMemoryAllocation}
+        costsCPUIdle={queries.pods.costsCPUIdle}
+        costsMemoryIdle={queries.pods.costsMemoryIdle}
+      />
 
       <Containers />
     </Stack>

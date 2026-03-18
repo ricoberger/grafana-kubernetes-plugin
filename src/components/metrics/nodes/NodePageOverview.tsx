@@ -15,6 +15,7 @@ import { TableKubernetesResource } from '../shared/TableKubernetesResource';
 import { TimeSeriesMemoryOrCPU } from '../shared/TimeSeriesMemoryOrCPU';
 import datasourcePluginJson from '../../../datasource/plugin.json';
 import { useVizPanelMenu } from '../../../hooks/useVizPanelMenu';
+import { RowCosts } from '../shared/RowCosts';
 
 export function NodePageOverview() {
   const styles = useStyles2(getStyles);
@@ -50,6 +51,13 @@ export function NodePageOverview() {
           usageExpr={queries.nodes.memoryUsage}
         />
       </div>
+
+      <RowCosts
+        costsCPUAllocation={queries.nodes.costsCPUAllocation}
+        costsMemoryAllocation={queries.nodes.costsMemoryAllocation}
+        costsCPUIdle={queries.nodes.costsCPUIdle}
+        costsMemoryIdle={queries.nodes.costsMemoryIdle}
+      />
 
       <Pods />
     </Stack>

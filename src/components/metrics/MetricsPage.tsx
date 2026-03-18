@@ -19,6 +19,7 @@ import datasourcePluginJson from '../../datasource/plugin.json';
 import { StatWithFixedColorAndLink } from './shared/StatWithFixedColorAndLink';
 import { queries, variableQuery } from './queries';
 import { TimeSeriesMemoryOrCPU } from './shared/TimeSeriesMemoryOrCPU';
+import { RowCosts } from './shared/RowCosts';
 
 export function MetricsPage() {
   const styles = useStyles2(getStyles);
@@ -151,6 +152,14 @@ export function MetricsPage() {
                         usageExpr={queries.cluster.memoryUsage}
                       />
                     </div>
+                    <RowCosts
+                      costsCPUAllocation={queries.cluster.costsCPUAllocation}
+                      costsMemoryAllocation={
+                        queries.cluster.costsMemoryAllocation
+                      }
+                      costsCPUIdle={queries.cluster.costsCPUIdle}
+                      costsMemoryIdle={queries.cluster.costsMemoryIdle}
+                    />
                   </Stack>
                 </Stack>
               </PluginPage>
