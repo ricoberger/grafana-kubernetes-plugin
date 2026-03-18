@@ -15,6 +15,7 @@ import { TableKubernetesResource } from '../shared/TableKubernetesResource';
 import { TimeSeriesMemoryOrCPU } from '../shared/TimeSeriesMemoryOrCPU';
 import datasourcePluginJson from '../../../datasource/plugin.json';
 import { useVizPanelMenu } from '../../../hooks/useVizPanelMenu';
+import { RowCosts } from '../shared/RowCosts';
 
 export function NamespacePageOverview() {
   const styles = useStyles2(getStyles);
@@ -49,6 +50,13 @@ export function NamespacePageOverview() {
           usageExpr={queries.namespaces.memoryUsage}
         />
       </div>
+
+      <RowCosts
+        costsCPUAllocation={queries.namespaces.costsCPUAllocation}
+        costsMemoryAllocation={queries.namespaces.costsMemoryAllocation}
+        costsCPUIdle={queries.namespaces.costsCPUIdle}
+        costsMemoryIdle={queries.namespaces.costsMemoryIdle}
+      />
 
       <Workloads />
     </Stack>

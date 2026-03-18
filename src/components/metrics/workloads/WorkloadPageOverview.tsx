@@ -27,6 +27,7 @@ import { TimeSeriesMemoryOrCPU } from '../shared/TimeSeriesMemoryOrCPU';
 import datasourcePluginJson from '../../../datasource/plugin.json';
 import { useVizPanelMenu } from '../../../hooks/useVizPanelMenu';
 import { TimeSeriesWorkloadStatus } from '../shared/TimeSeriesWorkloadStatus';
+import { RowCosts } from '../shared/RowCosts';
 
 interface Props {
   workloadType: string;
@@ -240,6 +241,13 @@ export function WorkloadPageOverview({ workloadType }: Props) {
           />
         )}
       </div>
+
+      <RowCosts
+        costsCPUAllocation={queries.workloads.costsCPUAllocation}
+        costsMemoryAllocation={queries.workloads.costsMemoryAllocation}
+        costsCPUIdle={queries.workloads.costsCPUIdle}
+        costsMemoryIdle={queries.workloads.costsMemoryIdle}
+      />
 
       <Pods />
 
