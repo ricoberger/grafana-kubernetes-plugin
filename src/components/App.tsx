@@ -11,7 +11,7 @@ import { ResourcesPage } from './resources/ResourcesPage';
 import { HelmPage } from './helm/HelmPage';
 import { FluxPage } from './flux/FluxPage';
 import { CertManagerPage } from './certmanager/CertManagerPage';
-import { MetricsPage } from './metrics/MetricsPage';
+import { MetricsPage } from './metrics/metrics/MetricsPage';
 import { NodesPage } from './metrics/nodes/NodesPage';
 import { NamespacesPage } from './metrics/namespaces/NamespacesPage';
 import { WorkloadsPage } from './metrics/workloads/WorkloadsPage';
