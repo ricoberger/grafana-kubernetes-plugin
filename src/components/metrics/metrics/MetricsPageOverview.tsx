@@ -17,6 +17,7 @@ import { RowCosts } from '../shared/RowCosts';
 import { LegendResourceUsage } from '../shared/LegendResourceUsage';
 import { TableResourceUsage } from '../shared/TableResourceUsage';
 import { useVizPanelMenu } from '../../../hooks/useVizPanelMenu';
+import { TableCosts } from '../shared/TableCosts';
 
 export function MetricsPageOverview() {
   const styles = useStyles2(getStyles);
@@ -102,6 +103,7 @@ function Nodes() {
           <RadioButtonGroup
             options={[
               { label: 'Usage', value: 'usage' },
+              { label: 'Cost', value: 'cost' },
               { label: 'Info', value: 'info' },
             ]}
             value={selected}
@@ -127,6 +129,15 @@ function Nodes() {
               memoryUsageMaxPercentExpr={
                 queries.nodes.memoryUsageMaxPercentOverTime
               }
+            />
+          )}
+          {selected === 'cost' && (
+            <TableCosts
+              title="Nodes"
+              cpuAllocationExpr={queries.nodes.costsCPUAllocation}
+              memoryAllocationExpr={queries.nodes.costsMemoryAllocation}
+              cpuIdleExpr={queries.nodes.costsCPUIdle}
+              memoryIdleExpr={queries.nodes.costsMemoryIdle}
             />
           )}
           {selected === 'info' && <TableKubernetesPods />}
