@@ -8,6 +8,7 @@ import {
   QueryVariable,
   TimeRangePicker,
   RefreshPicker,
+  CustomVariable,
 } from '@grafana/scenes-react';
 
 import pluginJson from '../../../plugin.json';
@@ -16,6 +17,7 @@ import { getStyles } from '../../../utils/utils.styles';
 import datasourcePluginJson from '../../../datasource/plugin.json';
 import { queries, variableQuery } from '../queries';
 import { MetricsPageOverview } from './MetricsPageOverview';
+import { MetricsPageCost } from './MetricsPageCost';
 
 export function MetricsPage() {
   const styles = useStyles2(getStyles);
@@ -58,57 +60,90 @@ export function MetricsPage() {
             refresh={VariableRefresh.onDashboardLoad}
             hide={VariableHide.hideVariable}
           >
-            <QueryVariable
-              name="namespace"
-              label="Namespace"
-              datasource={{
-                type: 'prometheus',
-                uid: '$prometheus',
-              }}
-              query={{
-                refId: 'namespaces',
-                query: variableQuery(queries.namespaces.labelsByCluster),
-              }}
-              refresh={VariableRefresh.onTimeRangeChanged}
-              isMulti={true}
-              includeAll={true}
-              initialValue={'$__all'}
-              allValue=".+"
-              sort={VariableSort.alphabeticalCaseInsensitiveAsc}
+            <CustomVariable
+              name="node"
+              label="Node"
+              query=".+"
+              initialValue=".+"
+              hide={VariableHide.hideVariable}
             >
-              <PluginPage
-                renderTitle={() => (
-                  <Stack gap={0} alignItems="center" direction="row">
-                    <img
-                      className={styles.pluginPage.title.image}
-                      alt="Metrics"
-                      src={resourcesImg}
-                    />
-                    <h1>Metrics</h1>
-                  </Stack>
-                )}
-                subTitle={pluginJson.info.description}
-                actions={
-                  <>
-                    <TimeRangePicker />
-                    <RefreshPicker />
-                  </>
-                }
+              <QueryVariable
+                name="namespace"
+                label="Namespace"
+                datasource={{
+                  type: 'prometheus',
+                  uid: '$prometheus',
+                }}
+                query={{
+                  refId: 'namespaces',
+                  query: variableQuery(queries.namespaces.labelsByCluster),
+                }}
+                refresh={VariableRefresh.onTimeRangeChanged}
+                isMulti={true}
+                includeAll={true}
+                initialValue={'$__all'}
+                allValue=".+"
+                sort={VariableSort.alphabeticalCaseInsensitiveAsc}
               >
-                <TabsBar className={styles.dashboard.tabsBar}>
-                  <Tab
-                    label="Overview"
-                    active={activeTab === 'overview'}
-                    onChangeTab={(ev) => {
-                      ev?.preventDefault();
-                      setActiveTab('overview');
-                    }}
-                  />
-                </TabsBar>
+                <CustomVariable
+                  name="workloadtype"
+                  label="Workload Type"
+                  query=".+"
+                  initialValue=".+"
+                  hide={VariableHide.hideVariable}
+                >
+                  <CustomVariable
+                    name="workload"
+                    label="Workload"
+                    query=".+"
+                    initialValue=".+"
+                    hide={VariableHide.hideVariable}
+                  >
+                    <PluginPage
+                      renderTitle={() => (
+                        <Stack gap={0} alignItems="center" direction="row">
+                          <img
+                            className={styles.pluginPage.title.image}
+                            alt="Metrics"
+                            src={resourcesImg}
+                          />
+                          <h1>Metrics</h1>
+                        </Stack>
+                      )}
+                      subTitle={pluginJson.info.description}
+                      actions={
+                        <>
+                          <TimeRangePicker />
+                          <RefreshPicker />
+                        </>
+                      }
+                    >
+                      <TabsBar className={styles.dashboard.tabsBar}>
+                        <Tab
+                          label="Overview"
+                          active={activeTab === 'overview'}
+                          onChangeTab={(ev) => {
+                            ev?.preventDefault();
+                            setActiveTab('overview');
+                          }}
+                        />
+                        <Tab
+                          label="Cost"
+                          active={activeTab === 'cost'}
+                          onChangeTab={(ev) => {
+                            ev?.preventDefault();
+                            setActiveTab('cost');
+                          }}
+                        />
+                      </TabsBar>
 
-                {activeTab === 'overview' && <MetricsPageOverview />}
-              </PluginPage>
-            </QueryVariable>
+                      {activeTab === 'overview' && <MetricsPageOverview />}
+                      {activeTab === 'cost' && <MetricsPageCost />}
+                    </PluginPage>
+                  </CustomVariable>
+                </CustomVariable>
+              </QueryVariable>
+            </CustomVariable>
           </QueryVariable>
         </QueryVariable>
       </DataSourceVariable>

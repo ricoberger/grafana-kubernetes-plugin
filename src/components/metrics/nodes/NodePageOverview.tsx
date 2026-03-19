@@ -16,6 +16,7 @@ import { TimeSeriesMemoryOrCPU } from '../shared/TimeSeriesMemoryOrCPU';
 import datasourcePluginJson from '../../../datasource/plugin.json';
 import { useVizPanelMenu } from '../../../hooks/useVizPanelMenu';
 import { RowCosts } from '../shared/RowCosts';
+import { TableCosts } from '../shared/TableCosts';
 
 export function NodePageOverview() {
   const styles = useStyles2(getStyles);
@@ -76,6 +77,7 @@ function Pods() {
           <RadioButtonGroup
             options={[
               { label: 'Usage', value: 'usage' },
+              { label: 'Cost', value: 'cost' },
               { label: 'Info', value: 'info' },
             ]}
             value={selected}
@@ -103,6 +105,15 @@ function Pods() {
                 queries.pods.memoryUsageMaxPercentOverTime
               }
               alertsExpr={queries.pods.alertsCount}
+            />
+          )}
+          {selected === 'cost' && (
+            <TableCosts
+              title="Pods"
+              cpuAllocationExpr={queries.pods.costsCPUAllocation}
+              memoryAllocationExpr={queries.pods.costsMemoryAllocation}
+              cpuIdleExpr={queries.pods.costsCPUIdle}
+              memoryIdleExpr={queries.pods.costsMemoryIdle}
             />
           )}
           {selected === 'info' && <TableKubernetesPods />}

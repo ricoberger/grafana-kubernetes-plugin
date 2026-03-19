@@ -16,6 +16,7 @@ import { TimeSeriesMemoryOrCPU } from '../shared/TimeSeriesMemoryOrCPU';
 import datasourcePluginJson from '../../../datasource/plugin.json';
 import { useVizPanelMenu } from '../../../hooks/useVizPanelMenu';
 import { RowCosts } from '../shared/RowCosts';
+import { TableCosts } from '../shared/TableCosts';
 
 export function NamespacePageOverview() {
   const styles = useStyles2(getStyles);
@@ -75,12 +76,15 @@ function Workloads() {
           <RadioButtonGroup
             options={[
               { label: 'Usage', value: 'usage' },
+              { label: 'Cost', value: 'cost' },
               { label: 'Info', value: 'info' },
             ]}
             value={selected}
             onChange={(value) => setSelected(value)}
           />
-          {selected === 'usage' && <VariableControl name="workload" />}
+          {(selected === 'usage' || selected === 'cost') && (
+            <VariableControl name="workload" />
+          )}
           <div className={styles.dashboard.header.spacer} />
           {selected === 'usage' && <LegendResourceUsage />}
         </div>
@@ -107,6 +111,15 @@ function Workloads() {
               desiredPodsExpr={queries.workloads.desiredPods}
               readyPodsExpr={queries.workloads.readyPods}
               alertsExpr={queries.workloads.alertsCount}
+            />
+          )}
+          {selected === 'cost' && (
+            <TableCosts
+              title="Workloads"
+              cpuAllocationExpr={queries.workloads.costsCPUAllocation}
+              memoryAllocationExpr={queries.workloads.costsMemoryAllocation}
+              cpuIdleExpr={queries.workloads.costsCPUIdle}
+              memoryIdleExpr={queries.workloads.costsMemoryIdle}
             />
           )}
           {selected === 'info' && <TableKubernetesWorkloads />}

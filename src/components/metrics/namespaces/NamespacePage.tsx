@@ -94,150 +94,160 @@ export function NamespacePage() {
                 initialValue={namespace}
                 hide={VariableHide.hideVariable}
               >
-                <QueryVariable
-                  name="workload"
-                  label="Workload"
-                  datasource={{
-                    type: 'prometheus',
-                    uid: '$prometheus',
-                  }}
-                  query={{
-                    refId: 'workloads',
-                    query: variableQuery(
-                      queries.workloads.labelsByClusterNamespace,
-                    ),
-                  }}
-                  refresh={VariableRefresh.onTimeRangeChanged}
-                  isMulti={true}
-                  includeAll={true}
-                  initialValue={'$__all'}
-                  allValue=".+"
-                  regex={`/workload="(?<value>[^"]+)/`}
-                  sort={VariableSort.alphabeticalCaseInsensitiveAsc}
+                <CustomVariable
+                  name="workloadtype"
+                  label="Workload Type"
+                  query=".+"
+                  initialValue=".+"
+                  hide={VariableHide.hideVariable}
                 >
-                  <CustomVariable
-                    name="pod"
-                    label="Pod"
-                    query=".+"
-                    initialValue=".+"
-                    hide={VariableHide.hideVariable}
+                  <QueryVariable
+                    name="workload"
+                    label="Workload"
+                    datasource={{
+                      type: 'prometheus',
+                      uid: '$prometheus',
+                    }}
+                    query={{
+                      refId: 'workloads',
+                      query: variableQuery(
+                        queries.workloads.labelsByClusterNamespace,
+                      ),
+                    }}
+                    refresh={VariableRefresh.onTimeRangeChanged}
+                    isMulti={true}
+                    includeAll={true}
+                    initialValue={'$__all'}
+                    allValue=".+"
+                    regex={`/workload="(?<value>[^"]+)/`}
+                    sort={VariableSort.alphabeticalCaseInsensitiveAsc}
                   >
-                    <QueryVariable
-                      name="pvc"
-                      label="PersistentVolumeClaim"
-                      datasource={{
-                        type: 'prometheus',
-                        uid: '$prometheus',
-                      }}
-                      query={{
-                        refId: 'pvcs',
-                        query: variableQuery(
-                          queries.persistentVolumeClaims
-                            .labelsByClusterNamespacePod,
-                        ),
-                      }}
-                      refresh={VariableRefresh.onTimeRangeChanged}
-                      isMulti={true}
-                      includeAll={true}
-                      initialValue={'$__all'}
-                      sort={VariableSort.alphabeticalCaseInsensitiveAsc}
+                    <CustomVariable
+                      name="pod"
+                      label="Pod"
+                      query=".+"
+                      initialValue=".+"
+                      hide={VariableHide.hideVariable}
                     >
-                      <PluginPage
-                        pageNav={{
-                          text: namespace,
-                          parentItem: {
-                            text: 'Namespaces',
-                            url: prefixRoute(ROUTES.MetricsNamespaces),
-                          },
+                      <QueryVariable
+                        name="pvc"
+                        label="PersistentVolumeClaim"
+                        datasource={{
+                          type: 'prometheus',
+                          uid: '$prometheus',
                         }}
-                        renderTitle={() => (
-                          <Stack gap={0} alignItems="center" direction="row">
-                            <img
-                              className={styles.pluginPage.title.image}
-                              alt={namespace}
-                              src={resourcesImg}
-                            />
-                            <h1>{namespace}</h1>
-                            <Badge
-                              className={styles.pluginPage.title.badge}
-                              color="blue"
-                              text="namespace"
-                            />
-                          </Stack>
-                        )}
-                        subTitle={pluginJson.info.description}
-                        actions={
-                          <>
-                            <TimeRangePicker />
-                            <RefreshPicker />
-                          </>
-                        }
+                        query={{
+                          refId: 'pvcs',
+                          query: variableQuery(
+                            queries.persistentVolumeClaims
+                              .labelsByClusterNamespacePod,
+                          ),
+                        }}
+                        refresh={VariableRefresh.onTimeRangeChanged}
+                        isMulti={true}
+                        includeAll={true}
+                        initialValue={'$__all'}
+                        sort={VariableSort.alphabeticalCaseInsensitiveAsc}
                       >
-                        <TabsBar className={styles.dashboard.tabsBar}>
-                          <Tab
-                            label="Overview"
-                            active={activeTab === 'overview'}
-                            onChangeTab={(ev) => {
-                              ev?.preventDefault();
-                              setActiveTab('overview');
-                            }}
-                          />
-                          <Tab
-                            label="CPU"
-                            active={activeTab === 'cpu'}
-                            onChangeTab={(ev) => {
-                              ev?.preventDefault();
-                              setActiveTab('cpu');
-                            }}
-                          />
-                          <Tab
-                            label="Memory"
-                            active={activeTab === 'memory'}
-                            onChangeTab={(ev) => {
-                              ev?.preventDefault();
-                              setActiveTab('memory');
-                            }}
-                          />
-                          <Tab
-                            label="Network"
-                            active={activeTab === 'network'}
-                            onChangeTab={(ev) => {
-                              ev?.preventDefault();
-                              setActiveTab('network');
-                            }}
-                          />
-                          <Tab
-                            label="Storage"
-                            active={activeTab === 'storage'}
-                            onChangeTab={(ev) => {
-                              ev?.preventDefault();
-                              setActiveTab('storage');
-                            }}
-                          />
-                          <TabLogs
-                            resource="namespace"
-                            active={activeTab === 'logs'}
-                            onChangeTab={(ev) => {
-                              ev?.preventDefault();
-                              setActiveTab('logs');
-                            }}
-                          />
-                        </TabsBar>
-                        {activeTab === 'overview' && <NamespacePageOverview />}
-                        {activeTab === 'cpu' && <NamespacePageCPU />}
-                        {activeTab === 'memory' && <NamespacePageMemory />}
-                        {activeTab === 'network' && <NamespacePageNetwork />}
-                        {activeTab === 'storage' && <NamespacePageStorage />}
-                        {activeTab === 'logs' && (
-                          <TabLogsContent
-                            page="namespace"
-                            resource="namespace"
-                          />
-                        )}
-                      </PluginPage>
-                    </QueryVariable>
-                  </CustomVariable>
-                </QueryVariable>
+                        <PluginPage
+                          pageNav={{
+                            text: namespace,
+                            parentItem: {
+                              text: 'Namespaces',
+                              url: prefixRoute(ROUTES.MetricsNamespaces),
+                            },
+                          }}
+                          renderTitle={() => (
+                            <Stack gap={0} alignItems="center" direction="row">
+                              <img
+                                className={styles.pluginPage.title.image}
+                                alt={namespace}
+                                src={resourcesImg}
+                              />
+                              <h1>{namespace}</h1>
+                              <Badge
+                                className={styles.pluginPage.title.badge}
+                                color="blue"
+                                text="namespace"
+                              />
+                            </Stack>
+                          )}
+                          subTitle={pluginJson.info.description}
+                          actions={
+                            <>
+                              <TimeRangePicker />
+                              <RefreshPicker />
+                            </>
+                          }
+                        >
+                          <TabsBar className={styles.dashboard.tabsBar}>
+                            <Tab
+                              label="Overview"
+                              active={activeTab === 'overview'}
+                              onChangeTab={(ev) => {
+                                ev?.preventDefault();
+                                setActiveTab('overview');
+                              }}
+                            />
+                            <Tab
+                              label="CPU"
+                              active={activeTab === 'cpu'}
+                              onChangeTab={(ev) => {
+                                ev?.preventDefault();
+                                setActiveTab('cpu');
+                              }}
+                            />
+                            <Tab
+                              label="Memory"
+                              active={activeTab === 'memory'}
+                              onChangeTab={(ev) => {
+                                ev?.preventDefault();
+                                setActiveTab('memory');
+                              }}
+                            />
+                            <Tab
+                              label="Network"
+                              active={activeTab === 'network'}
+                              onChangeTab={(ev) => {
+                                ev?.preventDefault();
+                                setActiveTab('network');
+                              }}
+                            />
+                            <Tab
+                              label="Storage"
+                              active={activeTab === 'storage'}
+                              onChangeTab={(ev) => {
+                                ev?.preventDefault();
+                                setActiveTab('storage');
+                              }}
+                            />
+                            <TabLogs
+                              resource="namespace"
+                              active={activeTab === 'logs'}
+                              onChangeTab={(ev) => {
+                                ev?.preventDefault();
+                                setActiveTab('logs');
+                              }}
+                            />
+                          </TabsBar>
+                          {activeTab === 'overview' && (
+                            <NamespacePageOverview />
+                          )}
+                          {activeTab === 'cpu' && <NamespacePageCPU />}
+                          {activeTab === 'memory' && <NamespacePageMemory />}
+                          {activeTab === 'network' && <NamespacePageNetwork />}
+                          {activeTab === 'storage' && <NamespacePageStorage />}
+                          {activeTab === 'logs' && (
+                            <TabLogsContent
+                              page="namespace"
+                              resource="namespace"
+                            />
+                          )}
+                        </PluginPage>
+                      </QueryVariable>
+                    </CustomVariable>
+                  </QueryVariable>
+                </CustomVariable>
               </CustomVariable>
             </QueryVariable>
           </QueryVariable>
