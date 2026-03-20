@@ -73,16 +73,19 @@ export function TableCostsTop({
           includeByName: {
             ['namespace']: true,
             ['workload']: true,
+            ['workload_type']: true,
             ['Value #cpu_allocation + Value #memory_allocation']: true,
           },
           indexByName: {
             ['namespace']: 0,
             ['workload']: 1,
-            ['Value #cpu_allocation + Value #memory_allocation']: 2,
+            ['workload_type']: 2,
+            ['Value #cpu_allocation + Value #memory_allocation']: 3,
           },
           renameByName: {
             ['namespace']: 'NAMESPACE',
             ['workload']: 'WORKLOAD',
+            ['workload_type']: 'WORKLOAD TYPE',
             ['Value #cpu_allocation + Value #memory_allocation']: 'COST',
           },
         },
@@ -119,6 +122,16 @@ export function TableCostsTop({
             url: `${prefixRoute(ROUTES.MetricsWorkloads)}/\${__data.fields["namespace"].text}/\${__data.fields["workload_type"].text}/\${__value.raw}\${__url.params:exclude:var-node,var-namespace,var-workloadtype,var-workload,var-pod,var-pvc}`,
           },
         ])
+        .build();
+    })
+    .setOverrides((b) => {
+      return b
+        .matchFieldsWithName('workload_type')
+        .overrideCustomFieldConfig('hideFrom', {
+          legend: true,
+          tooltip: true,
+          viz: true,
+        })
         .build();
     })
     .setOverrides((b) =>
