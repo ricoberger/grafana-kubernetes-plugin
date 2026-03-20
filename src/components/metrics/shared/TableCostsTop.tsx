@@ -100,44 +100,47 @@ export function TableCostsTop({
         displayName: 'COST',
       },
     ])
+    // NOTE: See https://github.com/grafana/scenes/issues/1348 for why this is
+    // working.
+    .setCustomFieldConfig('hideFrom', { viz: true })
     .setOverrides((b) => {
-      return b
-        .matchFieldsWithName('namespace')
-        .overrideCustomFieldConfig('width', 300)
-        .overrideLinks([
-          {
-            title: '',
-            url: `${prefixRoute(ROUTES.MetricsNamespaces)}/\${__value.raw}\${__url.params:exclude:var-node,var-namespace,var-workloadtype,var-workload,var-pod,var-pvc}`,
-          },
-        ])
-        .build();
+      return (
+        b
+          .matchFieldsWithName('namespace')
+          .overrideCustomFieldConfig('width', 300)
+          .overrideLinks([
+            {
+              title: '',
+              url: `${prefixRoute(ROUTES.MetricsNamespaces)}/\${__value.raw}\${__url.params:exclude:var-node,var-namespace,var-workloadtype,var-workload,var-pod,var-pvc}`,
+            },
+          ])
+          // @ts-ignore
+          .overrideCustomFieldConfig('hideFrom.viz', false)
+          .build()
+      );
     })
     .setOverrides((b) => {
-      return b
-        .matchFieldsWithName('workload')
-        .overrideCustomFieldConfig('width', 300)
-        .overrideLinks([
-          {
-            title: '',
-            url: `${prefixRoute(ROUTES.MetricsWorkloads)}/\${__data.fields["namespace"].text}/\${__data.fields["workload_type"].text}/\${__value.raw}\${__url.params:exclude:var-node,var-namespace,var-workloadtype,var-workload,var-pod,var-pvc}`,
-          },
-        ])
-        .build();
-    })
-    .setOverrides((b) => {
-      return b
-        .matchFieldsWithName('workload_type')
-        .overrideCustomFieldConfig('hideFrom', {
-          legend: true,
-          tooltip: true,
-          viz: true,
-        })
-        .build();
+      return (
+        b
+          .matchFieldsWithName('workload')
+          .overrideCustomFieldConfig('width', 300)
+          .overrideLinks([
+            {
+              title: '',
+              url: `${prefixRoute(ROUTES.MetricsWorkloads)}/\${__data.fields["namespace"].text}/\${__data.fields["workload_type"].text}/\${__value.raw}\${__url.params:exclude:var-node,var-namespace,var-workloadtype,var-workload,var-pod,var-pvc}`,
+            },
+          ])
+          // @ts-ignore
+          .overrideCustomFieldConfig('hideFrom.viz', false)
+          .build()
+      );
     })
     .setOverrides((b) =>
       b
         .matchFieldsWithName('Value #cpu_allocation + Value #memory_allocation')
-        .overrideUnit('currencyUSD'),
+        .overrideUnit('currencyUSD')
+        // @ts-ignore
+        .overrideCustomFieldConfig('hideFrom.viz', false),
     )
     .build();
 
