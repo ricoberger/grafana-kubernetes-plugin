@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { VariableHide, VariableRefresh, VariableSort } from '@grafana/data';
+import { VariableHide, VariableRefresh } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import { Stack, Tab, TabsBar, useStyles2 } from '@grafana/ui';
 import {
@@ -15,7 +15,6 @@ import pluginJson from '../../../plugin.json';
 import resourcesImg from '../../../img/logo.svg';
 import { getStyles } from '../../../utils/utils.styles';
 import datasourcePluginJson from '../../../datasource/plugin.json';
-import { queries, variableQuery } from '../queries';
 import { MetricsPageOverview } from './MetricsPageOverview';
 import { MetricsPageCost } from './MetricsPageCost';
 
@@ -67,23 +66,12 @@ export function MetricsPage() {
               initialValue=".+"
               hide={VariableHide.hideVariable}
             >
-              <QueryVariable
+              <CustomVariable
                 name="namespace"
                 label="Namespace"
-                datasource={{
-                  type: 'prometheus',
-                  uid: '$prometheus',
-                }}
-                query={{
-                  refId: 'namespaces',
-                  query: variableQuery(queries.namespaces.labelsByCluster),
-                }}
-                refresh={VariableRefresh.onTimeRangeChanged}
-                isMulti={true}
-                includeAll={true}
-                initialValue={'$__all'}
-                allValue=".+"
-                sort={VariableSort.alphabeticalCaseInsensitiveAsc}
+                query=".+"
+                initialValue=".+"
+                hide={VariableHide.hideVariable}
               >
                 <CustomVariable
                   name="workloadtype"
@@ -142,7 +130,7 @@ export function MetricsPage() {
                     </PluginPage>
                   </CustomVariable>
                 </CustomVariable>
-              </QueryVariable>
+              </CustomVariable>
             </CustomVariable>
           </QueryVariable>
         </QueryVariable>
