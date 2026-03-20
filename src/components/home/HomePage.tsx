@@ -1,5 +1,5 @@
 import React from 'react';
-import { VariableHide, VariableRefresh, VariableSort } from '@grafana/data';
+import { VariableHide, VariableRefresh } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import { Card, LinkButton, Stack, useStyles2 } from '@grafana/ui';
 import {
@@ -9,6 +9,7 @@ import {
   VariableControl,
   TimeRangePicker,
   RefreshPicker,
+  CustomVariable,
 } from '@grafana/scenes-react';
 
 import { ROUTES } from '../../constants';
@@ -21,7 +22,7 @@ import { getStyles } from '../../utils/utils.styles';
 import datasourcePluginJson from '../../datasource/plugin.json';
 import { StatWithFixedColorAndLink } from '../metrics/shared/StatWithFixedColorAndLink';
 import { TimeSeriesMemoryOrCPU } from '../metrics/shared/TimeSeriesMemoryOrCPU';
-import { queries, variableQuery } from '../metrics/queries';
+import { queries } from '../metrics/queries';
 
 interface Item {
   route: ROUTES;
@@ -109,23 +110,12 @@ export function HomePage() {
             refresh={VariableRefresh.onDashboardLoad}
             hide={VariableHide.hideVariable}
           >
-            <QueryVariable
+            <CustomVariable
               name="namespace"
               label="Namespace"
-              datasource={{
-                type: 'prometheus',
-                uid: '$prometheus',
-              }}
-              query={{
-                refId: 'namespaces',
-                query: variableQuery(queries.namespaces.labelsByCluster),
-              }}
-              refresh={VariableRefresh.onTimeRangeChanged}
-              isMulti={true}
-              includeAll={true}
-              initialValue={'$__all'}
-              allValue=".+"
-              sort={VariableSort.alphabeticalCaseInsensitiveAsc}
+              query=".+"
+              initialValue=".+"
+              hide={VariableHide.hideVariable}
             >
               <PluginPage
                 actions={
@@ -229,7 +219,7 @@ export function HomePage() {
                   </ul>
                 </div>
               </PluginPage>
-            </QueryVariable>
+            </CustomVariable>
           </QueryVariable>
         </QueryVariable>
       </DataSourceVariable>
