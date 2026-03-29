@@ -1,7 +1,6 @@
+# yaml-language-server: $schema=https://golangci-lint.run/jsonschema/golangci.jsonschema.json
 ---
 version: '2'
-run:
-  modules-download-mode: readonly
 linters:
   default: none
   enable:
@@ -20,21 +19,6 @@ linters:
       - common-false-positives
       - legacy
       - std-error-handling
-    paths:
-      - third_party$
-      - builtin$
-      - examples$
-  settings:
-    gosec:
-      excludes:
-        # TODO: The following lints cause false-positives in many repositories,
-        # should be fixed with the next release.
-        #
-        # See: https://github.com/securego/gosec/issues/1500
-        - G703
-        - G704
-        - G705
-        - G706
 formatters:
   enable:
     - gofmt
@@ -43,9 +27,3 @@ formatters:
     goimports:
       local-prefixes:
         - github.com/ricoberger/grafana-kubernetes-plugin
-  exclusions:
-    generated: lax
-    paths:
-      - third_party$
-      - builtin$
-      - examples$
