@@ -12,6 +12,7 @@ import { Yaml } from '../shared/details/Yaml';
 import { Templates } from './Templates';
 import { AI } from './AI';
 import pluginJson from '../../plugin.json';
+import { Manifests } from './Manifests';
 
 await initPluginTranslations(pluginJson.id, [loadResources]);
 
@@ -108,6 +109,14 @@ export function Details({
                 setActiveTab('templates');
               }}
             />
+            <Tab
+              label="Manifests"
+              active={activeTab === 'manifests'}
+              onChangeTab={(ev) => {
+                ev?.preventDefault();
+                setActiveTab('manifests');
+              }}
+            />
             {ai.value && (
               <Tab
                 label="AI"
@@ -130,7 +139,13 @@ export function Details({
         </Alert>
       ) : (
         <>
-          {activeTab === 'overview' && <Overview release={state.value} />}
+          {activeTab === 'overview' && (
+            <Overview
+              datasource={datasource}
+              namespace={namespace}
+              release={state.value}
+            />
+          )}
           {activeTab === 'history' && (
             <History
               datasource={datasource}
@@ -143,6 +158,9 @@ export function Details({
             <Yaml value={state.value?.chart?.values} />
           )}
           {activeTab === 'templates' && <Templates release={state.value} />}
+          {activeTab === 'manifests' && (
+            <Manifests namespace={namespace} release={state.value} />
+          )}
           {activeTab === 'ai' && (
             <AI
               datasource={datasource}
