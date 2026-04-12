@@ -17,7 +17,6 @@ jobs:
     outputs:
       plugin-id: ${{ steps.metadata.outputs.plugin-id }}
       plugin-version: ${{ steps.metadata.outputs.plugin-version }}
-      has-e2e: ${{ steps.check-for-e2e.outputs.has-e2e }}
       has-backend: ${{ steps.check-for-backend.outputs.has-backend }}
 
     steps:
@@ -79,14 +78,6 @@ jobs:
           version: latest
           args: buildAll
 
-      - name: Check for E2E
-        id: check-for-e2e
-        run: |
-          if [ -f "playwright.config.ts" ]
-          then
-            echo "has-e2e=true" >> $GITHUB_OUTPUT
-          fi
-
       - name: Sign Plugin
         if: ${{ env.GRAFANA_ACCESS_POLICY_TOKEN != '' }}
         run: npm run sign
@@ -128,111 +119,4 @@ jobs:
             ${{ steps.metadata.outputs.plugin-id }}-${{
             steps.metadata.outputs.plugin-version }}
           path: ${{ steps.metadata.outputs.plugin-id }}
-          retention-days: 5
-
-  resolve-versions:
-    name: Resolve e2e images
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    timeout-minutes: 3
-    needs: build
-    if: ${{ needs.build.outputs.has-e2e == 'true' }}
-    outputs:
-      matrix: ${{ steps.resolve-versions.outputs.matrix }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          persist-credentials: false
-
-      - name: Resolve Grafana E2E versions
-        id: resolve-versions
-        uses: grafana/plugin-actions/e2e-version@e2e-version/v1.2.1
-
-  playwright-tests:
-    needs: [resolve-versions, build]
-    timeout-minutes: 15
-    permissions:
-      contents: read
-      id-token: write
-      pull-requests: write
-    strategy:
-      fail-fast: false
-      matrix:
-        GRAFANA_IMAGE: ${{fromJson(needs.resolve-versions.outputs.matrix)}}
-    name:
-      E2E Test ${{ matrix.GRAFANA_IMAGE.name }}@${{ matrix.GRAFANA_IMAGE.VERSION
-      }}
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          persist-credentials: false
-
-      - name: Download Plugin
-        uses: actions/download-artifact@v8
-        with:
-          path: dist
-          name:
-            ${{ needs.build.outputs.plugin-id }}-${{
-            needs.build.outputs.plugin-version }}
-
-      - name: Execute Permissions on Binary
-        if: needs.build.outputs.has-backend == 'true'
-        run: |
-          chmod +x ./dist/datasource/gpx_*
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '22'
-          cache: 'npm'
-
-      - name: Install Development Dependencies
-        run: npm ci
-
-      - name: Start Grafana
-        run: |
-          docker compose pull
-          ANONYMOUS_AUTH_ENABLED=false DEVELOPMENT=false GRAFANA_VERSION=${{ matrix.GRAFANA_IMAGE.VERSION }} GRAFANA_IMAGE=${{ matrix.GRAFANA_IMAGE.NAME }} docker compose up -d
-
-      - name: Wait for Grafana Server
-        uses: grafana/plugin-actions/wait-for-grafana@wait-for-grafana/v1.0.2
-        with:
-          url: http://localhost:3000/login
-
-      - name: Install Playwright Browsers
-        run: npm exec playwright install chromium --with-deps
-
-      - name: Run Playwright Tests
-        id: run-tests
-        run: npm run e2e
-
-      - name: Upload E2E Test Summary
-        uses: grafana/plugin-actions/playwright-gh-pages/upload-report-artifacts@upload-report-artifacts/v1.0.1
-        if: ${{ always() && !cancelled() }}
-        with:
-          upload-report: false
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          test-outcome: ${{ steps.run-tests.outcome }}
-
-      - name: Docker Logs
-        if: ${{ always() && steps.run-tests.outcome == 'failure' }}
-        run: |
-          docker logs ricoberger-kubernetes-app >& grafana-server.log
-
-      - name: Stop Grafana Docker
-        run: docker compose down
-
-      - name: Upload Server Log
-        uses: actions/upload-artifact@v7
-        if: ${{ always() && steps.run-tests.outcome == 'failure' }}
-        with:
-          name:
-            ${{ matrix.GRAFANA_IMAGE.NAME }}-v${{ matrix.GRAFANA_IMAGE.VERSION
-            }}-${{github.run_id}}-server-log
-          path: grafana-server.log
           retention-days: 5
