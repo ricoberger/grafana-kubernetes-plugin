@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { V1LabelSelector } from '@kubernetes/client-node';
-import { Badge, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { Badge, useStyles2 } from '@grafana/ui';
+import { V1LabelSelector } from '@kubernetes/client-node';
+import React, { useState } from 'react';
 
 import { DefinitionItem } from '../../shared/definitionlist/DefinitionList';
 import { Resources } from './Resources';

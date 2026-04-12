@@ -1,5 +1,5 @@
-import React from 'react';
-import { Stack, useStyles2 } from '@grafana/ui';
+import { VariableRefresh, VariableSort } from '@grafana/data';
+import { VizConfigBuilders } from '@grafana/scenes';
 import {
   QueryVariable,
   VariableControl,
@@ -7,14 +7,14 @@ import {
   useQueryRunner,
   useVariables,
 } from '@grafana/scenes-react';
-import { VizConfigBuilders } from '@grafana/scenes';
+import { Stack, useStyles2 } from '@grafana/ui';
+import React from 'react';
 
 import datasourcePluginJson from '../../../datasource/plugin.json';
-import { getStyles } from '../../../utils/utils.styles';
-import { useVizPanelMenu } from 'hooks/useVizPanelMenu';
-import { queries, variableQuery } from '../queries';
-import { VariableRefresh, VariableSort } from '@grafana/data';
+import { useVizPanelMenu } from '../../../hooks/useVizPanelMenu';
 import { prometheusResourceToKubernetesResourceInfo } from '../../../utils/utils.resource';
+import { getStyles } from '../../../utils/utils.styles';
+import { queries, variableQuery } from '../queries';
 
 interface Props {
   page: string;

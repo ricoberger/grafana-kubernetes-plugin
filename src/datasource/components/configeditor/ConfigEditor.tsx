@@ -1,15 +1,15 @@
-import React from 'react';
 import { DataSourcePluginOptionsEditorProps } from '@grafana/data';
+import React from 'react';
 
 import {
   DataSourceOptions,
   KubernetesSecureJsonData,
 } from '../../types/settings';
 import { Cluster } from './Cluster';
-import { Impersonate } from './Impersonate';
-import { Integrations } from './Integrations';
 import { GenerateKubeconfig } from './GenerateKubeconfig';
 import { Grafana } from './Grafana';
+import { Impersonate } from './Impersonate';
+import { Integrations } from './Integrations';
 
 interface Props
   extends DataSourcePluginOptionsEditorProps<

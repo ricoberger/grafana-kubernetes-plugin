@@ -1,6 +1,6 @@
-import React from 'react';
-import { Tab } from '@grafana/ui';
 import { useVariables } from '@grafana/scenes-react';
+import { Tab } from '@grafana/ui';
+import React from 'react';
 
 interface Props {
   resource: string;

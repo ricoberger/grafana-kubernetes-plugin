@@ -1,14 +1,14 @@
-import React from 'react';
 import { ScrollContainer } from '@grafana/ui';
+import React from 'react';
 
-import { DefinitionLists } from '../shared/definitionlist/DefinitionList';
 import { KubernetesManifest } from '../../types/kubernetes';
+import { DefinitionLists } from '../shared/definitionlist/DefinitionList';
 import { Conditions } from '../shared/details/Conditions';
 import { Metadata } from '../shared/details/Metadata';
 import { Certificate } from './overview/Certificate';
 import { CertificateRequest } from './overview/CertificateRequest';
-import { Order } from './overview/Order';
 import { Challenge } from './overview/Challenge';
+import { Order } from './overview/Order';
 
 interface Props {
   datasource?: string;

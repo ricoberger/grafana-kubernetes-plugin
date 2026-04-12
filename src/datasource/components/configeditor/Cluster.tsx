@@ -1,15 +1,15 @@
-import React, { ChangeEvent } from 'react';
+import { DataSourcePluginOptionsEditorProps } from '@grafana/data';
 import {
   InlineField,
   Input,
   RadioButtonGroup,
   SecretTextArea,
 } from '@grafana/ui';
-import { DataSourcePluginOptionsEditorProps } from '@grafana/data';
+import React, { ChangeEvent } from 'react';
 
 import {
-  DataSourceOptions,
   ClusterProvider,
+  DataSourceOptions,
   KubernetesSecureJsonData,
 } from '../../types/settings';
 

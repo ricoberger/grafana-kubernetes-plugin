@@ -1,10 +1,10 @@
-import React from 'react';
 import { VizConfigBuilders } from '@grafana/scenes';
 import { useQueryRunner, VizPanel } from '@grafana/scenes-react';
+import React from 'react';
 
 import datasourcePluginJson from '../../datasource/plugin.json';
 
-export const HelmReleasesTable = () => {
+export function HelmReleasesTable() {
   const dataProvider = useQueryRunner({
     datasource: {
       type: datasourcePluginJson.id,
@@ -22,4 +22,4 @@ export const HelmReleasesTable = () => {
   const viz = VizConfigBuilders.table().build();
 
   return <VizPanel title="Releases" viz={viz} dataProvider={dataProvider} />;
-};
+}

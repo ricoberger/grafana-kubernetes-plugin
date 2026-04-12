@@ -1,10 +1,10 @@
 import React from 'react';
 
-import {
-  DefinitionList,
-  DefinitionItem,
-} from '../../shared/definitionlist/DefinitionList';
 import { KubernetesManifest } from '../../../types/kubernetes';
+import {
+  DefinitionItem,
+  DefinitionList,
+} from '../../shared/definitionlist/DefinitionList';
 
 interface Props {
   datasource?: string;

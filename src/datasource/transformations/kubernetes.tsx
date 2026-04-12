@@ -1,11 +1,11 @@
-import React from 'react';
-import { CustomCellRendererProps, TableCellDisplayMode } from '@grafana/ui';
 import { DataFrame, FieldType } from '@grafana/data';
+import { CustomCellRendererProps, TableCellDisplayMode } from '@grafana/ui';
+import React from 'react';
 
-import { Query } from '../types/query';
-import { Actions } from '../components/kubernetes/Actions';
-import { Actions as FluxActions } from '../components/flux/Actions';
 import { Actions as CertManagerActions } from '../components/certmanager/Actions';
+import { Actions as FluxActions } from '../components/flux/Actions';
+import { Actions } from '../components/kubernetes/Actions';
+import { Query } from '../types/query';
 
 export const kubernetesResourcesTransformation = (
   query: Query,

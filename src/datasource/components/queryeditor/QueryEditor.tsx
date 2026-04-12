@@ -1,21 +1,19 @@
-import React from 'react';
+import { QueryEditorProps } from '@grafana/data';
 import {
   Combobox,
   ComboboxOption,
   InlineField,
   InlineFieldRow,
 } from '@grafana/ui';
-import { QueryEditorProps } from '@grafana/data';
+import React from 'react';
 
 import { DataSource } from '../../datasource';
 import { DEFAULT_QUERIES, Query, QueryType } from '../../types/query';
 import { DataSourceOptions } from '../../types/settings';
+import { HelmReleaseHistory } from './HelmReleaseHistory';
+import { HelmReleases } from './HelmReleases';
 import { KubernetesLogs } from './KubernetesLogs';
 import { KubernetesResources } from './KubernetesResources';
-import { HelmReleases } from './HelmReleases';
-import { HelmReleaseHistory } from './HelmReleaseHistory';
-import { FluxResources } from './FluxResources';
-import { CertManagerResources } from './CertManagerResources';
 
 type Props = QueryEditorProps<DataSource, Query, DataSourceOptions>;
 
@@ -34,13 +32,8 @@ export function QueryEditor({
             options={[
               { label: 'Kubernetes: Resources', value: 'kubernetes-resources' },
               { label: 'Kubernetes: Logs', value: 'kubernetes-logs' },
-              { label: 'Helm Releases', value: 'helm-releases' },
-              { label: 'Helm Release History', value: 'helm-release-history' },
-              { label: 'Flux: Resources', value: 'flux-resources' },
-              {
-                label: 'cert-manager: Resources',
-                value: 'certmanager-resources',
-              },
+              { label: 'Helm: Releases', value: 'helm-releases' },
+              { label: 'Helm: Release History', value: 'helm-release-history' },
             ]}
             onChange={(option: ComboboxOption<QueryType>) => {
               onChange({
@@ -83,24 +76,6 @@ export function QueryEditor({
 
       {query.queryType === 'helm-release-history' && (
         <HelmReleaseHistory
-          datasource={datasource}
-          query={query}
-          onChange={onChange}
-          onRunQuery={onRunQuery}
-        />
-      )}
-
-      {query.queryType === 'flux-resources' && (
-        <FluxResources
-          datasource={datasource}
-          query={query}
-          onChange={onChange}
-          onRunQuery={onRunQuery}
-        />
-      )}
-
-      {query.queryType === 'certmanager-resources' && (
-        <CertManagerResources
           datasource={datasource}
           query={query}
           onChange={onChange}

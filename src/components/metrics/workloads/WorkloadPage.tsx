@@ -1,32 +1,32 @@
-import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
 import { VariableHide, VariableRefresh, VariableSort } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
-import { Alert, Badge, Stack, Tab, TabsBar, useStyles2 } from '@grafana/ui';
 import {
-  SceneContextProvider,
+  AnnotationLayer,
+  CustomVariable,
   DataSourceVariable,
   QueryVariable,
-  TimeRangePicker,
   RefreshPicker,
-  CustomVariable,
-  AnnotationLayer,
+  SceneContextProvider,
+  TimeRangePicker,
 } from '@grafana/scenes-react';
+import { Alert, Badge, Stack, Tab, TabsBar, useStyles2 } from '@grafana/ui';
+import React, { useState } from 'react';
+import { useParams } from 'react-router-dom';
 
-import pluginJson from '../../../plugin.json';
-import resourcesImg from '../../../img/logo.svg';
-import { getStyles } from '../../../utils/utils.styles';
-import datasourcePluginJson from '../../../datasource/plugin.json';
-import { WorkloadPageOverview } from './WorkloadPageOverview';
-import { queries, variableQuery } from '../queries';
-import { WorkloadPageMemory } from './WorkloadPageMemory';
-import { WorkloadPageCPU } from './WorkloadPageCPU';
-import { WorkloadPageNetwork } from './WorkloadPageNetwork';
-import { WorkloadPageStorage } from './WorkloadPageStorage';
 import { ROUTES } from '../../../constants';
+import datasourcePluginJson from '../../../datasource/plugin.json';
+import resourcesImg from '../../../img/logo.svg';
+import pluginJson from '../../../plugin.json';
 import { prefixRoute } from '../../../utils/utils.routing';
+import { getStyles } from '../../../utils/utils.styles';
+import { queries, variableQuery } from '../queries';
 import { TabLogs } from '../shared/TabLogs';
 import { TabLogsContent } from '../shared/TabLogsContent';
+import { WorkloadPageCPU } from './WorkloadPageCPU';
+import { WorkloadPageMemory } from './WorkloadPageMemory';
+import { WorkloadPageNetwork } from './WorkloadPageNetwork';
+import { WorkloadPageOverview } from './WorkloadPageOverview';
+import { WorkloadPageStorage } from './WorkloadPageStorage';
 
 export function WorkloadPage() {
   const styles = useStyles2(getStyles);

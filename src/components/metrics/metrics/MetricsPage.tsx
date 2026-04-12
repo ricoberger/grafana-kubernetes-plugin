@@ -1,22 +1,22 @@
-import React, { useState } from 'react';
 import { VariableHide, VariableRefresh } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
-import { Stack, Tab, TabsBar, useStyles2 } from '@grafana/ui';
 import {
-  SceneContextProvider,
+  CustomVariable,
   DataSourceVariable,
   QueryVariable,
-  TimeRangePicker,
   RefreshPicker,
-  CustomVariable,
+  SceneContextProvider,
+  TimeRangePicker,
 } from '@grafana/scenes-react';
+import { Stack, Tab, TabsBar, useStyles2 } from '@grafana/ui';
+import React, { useState } from 'react';
 
-import pluginJson from '../../../plugin.json';
-import resourcesImg from '../../../img/logo.svg';
-import { getStyles } from '../../../utils/utils.styles';
 import datasourcePluginJson from '../../../datasource/plugin.json';
-import { MetricsPageOverview } from './MetricsPageOverview';
+import resourcesImg from '../../../img/logo.svg';
+import pluginJson from '../../../plugin.json';
+import { getStyles } from '../../../utils/utils.styles';
 import { MetricsPageCost } from './MetricsPageCost';
+import { MetricsPageOverview } from './MetricsPageOverview';
 
 export function MetricsPage() {
   const styles = useStyles2(getStyles);

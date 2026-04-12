@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { css } from '@emotion/css';
+import { AppEvents } from '@grafana/data';
+import { getAppEvents } from '@grafana/runtime';
 import {
   Alert,
   Button,
@@ -8,13 +10,11 @@ import {
   Stack,
   useStyles2,
 } from '@grafana/ui';
-import { AppEvents } from '@grafana/data';
-import { getAppEvents } from '@grafana/runtime';
-import YAML from 'yaml';
 import { compare } from 'fast-json-patch';
+import React, { useEffect, useState } from 'react';
 import { useAsync } from 'react-use';
 import AutoSizer from 'react-virtualized-auto-sizer';
-import { css } from '@emotion/css';
+import YAML from 'yaml';
 
 import {
   getResource,

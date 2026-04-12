@@ -1,19 +1,17 @@
-import React, { useState } from 'react';
-import { Alert, Drawer, LoadingPlaceholder, Tab, TabsBar } from '@grafana/ui';
-import { useAsync } from 'react-use';
-import { llm } from '@grafana/llm';
 import { initPluginTranslations } from '@grafana/i18n';
 import { loadResources } from '@grafana/scenes';
+import { Alert, Drawer, LoadingPlaceholder, Tab, TabsBar } from '@grafana/ui';
+import React, { useState } from 'react';
+import { useAsync } from 'react-use';
 
 import { getResourceManifest } from '../../../utils/utils.resource';
+import datasourcePluginJson from '../../plugin.json';
 import { KubernetesManifest } from '../../types/kubernetes';
-import { Yaml } from '../shared/details/Yaml';
 import { Events } from '../shared/details/Events';
+import { Yaml } from '../shared/details/Yaml';
 import { Overview } from './Overview';
-import { AI } from './AI';
-import pluginJson from '../../plugin.json';
 
-await initPluginTranslations(pluginJson.id, [loadResources]);
+await initPluginTranslations(datasourcePluginJson.id, [loadResources]);
 
 interface Props {
   datasource?: string;
@@ -42,14 +40,6 @@ export function Details({
 
     return manifest;
   }, [datasource, resourceId, namespace, name]);
-
-  const ai = useAsync(async (): Promise<boolean> => {
-    const enabled = await llm.enabled();
-    if (!enabled) {
-      return false;
-    }
-    return true;
-  }, []);
 
   return (
     <Drawer
@@ -84,16 +74,6 @@ export function Details({
                 setActiveTab('events');
               }}
             />
-            {ai.value && (
-              <Tab
-                label="AI"
-                active={activeTab === 'ai'}
-                onChangeTab={(ev) => {
-                  ev?.preventDefault();
-                  setActiveTab('ai');
-                }}
-              />
-            )}
           </TabsBar>
         )
       }
@@ -121,15 +101,6 @@ export function Details({
           {activeTab === 'yaml' && <Yaml value={state.value} />}
           {activeTab === 'events' && (
             <Events datasource={datasource} namespace={namespace} name={name} />
-          )}
-
-          {activeTab === 'ai' && (
-            <AI
-              datasource={datasource}
-              resourceId={resourceId}
-              namespace={namespace}
-              name={name}
-            />
           )}
         </>
       )}

@@ -1,4 +1,4 @@
-import React from 'react';
+import { VizConfigBuilders } from '@grafana/scenes';
 import { useQueryRunner, VizPanel } from '@grafana/scenes-react';
 import {
   BigValueColorMode,
@@ -6,7 +6,7 @@ import {
   BigValueTextMode,
   ThresholdsMode,
 } from '@grafana/schema';
-import { VizConfigBuilders } from '@grafana/scenes';
+import React from 'react';
 
 import { useVizPanelMenu } from '../../../hooks/useVizPanelMenu';
 

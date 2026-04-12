@@ -1,4 +1,5 @@
-import React, { ReactNode, useMemo, useState } from 'react';
+import { css } from '@emotion/css';
+import { Badge, Box, InteractiveTable, Stack, useStyles2 } from '@grafana/ui';
 import {
   V1ContainerPort,
   V1ContainerState,
@@ -8,12 +9,11 @@ import {
   V1Pod,
   V1Probe,
 } from '@kubernetes/client-node';
-import { Badge, Box, InteractiveTable, Stack, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import React, { ReactNode, useMemo, useState } from 'react';
 
 import {
-  DefinitionList,
   DefinitionItem,
+  DefinitionList,
 } from '../../shared/definitionlist/DefinitionList';
 import { Resources } from '../../shared/details/Resources';
 

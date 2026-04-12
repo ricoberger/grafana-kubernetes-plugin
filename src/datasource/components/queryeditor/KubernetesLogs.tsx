@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from 'react';
+import { QueryEditorProps } from '@grafana/data';
 import {
   Combobox,
   ComboboxOption,
@@ -7,14 +7,14 @@ import {
   InlineSwitch,
   Input,
 } from '@grafana/ui';
-import { QueryEditorProps } from '@grafana/data';
+import React, { ChangeEvent } from 'react';
 
 import { DataSource } from '../../datasource';
 import { Query } from '../../types/query';
 import { DataSourceOptions } from '../../types/settings';
+import { ContainerField } from '../shared/field/ContainerField';
 import { NamespaceField } from '../shared/field/NamespaceField';
 import { ResourceNameField } from '../shared/field/ResourceNameField';
-import { ContainerField } from '../shared/field/ContainerField';
 
 type Props = QueryEditorProps<DataSource, Query, DataSourceOptions>;
 

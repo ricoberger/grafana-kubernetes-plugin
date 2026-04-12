@@ -1,4 +1,4 @@
-import React from 'react';
+import { css } from '@emotion/css';
 import {
   Alert,
   Button,
@@ -8,10 +8,10 @@ import {
   Stack,
   useStyles2,
 } from '@grafana/ui';
-import YAML from 'yaml';
+import React from 'react';
 import { useAsync } from 'react-use';
 import AutoSizer from 'react-virtualized-auto-sizer';
-import { css } from '@emotion/css';
+import YAML from 'yaml';
 
 import { fileDownload } from '../../utils/utils.download';
 

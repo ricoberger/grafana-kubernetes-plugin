@@ -1,12 +1,12 @@
-import React from 'react';
-import { Stack, useStyles2 } from '@grafana/ui';
 import { DataLayerControl, VariableControl } from '@grafana/scenes-react';
+import { Stack, useStyles2 } from '@grafana/ui';
+import React from 'react';
 
 import { getStyles } from '../../../utils/utils.styles';
 import { queries } from '../queries';
+import { SectionPersistentVolumeClaimsForPods } from '../shared/SectionPersistenVolumeClaimsForPods';
 import { TimeSeriesIO } from '../shared/TimeSeriesIO';
 import { TimeSeriesMemoryOrCPUDistribution } from '../shared/TimeSeriesMemoryOrCPUDistribution';
-import { SectionPersistentVolumeClaimsForPods } from '../shared/SectionPersistenVolumeClaimsForPods';
 
 export function WorkloadPageStorage() {
   const styles = useStyles2(getStyles);

@@ -1,4 +1,6 @@
-import React, { ChangeEvent, useState } from 'react';
+import { css } from '@emotion/css';
+import { AppEvents, GrafanaTheme2 } from '@grafana/data';
+import { getAppEvents } from '@grafana/runtime';
 import {
   ConfirmModal,
   InlineField,
@@ -8,9 +10,7 @@ import {
   Stack,
   useStyles2,
 } from '@grafana/ui';
-import { AppEvents, GrafanaTheme2 } from '@grafana/data';
-import { getAppEvents } from '@grafana/runtime';
-import { css } from '@emotion/css';
+import React, { ChangeEvent, useState } from 'react';
 
 import { RollbackOptions } from '../../types/helm';
 

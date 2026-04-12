@@ -1,9 +1,9 @@
-import React from 'react';
-import { CustomCellRendererProps, TableCellDisplayMode } from '@grafana/ui';
 import { DataFrame, FieldType } from '@grafana/data';
+import { CustomCellRendererProps, TableCellDisplayMode } from '@grafana/ui';
+import React from 'react';
 
-import { Query } from '../types/query';
 import { Actions } from '../components/helm/Actions';
+import { Query } from '../types/query';
 
 export const helmTransformation = (query: Query, frame: DataFrame) => {
   return {

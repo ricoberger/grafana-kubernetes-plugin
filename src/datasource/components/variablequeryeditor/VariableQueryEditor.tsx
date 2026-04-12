@@ -1,17 +1,17 @@
-import React from 'react';
 import { QueryEditorProps } from '@grafana/data';
 import {
-  InlineFieldRow,
-  InlineField,
   Combobox,
   ComboboxOption,
+  InlineField,
+  InlineFieldRow,
 } from '@grafana/ui';
+import React from 'react';
 
 import { DataSource } from '../../datasource';
 import { DEFAULT_QUERIES, Query, QueryType } from '../../types/query';
 import { DataSourceOptions } from '../../types/settings';
-import { KubernetesResources } from './KubernetesResources';
 import { KubernetesContainers } from './KubernetesContainers';
+import { KubernetesResources } from './KubernetesResources';
 
 interface Props
   extends QueryEditorProps<DataSource, any, DataSourceOptions, Query> { }

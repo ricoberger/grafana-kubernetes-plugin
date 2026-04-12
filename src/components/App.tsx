@@ -1,27 +1,25 @@
+import { AppRootProps } from '@grafana/data';
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
-import { AppRootProps } from '@grafana/data';
 
-import { PluginPropsContext } from '../utils/utils.plugin';
 import { ROUTES } from '../constants';
+import { PluginPropsContext } from '../utils/utils.plugin';
+import { HelmPage } from './helm/HelmPage';
 import { HomePage } from './home/HomePage';
 import { KubeconfigPage } from './kubeconfig/KubeconfigPage';
 import { KubectlPage } from './kubectl/KubectlPage';
-import { ResourcesPage } from './resources/ResourcesPage';
-import { HelmPage } from './helm/HelmPage';
-import { FluxPage } from './flux/FluxPage';
-import { CertManagerPage } from './certmanager/CertManagerPage';
 import { MetricsPage } from './metrics/metrics/MetricsPage';
-import { NodesPage } from './metrics/nodes/NodesPage';
-import { NamespacesPage } from './metrics/namespaces/NamespacesPage';
-import { WorkloadsPage } from './metrics/workloads/WorkloadsPage';
-import { PodsPage } from './metrics/pods/PodsPage';
-import { NodePage } from './metrics/nodes/NodePage';
 import { NamespacePage } from './metrics/namespaces/NamespacePage';
-import { WorkloadPage } from './metrics/workloads/WorkloadPage';
-import { PodPage } from './metrics/pods/PodPage';
-import { PersistentVolumeClaimsPage } from './metrics/persistentcolumeclaims/PersistentVolumeClaimsPage';
+import { NamespacesPage } from './metrics/namespaces/NamespacesPage';
+import { NodePage } from './metrics/nodes/NodePage';
+import { NodesPage } from './metrics/nodes/NodesPage';
 import { PersistentVolumeClaimPage } from './metrics/persistentcolumeclaims/PersistentVolumeClaimPage';
+import { PersistentVolumeClaimsPage } from './metrics/persistentcolumeclaims/PersistentVolumeClaimsPage';
+import { PodPage } from './metrics/pods/PodPage';
+import { PodsPage } from './metrics/pods/PodsPage';
+import { WorkloadPage } from './metrics/workloads/WorkloadPage';
+import { WorkloadsPage } from './metrics/workloads/WorkloadsPage';
+import { ResourcesPage } from './resources/ResourcesPage';
 
 function App(props: AppRootProps) {
   return (
@@ -56,8 +54,6 @@ function App(props: AppRootProps) {
         />
         <Route path={ROUTES.Resources} element={<ResourcesPage />} />
         <Route path={ROUTES.Helm} element={<HelmPage />} />
-        <Route path={ROUTES.Flux} element={<FluxPage />} />
-        <Route path={ROUTES.CertManager} element={<CertManagerPage />} />
         <Route path={ROUTES.Kubeconfig} element={<KubeconfigPage />} />
         <Route path={ROUTES.Kubectl} element={<KubectlPage />} />
       </Routes>

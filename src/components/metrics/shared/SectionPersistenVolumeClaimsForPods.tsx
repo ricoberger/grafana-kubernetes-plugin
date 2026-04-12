@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
-import { RadioButtonGroup, Stack, useStyles2 } from '@grafana/ui';
+import { VizConfigBuilders } from '@grafana/scenes';
 import {
   VariableControl,
-  useQueryRunner,
   VizPanel,
+  useQueryRunner,
   useVariables,
 } from '@grafana/scenes-react';
-import { VizConfigBuilders } from '@grafana/scenes';
+import { RadioButtonGroup, Stack, useStyles2 } from '@grafana/ui';
+import React, { useState } from 'react';
 
 import datasourcePluginJson from '../../../datasource/plugin.json';
-import { getStyles } from '../../../utils/utils.styles';
 import { useVizPanelMenu } from '../../../hooks/useVizPanelMenu';
+import { getStyles } from '../../../utils/utils.styles';
 import { TablePersistentVolumeClaimsUsage } from './TablePersistentVolumeClaimsUsage';
 
 export function SectionPersistentVolumeClaimsForPods() {

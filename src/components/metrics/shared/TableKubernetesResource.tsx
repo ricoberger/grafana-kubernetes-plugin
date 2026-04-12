@@ -1,14 +1,14 @@
-import React from 'react';
 import { VizConfigBuilders } from '@grafana/scenes';
 import { useQueryRunner, VizPanel } from '@grafana/scenes-react';
 import { useStyles2 } from '@grafana/ui';
+import React from 'react';
 
 import datasourcePluginJson from '../../../datasource/plugin.json';
 import { useVizPanelMenu } from '../../../hooks/useVizPanelMenu';
-import { getStyles } from '../../../utils/utils.styles';
 import { prometheusResourceToKubernetesResourceInfo } from '../../../utils/utils.resource';
+import { getStyles } from '../../../utils/utils.styles';
 
-export const TableKubernetesResource = ({ resource }: { resource: string }) => {
+export function TableKubernetesResource({ resource }: { resource: string }) {
   const styles = useStyles2(getStyles);
   const info = prometheusResourceToKubernetesResourceInfo(resource);
 
@@ -32,9 +32,9 @@ export const TableKubernetesResource = ({ resource }: { resource: string }) => {
       </div>
     </>
   );
-};
+}
 
-const TableKubernetesResourceInternal = ({
+function TableKubernetesResourceInternal({
   title,
   resourceId,
   parameterName,
@@ -44,7 +44,7 @@ const TableKubernetesResourceInternal = ({
   resourceId: string;
   parameterName: string;
   parameterValue: string;
-}) => {
+}) {
   const dataProvider = useQueryRunner({
     datasource: {
       type: datasourcePluginJson.id,
@@ -72,4 +72,4 @@ const TableKubernetesResourceInternal = ({
   return (
     <VizPanel title={title} menu={menu} viz={viz} dataProvider={dataProvider} />
   );
-};
+}

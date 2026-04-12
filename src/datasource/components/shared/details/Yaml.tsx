@@ -1,8 +1,8 @@
-import React from 'react';
-import { CodeEditor, Stack, useStyles2 } from '@grafana/ui';
-import YAML from 'yaml';
-import AutoSizer from 'react-virtualized-auto-sizer';
 import { css } from '@emotion/css';
+import { CodeEditor, Stack, useStyles2 } from '@grafana/ui';
+import React from 'react';
+import AutoSizer from 'react-virtualized-auto-sizer';
+import YAML from 'yaml';
 
 interface Props {
   value: any;

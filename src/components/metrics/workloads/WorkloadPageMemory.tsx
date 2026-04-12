@@ -1,13 +1,13 @@
-import React from 'react';
-import { Stack, useStyles2 } from '@grafana/ui';
 import { DataLayerControl, VariableControl } from '@grafana/scenes-react';
+import { Stack, useStyles2 } from '@grafana/ui';
+import React from 'react';
 
 import { getStyles } from '../../../utils/utils.styles';
 import { queries } from '../queries';
+import { TableMemoryOrCPUUsage } from '../shared/TableMemoryOrCPUUsage';
 import { TimeSeriesMemoryOrCPU } from '../shared/TimeSeriesMemoryOrCPU';
 import { TimeSeriesMemoryOrCPUDistribution } from '../shared/TimeSeriesMemoryOrCPUDistribution';
 import { TimeSeriesMemoryOrCPUEfficiency } from '../shared/TimeSeriesMemoryOrCPUEfficiency';
-import { TableMemoryOrCPUUsage } from '../shared/TableMemoryOrCPUUsage';
 
 export function WorkloadPageMemory() {
   const styles = useStyles2(getStyles);

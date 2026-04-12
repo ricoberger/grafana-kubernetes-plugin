@@ -1,5 +1,3 @@
-import { from, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 import {
   CustomVariableSupport,
   DataQueryRequest,
@@ -7,6 +5,8 @@ import {
   ScopedVars,
   TimeRange,
 } from '@grafana/data';
+import { from, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import { VariableQueryEditor } from './components/variablequeryeditor/VariableQueryEditor';
 import { DataSource } from './datasource';

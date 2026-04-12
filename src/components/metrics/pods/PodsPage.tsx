@@ -1,24 +1,24 @@
-import React from 'react';
 import { VariableHide, VariableRefresh, VariableSort } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
-import { Stack, useStyles2 } from '@grafana/ui';
 import {
-  SceneContextProvider,
+  CustomVariable,
   DataSourceVariable,
   QueryVariable,
-  VariableControl,
-  TimeRangePicker,
   RefreshPicker,
-  CustomVariable,
+  SceneContextProvider,
+  TimeRangePicker,
+  VariableControl,
 } from '@grafana/scenes-react';
+import { Stack, useStyles2 } from '@grafana/ui';
+import React from 'react';
 
 import datasourcePluginJson from '../../../datasource/plugin.json';
-import pluginJson from '../../../plugin.json';
 import resourcesImg from '../../../img/logo.svg';
+import pluginJson from '../../../plugin.json';
 import { getStyles } from '../../../utils/utils.styles';
+import { queries, variableQuery } from '../queries';
 import { LegendResourceUsage } from '../shared/LegendResourceUsage';
 import { TableResourceUsage } from '../shared/TableResourceUsage';
-import { queries, variableQuery } from '../queries';
 
 export function PodsPage() {
   const styles = useStyles2(getStyles);

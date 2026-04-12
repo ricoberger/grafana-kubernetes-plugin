@@ -1,28 +1,26 @@
-import React from 'react';
 import { VariableHide, VariableRefresh } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
-import { Card, LinkButton, Stack, useStyles2 } from '@grafana/ui';
 import {
-  SceneContextProvider,
+  CustomVariable,
   DataSourceVariable,
   QueryVariable,
-  VariableControl,
-  TimeRangePicker,
   RefreshPicker,
-  CustomVariable,
+  SceneContextProvider,
+  TimeRangePicker,
+  VariableControl,
 } from '@grafana/scenes-react';
+import { Card, LinkButton, Stack, useStyles2 } from '@grafana/ui';
+import React from 'react';
 
 import { ROUTES } from '../../constants';
-import resourcesImg from '../../img/logo.svg';
+import datasourcePluginJson from '../../datasource/plugin.json';
 import helmImg from '../../img/helm.svg';
-import fluxImg from '../../img/flux.svg';
-import certmanagerImg from '../../img/cert-manager.svg';
+import resourcesImg from '../../img/logo.svg';
 import { prefixRoute } from '../../utils/utils.routing';
 import { getStyles } from '../../utils/utils.styles';
-import datasourcePluginJson from '../../datasource/plugin.json';
+import { queries } from '../metrics/queries';
 import { StatWithFixedColorAndLink } from '../metrics/shared/StatWithFixedColorAndLink';
 import { TimeSeriesMemoryOrCPU } from '../metrics/shared/TimeSeriesMemoryOrCPU';
-import { queries } from '../metrics/queries';
 
 interface Item {
   route: ROUTES;
@@ -46,20 +44,6 @@ const items: Item[] = [
     image: helmImg,
     description: 'Manage your Helm releases.',
     link: 'https://helm.sh',
-  },
-  {
-    route: ROUTES.Flux,
-    title: 'Flux',
-    image: fluxImg,
-    description: 'Manage your Flux resources.',
-    link: 'https://fluxcd.io',
-  },
-  {
-    route: ROUTES.CertManager,
-    title: 'cert-manager',
-    image: certmanagerImg,
-    description: 'Manage your cert-manager resources.',
-    link: 'https://cert-manager.io',
   },
   {
     route: ROUTES.Kubeconfig,

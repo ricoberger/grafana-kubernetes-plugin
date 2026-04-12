@@ -1,15 +1,15 @@
-import React from 'react';
+import { css } from '@emotion/css';
 import { DataSourceSettings, GrafanaTheme2 } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
-import { Alert, Stack, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { Alert, LoadingPlaceholder, Stack, useStyles2 } from '@grafana/ui';
+import React from 'react';
 import { useAsync } from 'react-use';
 
 import datasourcePluginJson from '../../datasource/plugin.json';
-import { Datasource } from './Datasource';
 import resourcesImg from '../../img/logo.svg';
+import { Datasource } from './Datasource';
 
-export const KubeconfigPage = () => {
+export function KubeconfigPage() {
   const styles = useStyles2((theme: GrafanaTheme2) => {
     return {
       title: {
@@ -63,4 +63,4 @@ export const KubeconfigPage = () => {
       )}
     </PluginPage>
   );
-};
+}

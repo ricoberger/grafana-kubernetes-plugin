@@ -1,43 +1,43 @@
 /**
  * `formatTime` formats an given `time` in a uniform way accross the UI.
  */
-export const formatTime = (time: Date): string => {
+export function formatTime(time: Date): string {
   return `${time.getFullYear()}-${('0' + (time.getMonth() + 1)).slice(-2)}-${('0' + time.getDate()).slice(-2)} ${(
     '0' + time.getHours()
   ).slice(
     -2,
   )}:${('0' + time.getMinutes()).slice(-2)}:${('0' + time.getSeconds()).slice(-2)}`;
-};
+}
 
 /**
  * `formatTimestamp` formats an given `timestamp` in a uniform way accross the
  * UI. It creates a new date from the provided timestamp and calls the
  * `formatTime` function.
  */
-export const formatTimestamp = (timestamp: number): string => {
+export function formatTimestamp(timestamp: number): string {
   const d = new Date(timestamp);
   return formatTime(d);
-};
+}
 
 /**
  * `formatTimeString` formats an given `time` in a uniform way accross the UI.
  * It creates a new date from the provided time string and calls the
  * `formatTime` function.
  */
-export const formatTimeString = (time: string): string => {
+export function formatTimeString(time: string): string {
   return formatTime(new Date(time));
-};
+}
 
 /**
  * `timeDifference` calculates the difference of two given timestamps and
  * returns a human readable string for the difference. It is used to get the
  * same style for the age of resources like it is displayed by kubectl.
  */
-export const timeDifference = (
+export function timeDifference(
   current: number,
   previous: number,
   long?: boolean,
-): string => {
+): string {
   const msPerMinute = 60 * 1000;
   const msPerHour = msPerMinute * 60;
   const msPerDay = msPerHour * 24;
@@ -56,4 +56,4 @@ export const timeDifference = (
   } else {
     return Math.round(elapsed / msPerYear) + (long ? ' years' : 'y');
   }
-};
+}
