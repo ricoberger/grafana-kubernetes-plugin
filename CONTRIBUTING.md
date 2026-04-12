@@ -91,20 +91,7 @@ You'll need to have the following tools set up:
    npm run server
    ```
 
-8. Run the E2E tests (using Playwright)
-
-   ```bash
-   # Install E2E test dependencies
-   npm exec playwright install chromium
-
-   # Spins up a Grafana instance first that we tests against
-   npm run server
-
-   # Starts the tests
-   npm run e2e
-   ```
-
-9. Run the linter
+8. Run the linter
 
    ```bash
    npm run lint
