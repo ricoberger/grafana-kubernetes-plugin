@@ -8,17 +8,16 @@ import { HelmPage } from './helm/HelmPage';
 import { HomePage } from './home/HomePage';
 import { KubeconfigPage } from './kubeconfig/KubeconfigPage';
 import { KubectlPage } from './kubectl/KubectlPage';
-import { MetricsPage } from './metrics/metrics/MetricsPage';
-import { NamespacePage } from './metrics/namespaces/NamespacePage';
-import { NamespacesPage } from './metrics/namespaces/NamespacesPage';
-import { NodePage } from './metrics/nodes/NodePage';
-import { NodesPage } from './metrics/nodes/NodesPage';
-import { PersistentVolumeClaimPage } from './metrics/persistentcolumeclaims/PersistentVolumeClaimPage';
-import { PersistentVolumeClaimsPage } from './metrics/persistentcolumeclaims/PersistentVolumeClaimsPage';
-import { PodPage } from './metrics/pods/PodPage';
-import { PodsPage } from './metrics/pods/PodsPage';
-import { WorkloadPage } from './metrics/workloads/WorkloadPage';
-import { WorkloadsPage } from './metrics/workloads/WorkloadsPage';
+import { NamespacePage } from './namespaces/NamespacePage';
+import { NamespacesPage } from './namespaces/NamespacesPage';
+import { NodePage } from './nodes/NodePage';
+import { NodesPage } from './nodes/NodesPage';
+import { PersistentVolumeClaimPage } from './persistentcolumeclaims/PersistentVolumeClaimPage';
+import { PersistentVolumeClaimsPage } from './persistentcolumeclaims/PersistentVolumeClaimsPage';
+import { PodPage } from './pods/PodPage';
+import { PodsPage } from './pods/PodsPage';
+import { WorkloadPage } from './workloads/WorkloadPage';
+import { WorkloadsPage } from './workloads/WorkloadsPage';
 import { ResourcesPage } from './resources/ResourcesPage';
 
 function App(props: AppRootProps) {
@@ -26,7 +25,6 @@ function App(props: AppRootProps) {
     <PluginPropsContext.Provider value={props}>
       <Routes>
         <Route path={ROUTES.Home} element={<HomePage />} />
-        <Route path={ROUTES.Metrics} element={<MetricsPage />} />
         <Route path={ROUTES.MetricsNodes} element={<NodesPage />} />
         <Route path={`${ROUTES.MetricsNodes}/:node`} element={<NodePage />} />
         <Route path={ROUTES.MetricsNamespaces} element={<NamespacesPage />} />

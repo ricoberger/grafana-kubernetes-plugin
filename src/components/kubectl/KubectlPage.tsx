@@ -4,7 +4,9 @@ import { Alert, LoadingPlaceholder, Stack, useStyles2 } from '@grafana/ui';
 import React from 'react';
 import { useAsync } from 'react-use';
 
+import { ROUTES } from '../../constants';
 import resourcesImg from '../../img/logo.svg';
+import { prefixRoute } from '../../utils/utils.routing';
 
 export function KubectlPage() {
   const styles = useStyles2(() => {
@@ -46,6 +48,13 @@ export function KubectlPage() {
 
   return (
     <PluginPage
+      pageNav={{
+        text: 'kubectl',
+        parentItem: {
+          text: 'Kubernetes',
+          url: prefixRoute(ROUTES.Home),
+        },
+      }}
       renderTitle={() => (
         <Stack gap={0} alignItems="center" direction="row">
           <img

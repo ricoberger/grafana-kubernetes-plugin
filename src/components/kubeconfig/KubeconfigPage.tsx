@@ -5,8 +5,10 @@ import { Alert, LoadingPlaceholder, Stack, useStyles2 } from '@grafana/ui';
 import React from 'react';
 import { useAsync } from 'react-use';
 
+import { ROUTES } from '../../constants';
 import datasourcePluginJson from '../../datasource/plugin.json';
 import resourcesImg from '../../img/logo.svg';
+import { prefixRoute } from '../../utils/utils.routing';
 import { Datasource } from './Datasource';
 
 export function KubeconfigPage() {
@@ -38,6 +40,13 @@ export function KubeconfigPage() {
 
   return (
     <PluginPage
+      pageNav={{
+        text: 'Kubeconfig',
+        parentItem: {
+          text: 'Kubernetes',
+          url: prefixRoute(ROUTES.Home),
+        },
+      }}
       renderTitle={() => (
         <Stack gap={0} alignItems="center" direction="row">
           <img
