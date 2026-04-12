@@ -86,7 +86,8 @@ func NewClient(ctx context.Context, impersonateUser, impersonateGroups bool, use
 			BasePath:  strings.TrimLeft(parsedGrafanaAppUrl.Path+"/api", "/"),
 			Schemes:   []string{parsedGrafanaAppUrl.Scheme},
 			BasicAuth: url.UserPassword(username, password),
-			OrgID:     pCtx.OrgID,
+			//nolint:staticcheck
+			OrgID: pCtx.OrgID,
 		}),
 		usersCache:           usersCache,
 		serviceAccountsCache: serviceAccountsCache,
