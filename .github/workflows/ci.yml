@@ -67,14 +67,14 @@ jobs:
 
       - name: Test Backend
         if: steps.check-for-backend.outputs.has-backend == 'true'
-        uses: magefile/mage-action@v3
+        uses: magefile/mage-action@v4
         with:
           version: latest
           args: coverage
 
       - name: Build Backend
         if: steps.check-for-backend.outputs.has-backend == 'true'
-        uses: magefile/mage-action@v3
+        uses: magefile/mage-action@v4
         with:
           version: latest
           args: buildAll

@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - name: Update Plugin
-        uses: grafana/plugin-actions/create-plugin-update@create-plugin-update/v2.0.1
+        uses: grafana/plugin-actions/create-plugin-update@create-plugin-update/v2.0.2
         with:
           # Make sure to save the token in your repository secrets as
           # `GH_GRAFANA_PAT_TOKEN`
