@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import { IconButton, Menu, WithContextMenu } from '@grafana/ui';
 import { DataFrame } from '@grafana/data';
+import { IconButton, Menu, WithContextMenu } from '@grafana/ui';
+import React, { useState } from 'react';
 
 import { Query } from '../../types/query';
-import { Renew } from './Renew';
-import { Details } from './Details';
-import { CRApprove } from './CRApprove';
-import { CRDeny } from './CRDeny';
 import { Delete } from '../kubernetes/Delete';
 import { Edit } from '../kubernetes/Edit';
+import { CRApprove } from './CRApprove';
+import { CRDeny } from './CRDeny';
+import { Details } from './Details';
+import { Renew } from './Renew';
 
 interface Props {
   query: Query;

@@ -1,6 +1,6 @@
-import React from 'react';
-import { InlineFieldRow } from '@grafana/ui';
 import { QueryEditorProps } from '@grafana/data';
+import { InlineFieldRow } from '@grafana/ui';
+import React from 'react';
 
 import { DataSource } from '../../datasource';
 import { Query } from '../../types/query';

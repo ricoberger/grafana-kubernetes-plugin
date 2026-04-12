@@ -1,34 +1,34 @@
-import React, { useState } from 'react';
+import { VizConfigBuilders } from '@grafana/scenes';
+import {
+  DataLayerControl,
+  useQueryRunner,
+  VariableControl,
+  VizPanel,
+} from '@grafana/scenes-react';
+import {
+  FieldColorModeId,
+  GraphDrawStyle,
+  StackingMode,
+} from '@grafana/schema';
 import {
   LegendDisplayMode,
   RadioButtonGroup,
   Stack,
   useStyles2,
 } from '@grafana/ui';
-import {
-  VariableControl,
-  useQueryRunner,
-  VizPanel,
-  DataLayerControl,
-} from '@grafana/scenes-react';
-import { VizConfigBuilders } from '@grafana/scenes';
-import {
-  FieldColorModeId,
-  GraphDrawStyle,
-  StackingMode,
-} from '@grafana/schema';
+import React, { useState } from 'react';
 
-import { getStyles } from '../../../utils/utils.styles';
-import { queries } from '../queries';
-import { TableResourceUsage } from '../shared/TableResourceUsage';
-import { LegendResourceUsage } from '../shared/LegendResourceUsage';
-import { TableKubernetesResource } from '../shared/TableKubernetesResource';
-import { TimeSeriesMemoryOrCPU } from '../shared/TimeSeriesMemoryOrCPU';
 import datasourcePluginJson from '../../../datasource/plugin.json';
 import { useVizPanelMenu } from '../../../hooks/useVizPanelMenu';
-import { TimeSeriesWorkloadStatus } from '../shared/TimeSeriesWorkloadStatus';
+import { getStyles } from '../../../utils/utils.styles';
+import { queries } from '../queries';
+import { LegendResourceUsage } from '../shared/LegendResourceUsage';
 import { RowCosts } from '../shared/RowCosts';
 import { TableCosts } from '../shared/TableCosts';
+import { TableKubernetesResource } from '../shared/TableKubernetesResource';
+import { TableResourceUsage } from '../shared/TableResourceUsage';
+import { TimeSeriesMemoryOrCPU } from '../shared/TimeSeriesMemoryOrCPU';
+import { TimeSeriesWorkloadStatus } from '../shared/TimeSeriesWorkloadStatus';
 
 interface Props {
   workloadType: string;

@@ -1,5 +1,5 @@
-import React from 'react';
 import { useStyles2 } from '@grafana/ui';
+import React from 'react';
 
 import { getStyles } from '../../../utils/utils.styles';
 import { StatCosts } from './StatCosts';

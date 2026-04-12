@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+import { css } from '@emotion/css';
+import { AppEvents, GrafanaTheme2 } from '@grafana/data';
+import { getAppEvents } from '@grafana/runtime';
 import {
   ConfirmModal,
   LoadingPlaceholder,
   Stack,
   useStyles2,
 } from '@grafana/ui';
-import { AppEvents, GrafanaTheme2 } from '@grafana/data';
-import { getAppEvents } from '@grafana/runtime';
-import { css } from '@emotion/css';
 import { V1Job } from '@kubernetes/client-node';
+import React, { useState } from 'react';
 
 import { getResourceManifest } from '../../../utils/utils.resource';
 

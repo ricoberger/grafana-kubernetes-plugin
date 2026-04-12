@@ -1,11 +1,11 @@
-import React from 'react';
-import { Drawer } from '@grafana/ui';
 import { VizConfigBuilders } from '@grafana/scenes';
 import {
   SceneContextProvider,
   useQueryRunner,
   VizPanel,
 } from '@grafana/scenes-react';
+import { Drawer } from '@grafana/ui';
+import React from 'react';
 
 import datasourcePluginJson from '../../../plugin.json';
 

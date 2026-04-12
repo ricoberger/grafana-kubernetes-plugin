@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import { css } from '@emotion/css';
 import { Badge, useStyles2 } from '@grafana/ui';
 import { V1OwnerReference } from '@kubernetes/client-node';
-import { css } from '@emotion/css';
+import React, { useState } from 'react';
 
+import { getResourceId } from '../../../../utils/utils.resource';
+import { formatTimeString, timeDifference } from '../../../../utils/utils.time';
+import { KubernetesManifest } from '../../../types/kubernetes';
 import {
   DefinitionItem,
   DefinitionList,
 } from '../definitionlist/DefinitionList';
-import { formatTimeString, timeDifference } from '../../../../utils/utils.time';
-import { KubernetesManifest } from '../../../types/kubernetes';
-import { getResourceId } from '../../../../utils/utils.resource';
 import { Resources } from './Resources';
 
 interface Props {

@@ -1,14 +1,14 @@
 import {
+  CoreApp,
   DataFrame,
   DataQueryRequest,
   DataQueryResponse,
   DataSourceInstanceSettings,
-  CoreApp,
-  ScopedVars,
-  MetricFindValue,
   LegacyMetricFindQueryOptions,
   LiveChannelScope,
   LoadingState,
+  MetricFindValue,
+  ScopedVars,
 } from '@grafana/data';
 import {
   DataSourceWithBackend,
@@ -17,17 +17,15 @@ import {
 } from '@grafana/runtime';
 import { lastValueFrom, map, merge, Observable, of } from 'rxjs';
 
-import { Query, DEFAULT_QUERY } from './types/query';
+import datasourcePluginJson from './plugin.json';
+import { helmTransformation } from './transformations/helm';
+import {
+  kubernetesLogsTransformation,
+  kubernetesResourcesTransformation,
+} from './transformations/kubernetes';
+import { DEFAULT_QUERY, Query } from './types/query';
 import { DataSourceOptions } from './types/settings';
 import { VariableSupport } from './variablesupport';
-import {
-  kubernetesResourcesTransformation,
-  kubernetesLogsTransformation,
-} from './transformations/kubernetes';
-import { helmTransformation } from './transformations/helm';
-import { fluxResourcesTransformation } from './transformations/flux';
-import { certManagerResourcesTransformation } from './transformations/certmanager';
-import datasourcePluginJson from './plugin.json';
 
 export class DataSource extends DataSourceWithBackend<
   Query,
@@ -164,22 +162,6 @@ export class DataSource extends DataSourceWithBackend<
                 query?.queryType === 'helm-release-history')
             ) {
               return helmTransformation(
-                this.applyTemplateVariables(query, request.scopedVars),
-                frame,
-              );
-            } else if (
-              request.app !== CoreApp.Explore &&
-              query?.queryType === 'flux-resources'
-            ) {
-              return fluxResourcesTransformation(
-                this.applyTemplateVariables(query, request.scopedVars),
-                frame,
-              );
-            } else if (
-              request.app !== CoreApp.Explore &&
-              query?.queryType === 'certmanager-resources'
-            ) {
-              return certManagerResourcesTransformation(
                 this.applyTemplateVariables(query, request.scopedVars),
                 frame,
               );
@@ -379,28 +361,6 @@ export class DataSource extends DataSourceWithBackend<
     if (
       query.queryType === 'helm-release-history' &&
       (!query.namespace || !query.name)
-    ) {
-      return false;
-    }
-
-    /**
-     * If the query type is "flux-resources" need a resource and namespace to
-     * run the query.
-     */
-    if (
-      query.queryType === 'flux-resources' &&
-      (!query.resourceId || !query.namespace)
-    ) {
-      return false;
-    }
-
-    /**
-     * If the query type is "certmanager-resources" need a resource and
-     * namespace to run the query.
-     */
-    if (
-      query.queryType === 'certmanager-resources' &&
-      (!query.resourceId || !query.namespace)
     ) {
       return false;
     }

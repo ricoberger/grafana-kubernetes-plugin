@@ -1,10 +1,10 @@
-import React from 'react';
-import { V1StatefulSet } from '@kubernetes/client-node';
 import { Badge } from '@grafana/ui';
+import { V1StatefulSet } from '@kubernetes/client-node';
+import React from 'react';
 
 import {
-  DefinitionList,
   DefinitionItem,
+  DefinitionList,
 } from '../../shared/definitionlist/DefinitionList';
 import { Selector } from '../../shared/details/Selector';
 

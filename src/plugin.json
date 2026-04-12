@@ -113,20 +113,6 @@
     },
     {
       "type": "page",
-      "name": "Flux",
-      "path": "/a/%PLUGIN_ID%/flux",
-      "addToNav": true,
-      "defaultNav": false
-    },
-    {
-      "type": "page",
-      "name": "cert-manager",
-      "path": "/a/%PLUGIN_ID%/cert-manager",
-      "addToNav": true,
-      "defaultNav": false
-    },
-    {
-      "type": "page",
       "name": "Kubeconfig",
       "path": "/a/%PLUGIN_ID%/kubeconfig",
       "addToNav": true,

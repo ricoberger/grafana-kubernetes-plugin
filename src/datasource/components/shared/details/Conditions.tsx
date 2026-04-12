@@ -1,6 +1,6 @@
-import React from 'react';
 import { InteractiveTable } from '@grafana/ui';
 import { V1Condition } from '@kubernetes/client-node';
+import React from 'react';
 
 import { formatTimeString } from '../../../../utils/utils.time';
 import { DefinitionList } from '../definitionlist/DefinitionList';

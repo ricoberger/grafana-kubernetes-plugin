@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
-import { Badge, InteractiveTable, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { Badge, InteractiveTable, useStyles2 } from '@grafana/ui';
+import React, { useState } from 'react';
 
+import { getResourceId } from '../../../../utils/utils.resource';
+import { formatTimeString } from '../../../../utils/utils.time';
+import { KubernetesManifest } from '../../../types/kubernetes';
 import {
-  DefinitionList,
   DefinitionItem,
+  DefinitionList,
 } from '../../shared/definitionlist/DefinitionList';
 import { Resources } from '../../shared/details/Resources';
-import { KubernetesManifest } from '../../../types/kubernetes';
 import { fluxKindToResourceId } from '../utils';
-import { formatTimeString } from '../../../../utils/utils.time';
-import { getResourceId } from '../../../../utils/utils.resource';
 
 interface Props {
   datasource?: string;

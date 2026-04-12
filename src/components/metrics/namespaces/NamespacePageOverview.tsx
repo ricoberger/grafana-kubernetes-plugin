@@ -1,22 +1,22 @@
-import React, { useState } from 'react';
-import { RadioButtonGroup, Stack, useStyles2 } from '@grafana/ui';
+import { VizConfigBuilders } from '@grafana/scenes';
 import {
-  VariableControl,
   useQueryRunner,
+  VariableControl,
   VizPanel,
 } from '@grafana/scenes-react';
-import { VizConfigBuilders } from '@grafana/scenes';
+import { RadioButtonGroup, Stack, useStyles2 } from '@grafana/ui';
+import React, { useState } from 'react';
 
-import { getStyles } from '../../../utils/utils.styles';
-import { queries } from '../queries';
-import { TableResourceUsage } from '../shared/TableResourceUsage';
-import { LegendResourceUsage } from '../shared/LegendResourceUsage';
-import { TableKubernetesResource } from '../shared/TableKubernetesResource';
-import { TimeSeriesMemoryOrCPU } from '../shared/TimeSeriesMemoryOrCPU';
 import datasourcePluginJson from '../../../datasource/plugin.json';
 import { useVizPanelMenu } from '../../../hooks/useVizPanelMenu';
+import { getStyles } from '../../../utils/utils.styles';
+import { queries } from '../queries';
+import { LegendResourceUsage } from '../shared/LegendResourceUsage';
 import { RowCosts } from '../shared/RowCosts';
 import { TableCosts } from '../shared/TableCosts';
+import { TableKubernetesResource } from '../shared/TableKubernetesResource';
+import { TableResourceUsage } from '../shared/TableResourceUsage';
+import { TimeSeriesMemoryOrCPU } from '../shared/TimeSeriesMemoryOrCPU';
 
 export function NamespacePageOverview() {
   const styles = useStyles2(getStyles);

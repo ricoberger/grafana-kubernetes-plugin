@@ -1,23 +1,23 @@
-import React from 'react';
+import { css } from '@emotion/css';
 import { GrafanaTheme2, VariableRefresh, VariableSort } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
-import { Stack, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
 import {
-  QueryVariable,
   DataSourceVariable,
-  SceneContextProvider,
+  QueryVariable,
   RefreshPicker,
+  SceneContextProvider,
   VariableControl,
 } from '@grafana/scenes-react';
+import { Stack, useStyles2 } from '@grafana/ui';
+import React from 'react';
 
 import datasourcePluginJson from '../../datasource/plugin.json';
-import helmImg from '../../img/helm.svg';
 import { DEFAULT_QUERIES } from '../../datasource/types/query';
+import helmImg from '../../img/helm.svg';
 import { HelmReleasesTable } from './HelmReleasesTable';
 
-export const HelmPage = () => {
-  const styles = useStyles2((theme: GrafanaTheme2) => {
+export function HelmPage() {
+  const styles = useStyles2(function (theme: GrafanaTheme2) {
     return {
       title: {
         image: css({
@@ -93,4 +93,4 @@ export const HelmPage = () => {
       </SceneContextProvider>
     </PluginPage>
   );
-};
+}

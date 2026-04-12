@@ -1,10 +1,10 @@
-import React, { ChangeEvent } from 'react';
-import { InlineField, InlineSwitch, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 import {
   DataSourcePluginOptionsEditorProps,
   GrafanaTheme2,
 } from '@grafana/data';
-import { css } from '@emotion/css';
+import { InlineField, InlineSwitch, useStyles2 } from '@grafana/ui';
+import React, { ChangeEvent } from 'react';
 
 import {
   DataSourceOptions,

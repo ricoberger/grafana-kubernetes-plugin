@@ -1,4 +1,4 @@
-import React from 'react';
+import { VizConfigBuilders } from '@grafana/scenes';
 import { useQueryRunner, VizPanel } from '@grafana/scenes-react';
 import {
   BigValueColorMode,
@@ -6,10 +6,10 @@ import {
   BigValueTextMode,
   FieldColorModeId,
 } from '@grafana/schema';
-import { VizConfigBuilders } from '@grafana/scenes';
+import React from 'react';
 
-import { prefixRoute } from '../../../utils/utils.routing';
 import { useVizPanelMenu } from '../../../hooks/useVizPanelMenu';
+import { prefixRoute } from '../../../utils/utils.routing';
 
 interface Props {
   title: string;

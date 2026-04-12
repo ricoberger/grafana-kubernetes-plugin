@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { css } from '@emotion/css';
 import {
   CodeEditor,
   Combobox,
@@ -6,8 +6,8 @@ import {
   Stack,
   useStyles2,
 } from '@grafana/ui';
+import React, { useState } from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
-import { css } from '@emotion/css';
 
 import { Release } from '../../types/helm';
 

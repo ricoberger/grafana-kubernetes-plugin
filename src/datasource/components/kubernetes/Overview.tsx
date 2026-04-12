@@ -1,4 +1,4 @@
-import React from 'react';
+import { ScrollContainer } from '@grafana/ui';
 import {
   V1CronJob,
   V1DaemonSet,
@@ -7,18 +7,18 @@ import {
   V1Pod,
   V1StatefulSet,
 } from '@kubernetes/client-node';
+import React from 'react';
 
-import { DefinitionLists } from '../shared/definitionlist/DefinitionList';
 import { KubernetesManifest } from '../../types/kubernetes';
-import { Metadata } from '../shared/details/Metadata';
+import { DefinitionLists } from '../shared/definitionlist/DefinitionList';
 import { Conditions } from '../shared/details/Conditions';
+import { Metadata } from '../shared/details/Metadata';
 import { CronJob } from './overview/CronJob';
 import { DaemonSet } from './overview/DaemonSet';
-import { StatefulSet } from './overview/StatefulSet';
-import { Pod } from './overview/Pod';
-import { Job } from './overview/Job';
 import { Deployment } from './overview/Deployment';
-import { ScrollContainer } from '@grafana/ui';
+import { Job } from './overview/Job';
+import { Pod } from './overview/Pod';
+import { StatefulSet } from './overview/StatefulSet';
 
 interface Props {
   datasource?: string;

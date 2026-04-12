@@ -1,33 +1,33 @@
-import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
 import { VariableHide, VariableRefresh } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
-import { Alert, Badge, RadioButtonGroup, Stack, useStyles2 } from '@grafana/ui';
+import { VizConfigBuilders } from '@grafana/scenes';
 import {
-  SceneContextProvider,
+  CustomVariable,
   DataSourceVariable,
   QueryVariable,
-  VariableControl,
-  TimeRangePicker,
   RefreshPicker,
-  CustomVariable,
+  SceneContextProvider,
+  TimeRangePicker,
   useQueryRunner,
+  VariableControl,
   VizPanel,
 } from '@grafana/scenes-react';
-import { VizConfigBuilders } from '@grafana/scenes';
+import { Alert, Badge, RadioButtonGroup, Stack, useStyles2 } from '@grafana/ui';
+import React, { useState } from 'react';
+import { useParams } from 'react-router-dom';
 
-import pluginJson from '../../../plugin.json';
+import { ROUTES } from '../../../constants';
 import datasourcePluginJson from '../../../datasource/plugin.json';
+import { useVizPanelMenu } from '../../../hooks/useVizPanelMenu';
 import resourcesImg from '../../../img/logo.svg';
+import pluginJson from '../../../plugin.json';
+import { prefixRoute } from '../../../utils/utils.routing';
 import { getStyles } from '../../../utils/utils.styles';
 import { queries, variableQuery } from '../queries';
-import { prefixRoute } from '../../../utils/utils.routing';
-import { ROUTES } from '../../../constants';
-import { TimeSeriesMemoryOrCPU } from '../shared/TimeSeriesMemoryOrCPU';
-import { TimeSeriesMemoryOrCPUDistribution } from '../shared/TimeSeriesMemoryOrCPUDistribution';
 import { TableKubernetesResource } from '../shared/TableKubernetesResource';
 import { TableResourceUsage } from '../shared/TableResourceUsage';
-import { useVizPanelMenu } from '../../../hooks/useVizPanelMenu';
+import { TimeSeriesMemoryOrCPU } from '../shared/TimeSeriesMemoryOrCPU';
+import { TimeSeriesMemoryOrCPUDistribution } from '../shared/TimeSeriesMemoryOrCPUDistribution';
 
 export function PersistentVolumeClaimPage() {
   const styles = useStyles2(getStyles);

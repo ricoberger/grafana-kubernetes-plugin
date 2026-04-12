@@ -1,6 +1,6 @@
-import React, { ReactNode } from 'react';
-import { PanelChrome, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { PanelChrome, Stack, Text, useStyles2 } from '@grafana/ui';
+import React, { ReactNode } from 'react';
 
 export function DefinitionItem({
   label,

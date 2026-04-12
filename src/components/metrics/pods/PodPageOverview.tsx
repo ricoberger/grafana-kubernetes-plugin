@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import { RadioButtonGroup, Stack, useStyles2 } from '@grafana/ui';
 import { DataLayerControl, VariableControl } from '@grafana/scenes-react';
+import { RadioButtonGroup, Stack, useStyles2 } from '@grafana/ui';
+import React, { useState } from 'react';
 
 import { getStyles } from '../../../utils/utils.styles';
 import { queries } from '../queries';
-import { TableResourceUsage } from '../shared/TableResourceUsage';
 import { LegendResourceUsage } from '../shared/LegendResourceUsage';
-import { TableKubernetesResource } from '../shared/TableKubernetesResource';
-import { TimeSeriesMemoryOrCPU } from '../shared/TimeSeriesMemoryOrCPU';
 import { RowCosts } from '../shared/RowCosts';
+import { TableKubernetesResource } from '../shared/TableKubernetesResource';
+import { TableResourceUsage } from '../shared/TableResourceUsage';
+import { TimeSeriesMemoryOrCPU } from '../shared/TimeSeriesMemoryOrCPU';
 
 export function PodPageOverview() {
   const styles = useStyles2(getStyles);

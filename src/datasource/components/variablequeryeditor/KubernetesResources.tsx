@@ -1,12 +1,12 @@
-import React, { ChangeEvent } from 'react';
 import { QueryEditorProps } from '@grafana/data';
 import {
-  InlineFieldRow,
   InlineField,
-  Input,
+  InlineFieldRow,
   InlineSwitch,
+  Input,
   RadioButtonGroup,
 } from '@grafana/ui';
+import React, { ChangeEvent } from 'react';
 
 import { DataSource } from '../../datasource';
 import { Query } from '../../types/query';

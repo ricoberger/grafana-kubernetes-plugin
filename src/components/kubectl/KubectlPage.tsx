@@ -1,12 +1,12 @@
-import React from 'react';
-import { PluginPage } from '@grafana/runtime';
-import { Alert, Stack, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { PluginPage } from '@grafana/runtime';
+import { Alert, LoadingPlaceholder, Stack, useStyles2 } from '@grafana/ui';
+import React from 'react';
 import { useAsync } from 'react-use';
 
 import resourcesImg from '../../img/logo.svg';
 
-export const KubectlPage = () => {
+export function KubectlPage() {
   const styles = useStyles2(() => {
     return {
       title: {
@@ -69,4 +69,4 @@ export const KubectlPage = () => {
       )}
     </PluginPage>
   );
-};
+}

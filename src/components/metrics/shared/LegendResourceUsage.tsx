@@ -1,7 +1,7 @@
-import React from 'react';
+import { css } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Tooltip, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import React from 'react';
 
 export function LegendResourceUsage() {
   const styles = useStyles2((theme: GrafanaTheme2) => {

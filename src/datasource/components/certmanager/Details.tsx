@@ -1,21 +1,19 @@
-import React, { useState } from 'react';
-import { Alert, Drawer, LoadingPlaceholder, Tab, TabsBar } from '@grafana/ui';
-import { useAsync } from 'react-use';
-import { llm } from '@grafana/llm';
 import { initPluginTranslations } from '@grafana/i18n';
 import { loadResources } from '@grafana/scenes';
+import { Alert, Drawer, LoadingPlaceholder, Tab, TabsBar } from '@grafana/ui';
+import React, { useState } from 'react';
+import { useAsync } from 'react-use';
 
 import { getResourceManifest } from '../../../utils/utils.resource';
+import datasourcePluginJson from '../../plugin.json';
 import { KubernetesManifest } from '../../types/kubernetes';
-import { Yaml } from '../shared/details/Yaml';
 import { Events } from '../shared/details/Events';
-import { Overview } from './Overview';
-import { AI } from './AI';
+import { Yaml } from '../shared/details/Yaml';
 import { CertificateRequests } from './CertificateRequests';
 import { IssuerRefs } from './IssuerRefs';
-import pluginJson from '../../plugin.json';
+import { Overview } from './Overview';
 
-await initPluginTranslations(pluginJson.id, [loadResources]);
+await initPluginTranslations(datasourcePluginJson.id, [loadResources]);
 
 interface Props {
   datasource?: string;
@@ -44,14 +42,6 @@ export function Details({
 
     return manifest;
   }, [datasource, resourceId, namespace, name]);
-
-  const ai = useAsync(async (): Promise<boolean> => {
-    const enabled = await llm.enabled();
-    if (!enabled) {
-      return false;
-    }
-    return true;
-  }, []);
 
   return (
     <Drawer
@@ -133,16 +123,6 @@ export function Details({
                   />
                 </>
               )}
-            {ai.value && (
-              <Tab
-                label="AI"
-                active={activeTab === 'ai'}
-                onChangeTab={(ev) => {
-                  ev?.preventDefault();
-                  setActiveTab('ai');
-                }}
-              />
-            )}
           </TabsBar>
         )
       }
@@ -212,15 +192,6 @@ export function Details({
               namespace={namespace}
               name={name}
               title="Challenges"
-            />
-          )}
-
-          {activeTab === 'ai' && (
-            <AI
-              datasource={datasource}
-              resourceId={resourceId}
-              namespace={namespace}
-              name={name}
             />
           )}
         </>

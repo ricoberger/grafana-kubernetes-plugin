@@ -1,5 +1,3 @@
-import React from 'react';
-
 import {
   Field,
   IconButton,
@@ -7,6 +5,7 @@ import {
   InlineFieldRow,
   Input,
 } from '@grafana/ui';
+import React from 'react';
 
 interface Props {
   redirectUrls: string[];

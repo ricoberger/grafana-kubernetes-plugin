@@ -1,23 +1,23 @@
-import React from 'react';
 import { VariableHide, VariableRefresh, VariableSort } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
-import { Stack, useStyles2 } from '@grafana/ui';
 import {
-  SceneContextProvider,
   DataSourceVariable,
   QueryVariable,
-  VariableControl,
-  TimeRangePicker,
   RefreshPicker,
+  SceneContextProvider,
+  TimeRangePicker,
+  VariableControl,
 } from '@grafana/scenes-react';
+import { Stack, useStyles2 } from '@grafana/ui';
+import React from 'react';
 
-import pluginJson from '../../../plugin.json';
 import datasourcePluginJson from '../../../datasource/plugin.json';
 import resourcesImg from '../../../img/logo.svg';
+import pluginJson from '../../../plugin.json';
 import { getStyles } from '../../../utils/utils.styles';
 import { queries, variableQuery } from '../queries';
-import { PersistentVolumeClaimsStat } from './PersistentVolumeClaimsStat';
 import { TablePersistentVolumeClaimsUsage } from '../shared/TablePersistentVolumeClaimsUsage';
+import { PersistentVolumeClaimsStat } from './PersistentVolumeClaimsStat';
 
 export function PersistentVolumeClaimsPage() {
   const styles = useStyles2(getStyles);

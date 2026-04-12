@@ -1,17 +1,17 @@
+import { css } from '@emotion/css';
+import { Badge, ScrollContainer, useStyles2 } from '@grafana/ui';
 import React, { useMemo, useState } from 'react';
 import YAML from 'yaml';
-import { Badge, ScrollContainer, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
 
+import { getResourceId } from '../../../utils/utils.resource';
+import { formatTimeString } from '../../../utils/utils.time';
 import { Release } from '../../types/helm';
+import { KubernetesManifest } from '../../types/kubernetes';
 import {
   DefinitionItem,
   DefinitionList,
   DefinitionLists,
 } from '../shared/definitionlist/DefinitionList';
-import { formatTimeString } from '../../../utils/utils.time';
-import { KubernetesManifest } from '../../types/kubernetes';
-import { getResourceId } from '../../../utils/utils.resource';
 import { Resources } from '../shared/details/Resources';
 
 interface Props {

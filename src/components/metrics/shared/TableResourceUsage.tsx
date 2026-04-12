@@ -1,15 +1,15 @@
-import React from 'react';
 import { DataTransformerID, MappingType, ThresholdsMode } from '@grafana/data';
+import { SceneDataQuery, VizConfigBuilders } from '@grafana/scenes';
 import {
   useDataTransformer,
   useQueryRunner,
   VizPanel,
 } from '@grafana/scenes-react';
-import { SceneDataQuery, VizConfigBuilders } from '@grafana/scenes';
 import { TableCellDisplayMode } from '@grafana/schema';
+import React from 'react';
 
-import { useVizPanelMenu } from '../../../hooks/useVizPanelMenu';
 import { ROUTES } from '../../../constants';
+import { useVizPanelMenu } from '../../../hooks/useVizPanelMenu';
 import { prefixRoute } from '../../../utils/utils.routing';
 
 interface Props {

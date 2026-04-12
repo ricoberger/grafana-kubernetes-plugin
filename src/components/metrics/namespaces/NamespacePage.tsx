@@ -1,31 +1,31 @@
-import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
 import { VariableHide, VariableRefresh, VariableSort } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
-import { Alert, Badge, Stack, Tab, TabsBar, useStyles2 } from '@grafana/ui';
 import {
-  SceneContextProvider,
+  CustomVariable,
   DataSourceVariable,
   QueryVariable,
-  TimeRangePicker,
   RefreshPicker,
-  CustomVariable,
+  SceneContextProvider,
+  TimeRangePicker,
 } from '@grafana/scenes-react';
+import { Alert, Badge, Stack, Tab, TabsBar, useStyles2 } from '@grafana/ui';
+import React, { useState } from 'react';
+import { useParams } from 'react-router-dom';
 
-import pluginJson from '../../../plugin.json';
-import resourcesImg from '../../../img/logo.svg';
-import { getStyles } from '../../../utils/utils.styles';
+import { ROUTES } from '../../../constants';
 import datasourcePluginJson from '../../../datasource/plugin.json';
+import resourcesImg from '../../../img/logo.svg';
+import pluginJson from '../../../plugin.json';
+import { prefixRoute } from '../../../utils/utils.routing';
+import { getStyles } from '../../../utils/utils.styles';
 import { queries, variableQuery } from '../queries';
-import { NamespacePageOverview } from './NamespacePageOverview';
+import { TabLogs } from '../shared/TabLogs';
+import { TabLogsContent } from '../shared/TabLogsContent';
 import { NamespacePageCPU } from './NamespacePageCPU';
 import { NamespacePageMemory } from './NamespacePageMemory';
 import { NamespacePageNetwork } from './NamespacePageNetwork';
+import { NamespacePageOverview } from './NamespacePageOverview';
 import { NamespacePageStorage } from './NamespacePageStorage';
-import { ROUTES } from '../../../constants';
-import { prefixRoute } from '../../../utils/utils.routing';
-import { TabLogsContent } from '../shared/TabLogsContent';
-import { TabLogs } from '../shared/TabLogs';
 
 export function NamespacePage() {
   const styles = useStyles2(getStyles);

@@ -1,7 +1,7 @@
-import React from 'react';
+import { SceneDataQuery, VizConfigBuilders } from '@grafana/scenes';
 import { useQueryRunner, VizPanel } from '@grafana/scenes-react';
 import { LegendDisplayMode } from '@grafana/schema';
-import { SceneDataQuery, VizConfigBuilders } from '@grafana/scenes';
+import React from 'react';
 
 import { useVizPanelMenu } from '../../../hooks/useVizPanelMenu';
 

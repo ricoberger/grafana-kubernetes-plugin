@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { IconButton, Menu, WithContextMenu } from '@grafana/ui';
 import { DataFrame } from '@grafana/data';
+import { IconButton, Menu, WithContextMenu } from '@grafana/ui';
+import React, { useState } from 'react';
 
 import { Query } from '../../types/query';
 import { Details } from './Details';

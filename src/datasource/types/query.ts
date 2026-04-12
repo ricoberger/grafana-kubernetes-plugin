@@ -57,14 +57,6 @@ export const DEFAULT_QUERIES: Record<QueryType, Partial<Query>> = {
     namespace: 'default',
     name: '',
   },
-  'flux-resources': {
-    resourceId: 'kustomization.kustomize.toolkit.fluxcd.io',
-    namespace: 'default',
-  },
-  'certmanager-resources': {
-    resourceId: 'certificates.cert-manager.io',
-    namespace: 'default',
-  },
 };
 
 /**
@@ -83,9 +75,7 @@ export type QueryType =
   | 'kubernetes-resources'
   | 'kubernetes-logs'
   | 'helm-releases'
-  | 'helm-release-history'
-  | 'flux-resources'
-  | 'certmanager-resources';
+  | 'helm-release-history';
 
 /**
  * Query defines the query structure for the Kubernetes data source. Depending
@@ -99,8 +89,7 @@ export interface Query
   QueryModelKubernetesContainers,
   QueryModelKubernetesLogs,
   QueryModelHelmReleases,
-  QueryModelHelmReleaseHistory,
-  QueryModelFluxResources {
+  QueryModelHelmReleaseHistory {
   queryType: QueryType;
 }
 
@@ -143,14 +132,4 @@ export interface QueryModelHelmReleases {
 export interface QueryModelHelmReleaseHistory {
   namespace?: string;
   name?: string;
-}
-
-export interface QueryModelFluxResources {
-  resourceId?: string;
-  namespace?: string;
-}
-
-export interface QueryModelCertManagerResources {
-  resourceId?: string;
-  namespace?: string;
 }

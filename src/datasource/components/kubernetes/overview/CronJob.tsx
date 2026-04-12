@@ -1,12 +1,12 @@
-import React from 'react';
-import { V1CronJob } from '@kubernetes/client-node';
 import { Badge } from '@grafana/ui';
+import { V1CronJob } from '@kubernetes/client-node';
+import React from 'react';
 
-import {
-  DefinitionList,
-  DefinitionItem,
-} from '../../shared/definitionlist/DefinitionList';
 import { formatTime, timeDifference } from '../../../../utils/utils.time';
+import {
+  DefinitionItem,
+  DefinitionList,
+} from '../../shared/definitionlist/DefinitionList';
 
 interface Props {
   manifest: V1CronJob;

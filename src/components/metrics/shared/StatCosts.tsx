@@ -1,7 +1,7 @@
-import React from 'react';
 import { VizConfigBuilders } from '@grafana/scenes';
 import { useQueryRunner, VizPanel } from '@grafana/scenes-react';
 import { FieldColorModeId, MappingType } from '@grafana/schema';
+import React from 'react';
 
 import { useVizPanelMenu } from '../../../hooks/useVizPanelMenu';
 

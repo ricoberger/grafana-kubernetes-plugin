@@ -1,20 +1,18 @@
-import React, { useState } from 'react';
-import { Alert, Drawer, LoadingPlaceholder, Tab, TabsBar } from '@grafana/ui';
-import { useAsync } from 'react-use';
 import { initPluginTranslations } from '@grafana/i18n';
 import { loadResources } from '@grafana/scenes';
-import { llm } from '@grafana/llm';
+import { Alert, Drawer, LoadingPlaceholder, Tab, TabsBar } from '@grafana/ui';
+import React, { useState } from 'react';
+import { useAsync } from 'react-use';
 
+import datasourcePluginJson from '../../plugin.json';
 import { Release } from '../../types/helm';
-import { Overview } from './Overview';
-import { History } from './History';
 import { Yaml } from '../shared/details/Yaml';
-import { Templates } from './Templates';
-import { AI } from './AI';
-import pluginJson from '../../plugin.json';
+import { History } from './History';
 import { Manifests } from './Manifests';
+import { Overview } from './Overview';
+import { Templates } from './Templates';
 
-await initPluginTranslations(pluginJson.id, [loadResources]);
+await initPluginTranslations(datasourcePluginJson.id, [loadResources]);
 
 interface Props {
   datasource?: string;
@@ -51,14 +49,6 @@ export function Details({
     const result = await response.json();
     return result;
   }, [datasource, namespace, name, version]);
-
-  const ai = useAsync(async (): Promise<boolean> => {
-    const enabled = await llm.enabled();
-    if (!enabled) {
-      return false;
-    }
-    return true;
-  }, []);
 
   return (
     <Drawer
@@ -117,16 +107,6 @@ export function Details({
                 setActiveTab('manifests');
               }}
             />
-            {ai.value && (
-              <Tab
-                label="AI"
-                active={activeTab === 'ai'}
-                onChangeTab={(ev) => {
-                  ev?.preventDefault();
-                  setActiveTab('ai');
-                }}
-              />
-            )}
           </TabsBar>
         )
       }
@@ -160,14 +140,6 @@ export function Details({
           {activeTab === 'templates' && <Templates release={state.value} />}
           {activeTab === 'manifests' && (
             <Manifests namespace={namespace} release={state.value} />
-          )}
-          {activeTab === 'ai' && (
-            <AI
-              datasource={datasource}
-              namespace={namespace}
-              name={name}
-              version={version}
-            />
           )}
         </>
       )}

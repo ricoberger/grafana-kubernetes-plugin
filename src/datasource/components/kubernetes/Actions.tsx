@@ -1,22 +1,22 @@
-import React, { useState } from 'react';
-import { IconButton, Menu, WithContextMenu } from '@grafana/ui';
 import { DataFrame } from '@grafana/data';
+import { IconButton, Menu, WithContextMenu } from '@grafana/ui';
+import React, { useState } from 'react';
 
+import { resourceIdToPrometheusLink } from '../../../utils/utils.resource';
 import { Query } from '../../types/query';
-import { Delete } from './Delete';
-import { Scale } from './Scale';
-import { Restart } from './Restart';
 import { CreateJob } from './CreateJob';
-import { Edit } from './Edit';
-import { Details } from './Details';
-import { CronJobSuspend } from './CronJobSuspend';
 import { CronJobResume } from './CronJobResume';
+import { CronJobSuspend } from './CronJobSuspend';
 import { CSRApprove } from './CSRApprove';
 import { CSRDeny } from './CSRDeny';
+import { Delete } from './Delete';
+import { Details } from './Details';
+import { Edit } from './Edit';
 import { EvictPod } from './EvictPod';
-import { NodeUncordon } from './NodeUncordon';
 import { NodeCordon } from './NodeCordon';
-import { resourceIdToPrometheusLink } from '../../../utils/utils.resource';
+import { NodeUncordon } from './NodeUncordon';
+import { Restart } from './Restart';
+import { Scale } from './Scale';
 
 interface Props {
   query: Query;

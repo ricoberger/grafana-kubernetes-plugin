@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import { IconButton, Menu, WithContextMenu } from '@grafana/ui';
 import { DataFrame } from '@grafana/data';
+import { IconButton, Menu, WithContextMenu } from '@grafana/ui';
+import React, { useState } from 'react';
 
 import { Query } from '../../types/query';
-import { Reconcile } from './Reconcile';
-import { Details } from './Details';
-import { Suspend } from './Suspend';
-import { Resume } from './Resume';
 import { Delete } from '../kubernetes/Delete';
 import { Edit } from '../kubernetes/Edit';
+import { Details } from './Details';
+import { Reconcile } from './Reconcile';
+import { Resume } from './Resume';
+import { Suspend } from './Suspend';
 
 interface Props {
   query: Query;

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Card } from '@grafana/ui';
 import { DataSourceSettings } from '@grafana/data';
+import { Card } from '@grafana/ui';
+import React, { useState } from 'react';
 
 import { Kubeconfig } from './Kubeconfig';
 

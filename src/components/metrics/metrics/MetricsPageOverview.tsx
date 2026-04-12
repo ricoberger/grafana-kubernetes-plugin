@@ -1,23 +1,23 @@
-import React, { useState } from 'react';
-import { RadioButtonGroup, Stack, useStyles2 } from '@grafana/ui';
+import { VizConfigBuilders } from '@grafana/scenes';
 import {
-  VariableControl,
   useQueryRunner,
+  VariableControl,
   VizPanel,
 } from '@grafana/scenes-react';
-import { VizConfigBuilders } from '@grafana/scenes';
+import { RadioButtonGroup, Stack, useStyles2 } from '@grafana/ui';
+import React, { useState } from 'react';
 
 import { ROUTES } from '../../../constants';
-import { getStyles } from '../../../utils/utils.styles';
 import datasourcePluginJson from '../../../datasource/plugin.json';
-import { StatWithFixedColorAndLink } from '../shared/StatWithFixedColorAndLink';
-import { queries } from '../queries';
-import { TimeSeriesMemoryOrCPU } from '../shared/TimeSeriesMemoryOrCPU';
-import { RowCosts } from '../shared/RowCosts';
-import { LegendResourceUsage } from '../shared/LegendResourceUsage';
-import { TableResourceUsage } from '../shared/TableResourceUsage';
 import { useVizPanelMenu } from '../../../hooks/useVizPanelMenu';
+import { getStyles } from '../../../utils/utils.styles';
+import { queries } from '../queries';
+import { LegendResourceUsage } from '../shared/LegendResourceUsage';
+import { RowCosts } from '../shared/RowCosts';
+import { StatWithFixedColorAndLink } from '../shared/StatWithFixedColorAndLink';
 import { TableCosts } from '../shared/TableCosts';
+import { TableResourceUsage } from '../shared/TableResourceUsage';
+import { TimeSeriesMemoryOrCPU } from '../shared/TimeSeriesMemoryOrCPU';
 
 export function MetricsPageOverview() {
   const styles = useStyles2(getStyles);

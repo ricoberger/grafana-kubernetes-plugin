@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from 'react';
+import { QueryEditorProps } from '@grafana/data';
 import {
   InlineField,
   InlineFieldRow,
@@ -6,13 +6,13 @@ import {
   Input,
   RadioButtonGroup,
 } from '@grafana/ui';
-import { QueryEditorProps } from '@grafana/data';
+import React, { ChangeEvent } from 'react';
 
 import { DataSource } from '../../datasource';
 import { Query } from '../../types/query';
 import { DataSourceOptions } from '../../types/settings';
-import { ResourceIdField } from '../shared/field/ResourceIdField';
 import { NamespaceField } from '../shared/field/NamespaceField';
+import { ResourceIdField } from '../shared/field/ResourceIdField';
 
 type Props = QueryEditorProps<DataSource, Query, DataSourceOptions>;
 

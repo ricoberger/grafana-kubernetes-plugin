@@ -1,7 +1,7 @@
 import { EventsV1EventList } from '@kubernetes/client-node';
 
-import { KubernetesManifest, Resource } from '../datasource/types/kubernetes';
 import { ROUTES } from '../constants';
+import { KubernetesManifest, Resource } from '../datasource/types/kubernetes';
 import { prefixRoute } from './utils.routing';
 
 /**
@@ -14,19 +14,19 @@ import { prefixRoute } from './utils.routing';
  * The backend implementation of generating the id, could be found in the
  * "resources.go" file.
  */
-export const getResourceId = (kind: string, apiVersion: string): string => {
+export function getResourceId(kind: string, apiVersion: string): string {
   let id = kind;
   const groupVersion = apiVersion.split('/');
   if (groupVersion.length === 2) {
     id = `${kind}.${groupVersion[0]}`;
   }
   return id.toLowerCase();
-};
+}
 
-export const getResource = async (
+export async function getResource(
   datasource: string | undefined,
   resourceId: string | undefined,
-): Promise<Resource> => {
+): Promise<Resource> {
   if (!datasource || !resourceId) {
     throw new Error();
   }
@@ -39,14 +39,14 @@ export const getResource = async (
   }
 
   return await response.json();
-};
+}
 
-export const getResourceManifest = async (
+export async function getResourceManifest(
   datasource: string | undefined,
   resourceId: string | undefined,
   namespace: string | undefined,
   name: string | undefined,
-): Promise<KubernetesManifest> => {
+): Promise<KubernetesManifest> {
   if (!datasource || !resourceId) {
     throw new Error();
   }
@@ -68,13 +68,13 @@ export const getResourceManifest = async (
   }
 
   return await response.json();
-};
+}
 
-export const getEvents = async (
+export async function getEvents(
   datasource: string | undefined,
   namespace: string | undefined,
   name: string | undefined,
-): Promise<EventsV1EventList> => {
+): Promise<EventsV1EventList> {
   if (!datasource) {
     throw new Error();
   }
@@ -90,19 +90,19 @@ export const getEvents = async (
     },
   );
   return await response.json();
-};
+}
 
 export interface Logs {
   container: string;
   logs: string;
 }
 
-export const getLogs = async (
+export async function getLogs(
   datasource: string | undefined,
   namespace: string | undefined,
   name: string | undefined,
   manifest: KubernetesManifest,
-): Promise<Logs[]> => {
+): Promise<Logs[]> {
   if (!datasource || !namespace || !name || !manifest) {
     throw new Error();
   }
@@ -123,7 +123,7 @@ export const getLogs = async (
     }
   }
   return logs;
-};
+}
 
 /**
  * Map the resource type from Prometheus to the corresponding Kubernetes
@@ -134,11 +134,11 @@ export function prometheusResourceToKubernetesResourceInfo(
   prometheusResource: string,
 ):
   | {
-    title: string;
-    resourceId: string;
-    parameterName: string;
-    parameterValue: string;
-  }
+      title: string;
+      resourceId: string;
+      parameterName: string;
+      parameterValue: string;
+    }
   | undefined {
   switch (prometheusResource.toLowerCase()) {
     case 'node':

@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
-import { Badge, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { Badge, useStyles2 } from '@grafana/ui';
+import React, { useState } from 'react';
 
+import { KubernetesManifest } from '../../../types/kubernetes';
 import {
-  DefinitionList,
   DefinitionItem,
+  DefinitionList,
 } from '../../shared/definitionlist/DefinitionList';
 import { Resources } from '../../shared/details/Resources';
-import { KubernetesManifest } from '../../../types/kubernetes';
 import { fluxKindToResourceId } from '../utils';
 
 interface Props {
