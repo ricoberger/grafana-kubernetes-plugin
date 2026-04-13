@@ -49,6 +49,7 @@ export function NamespacePage() {
         hide={VariableHide.hideVariable}
       >
         <QueryVariable
+          skipUrlSync={true}
           name="prometheus"
           label="Prometheus"
           datasource={{ type: datasourcePluginJson.id, uid: '$datasource' }}
@@ -62,6 +63,7 @@ export function NamespacePage() {
           hide={VariableHide.hideVariable}
         >
           <QueryVariable
+            skipUrlSync={true}
             name="cluster"
             label="Cluster Label"
             datasource={{ type: datasourcePluginJson.id, uid: '$datasource' }}
@@ -75,6 +77,7 @@ export function NamespacePage() {
             hide={VariableHide.hideVariable}
           >
             <QueryVariable
+              skipUrlSync={true}
               name="logs"
               label="Logs"
               datasource={{ type: datasourcePluginJson.id, uid: '$datasource' }}
@@ -88,6 +91,7 @@ export function NamespacePage() {
               hide={VariableHide.hideVariable}
             >
               <CustomVariable
+                skipUrlSync={true}
                 name="namespace"
                 label="Namespace"
                 query={namespace}
@@ -95,6 +99,7 @@ export function NamespacePage() {
                 hide={VariableHide.hideVariable}
               >
                 <CustomVariable
+                  skipUrlSync={true}
                   name="workloadtype"
                   label="Workload Type"
                   query=".+"
@@ -123,6 +128,7 @@ export function NamespacePage() {
                     sort={VariableSort.alphabeticalCaseInsensitiveAsc}
                   >
                     <CustomVariable
+                      skipUrlSync={true}
                       name="pod"
                       label="Pod"
                       query=".+"

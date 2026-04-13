@@ -15,10 +15,6 @@ export function NamespacePageMemory() {
   return (
     <Stack direction="column" gap={2}>
       <div className={styles.dashboard.header.container}>
-        <VariableControl name="datasource" />
-        <VariableControl name="prometheus" />
-        <VariableControl name="cluster" />
-        <VariableControl name="namespace" />
         <VariableControl name="workload" />
         <div className={styles.dashboard.header.spacer} />
       </div>

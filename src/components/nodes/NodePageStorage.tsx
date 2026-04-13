@@ -13,11 +13,6 @@ export function NodePageStorage() {
   return (
     <Stack direction="column" gap={2}>
       <div className={styles.dashboard.header.container}>
-        <VariableControl name="datasource" />
-        <VariableControl name="prometheus" />
-        <VariableControl name="cluster" />
-        <VariableControl name="node" />
-        <VariableControl name="namespace" />
         <VariableControl name="pod" />
         <div className={styles.dashboard.header.spacer} />
       </div>

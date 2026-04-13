@@ -35,6 +35,7 @@ export function PodsPage() {
         refresh={VariableRefresh.onDashboardLoad}
       >
         <QueryVariable
+          skipUrlSync={true}
           name="prometheus"
           label="Prometheus"
           datasource={{ type: datasourcePluginJson.id, uid: '$datasource' }}
@@ -48,6 +49,7 @@ export function PodsPage() {
           hide={VariableHide.hideVariable}
         >
           <QueryVariable
+            skipUrlSync={true}
             name="cluster"
             label="Cluster Label"
             datasource={{ type: datasourcePluginJson.id, uid: '$datasource' }}
@@ -61,6 +63,7 @@ export function PodsPage() {
             hide={VariableHide.hideVariable}
           >
             <CustomVariable
+              skipUrlSync={true}
               name="node"
               label="Node"
               query=".+"

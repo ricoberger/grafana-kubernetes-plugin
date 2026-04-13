@@ -33,6 +33,7 @@ export function HomePage() {
         refresh={VariableRefresh.onDashboardLoad}
       >
         <QueryVariable
+          skipUrlSync={true}
           name="prometheus"
           label="Prometheus"
           datasource={{ type: datasourcePluginJson.id, uid: '$datasource' }}
@@ -46,6 +47,7 @@ export function HomePage() {
           hide={VariableHide.hideVariable}
         >
           <QueryVariable
+            skipUrlSync={true}
             name="cluster"
             label="Cluster Label"
             datasource={{ type: datasourcePluginJson.id, uid: '$datasource' }}
@@ -59,6 +61,7 @@ export function HomePage() {
             hide={VariableHide.hideVariable}
           >
             <CustomVariable
+              skipUrlSync={true}
               name="node"
               label="Node"
               query=".+"
@@ -66,6 +69,7 @@ export function HomePage() {
               hide={VariableHide.hideVariable}
             >
               <CustomVariable
+                skipUrlSync={true}
                 name="namespace"
                 label="Namespace"
                 query=".+"
@@ -73,6 +77,7 @@ export function HomePage() {
                 hide={VariableHide.hideVariable}
               >
                 <CustomVariable
+                  skipUrlSync={true}
                   name="workloadtype"
                   label="Workload Type"
                   query=".+"
@@ -80,6 +85,7 @@ export function HomePage() {
                   hide={VariableHide.hideVariable}
                 >
                   <CustomVariable
+                    skipUrlSync={true}
                     name="workload"
                     label="Workload"
                     query=".+"

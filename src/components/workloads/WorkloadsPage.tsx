@@ -34,6 +34,7 @@ export function WorkloadsPage() {
         refresh={VariableRefresh.onDashboardLoad}
       >
         <QueryVariable
+          skipUrlSync={true}
           name="prometheus"
           label="Prometheus"
           datasource={{ type: datasourcePluginJson.id, uid: '$datasource' }}
@@ -47,6 +48,7 @@ export function WorkloadsPage() {
           hide={VariableHide.hideVariable}
         >
           <QueryVariable
+            skipUrlSync={true}
             name="cluster"
             label="Cluster Label"
             datasource={{ type: datasourcePluginJson.id, uid: '$datasource' }}
@@ -120,8 +122,6 @@ export function WorkloadsPage() {
                   <Stack direction="column" gap={2} height="100%">
                     <div className={styles.dashboard.header.container}>
                       <VariableControl name="datasource" />
-                      <VariableControl name="prometheus" />
-                      <VariableControl name="cluster" />
                       <VariableControl name="namespace" />
                       <VariableControl name="workload" />
                       <div className={styles.dashboard.header.spacer} />
