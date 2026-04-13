@@ -14,9 +14,6 @@ export function HomePageCost() {
     <Stack direction="column" gap={2}>
       <div className={styles.dashboard.header.container}>
         <VariableControl name="datasource" />
-        <VariableControl name="prometheus" />
-        <VariableControl name="cluster" />
-        <VariableControl name="namespace" />
         <div className={styles.dashboard.header.spacer} />
       </div>
       <Stack direction="column" gap={2}>

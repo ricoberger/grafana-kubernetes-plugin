@@ -1,4 +1,4 @@
-import { DataLayerControl, VariableControl } from '@grafana/scenes-react';
+import { DataLayerControl } from '@grafana/scenes-react';
 import { Stack, useStyles2 } from '@grafana/ui';
 import React from 'react';
 
@@ -15,10 +15,6 @@ export function PodPageCPU() {
   return (
     <Stack direction="column" gap={2}>
       <div className={styles.dashboard.header.container}>
-        <VariableControl name="datasource" />
-        <VariableControl name="prometheus" />
-        <VariableControl name="cluster" />
-        <VariableControl name="namespace" />
         <DataLayerControl name="Restarts" />
         <div className={styles.dashboard.header.spacer} />
       </div>

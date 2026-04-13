@@ -62,6 +62,7 @@ export function WorkloadPage() {
         refresh={VariableRefresh.onDashboardLoad}
       >
         <QueryVariable
+          skipUrlSync={true}
           name="prometheus"
           label="Prometheus"
           datasource={{ type: datasourcePluginJson.id, uid: '$datasource' }}
@@ -75,6 +76,7 @@ export function WorkloadPage() {
           hide={VariableHide.hideVariable}
         >
           <QueryVariable
+            skipUrlSync={true}
             name="cluster"
             label="Cluster Label"
             datasource={{ type: datasourcePluginJson.id, uid: '$datasource' }}
@@ -88,6 +90,7 @@ export function WorkloadPage() {
             hide={VariableHide.hideVariable}
           >
             <QueryVariable
+              skipUrlSync={true}
               name="logs"
               label="Logs"
               datasource={{ type: datasourcePluginJson.id, uid: '$datasource' }}
@@ -101,6 +104,7 @@ export function WorkloadPage() {
               hide={VariableHide.hideVariable}
             >
               <CustomVariable
+                skipUrlSync={true}
                 name="node"
                 label="Node"
                 query=".+"
@@ -108,6 +112,7 @@ export function WorkloadPage() {
                 hide={VariableHide.hideVariable}
               >
                 <CustomVariable
+                  skipUrlSync={true}
                   name="namespace"
                   label="Namespace"
                   query={namespace}
@@ -115,6 +120,7 @@ export function WorkloadPage() {
                   hide={VariableHide.hideVariable}
                 >
                   <CustomVariable
+                    skipUrlSync={true}
                     name="workloadtype"
                     label="Workload Type"
                     query={workloadType}
@@ -122,6 +128,7 @@ export function WorkloadPage() {
                     hide={VariableHide.hideVariable}
                   >
                     <CustomVariable
+                      skipUrlSync={true}
                       name="workload"
                       label="Workload"
                       query={workload.toLowerCase()}

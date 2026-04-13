@@ -49,7 +49,7 @@ export function StatWithFixedColorAndLink({
     .setOption('textMode', BigValueTextMode.Value)
     .setLinks([
       {
-        url: `${prefixRoute(route)}\${__url.params:exclude:var-node,var-namespace,var-workloadtype,var-workload,var-pod,var-pvc}`,
+        url: `${prefixRoute(route)}?\${__url_time_range}&var-datasource=$datasource`,
         title: title,
       },
     ])

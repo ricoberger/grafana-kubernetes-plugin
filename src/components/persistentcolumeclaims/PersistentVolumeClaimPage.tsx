@@ -9,7 +9,6 @@ import {
   SceneContextProvider,
   TimeRangePicker,
   useQueryRunner,
-  VariableControl,
   VizPanel,
 } from '@grafana/scenes-react';
 import { Alert, Badge, RadioButtonGroup, Stack, useStyles2 } from '@grafana/ui';
@@ -57,6 +56,7 @@ export function PersistentVolumeClaimPage() {
         hide={VariableHide.hideVariable}
       >
         <QueryVariable
+          skipUrlSync={true}
           name="prometheus"
           label="Prometheus"
           datasource={{ type: datasourcePluginJson.id, uid: '$datasource' }}
@@ -70,6 +70,7 @@ export function PersistentVolumeClaimPage() {
           hide={VariableHide.hideVariable}
         >
           <QueryVariable
+            skipUrlSync={true}
             name="cluster"
             label="Cluster Label"
             datasource={{ type: datasourcePluginJson.id, uid: '$datasource' }}
@@ -83,6 +84,7 @@ export function PersistentVolumeClaimPage() {
             hide={VariableHide.hideVariable}
           >
             <CustomVariable
+              skipUrlSync={true}
               name="node"
               label="Node"
               query=".+"
@@ -90,6 +92,7 @@ export function PersistentVolumeClaimPage() {
               hide={VariableHide.hideVariable}
             >
               <CustomVariable
+                skipUrlSync={true}
                 name="namespace"
                 label="Namespace"
                 query={namespace}
@@ -97,6 +100,7 @@ export function PersistentVolumeClaimPage() {
                 hide={VariableHide.hideVariable}
               >
                 <CustomVariable
+                  skipUrlSync={true}
                   name="pvc"
                   label="PersistentVolumeClaim"
                   query={pvc}
@@ -104,6 +108,7 @@ export function PersistentVolumeClaimPage() {
                   hide={VariableHide.hideVariable}
                 >
                   <QueryVariable
+                    skipUrlSync={true}
                     name="pod"
                     label="Pod"
                     datasource={{
@@ -162,11 +167,6 @@ export function PersistentVolumeClaimPage() {
                     >
                       <Stack direction="column" gap={2}>
                         <div className={styles.dashboard.header.container}>
-                          <VariableControl name="datasource" />
-                          <VariableControl name="prometheus" />
-                          <VariableControl name="cluster" />
-                          <VariableControl name="namespace" />
-                          <VariableControl name="pvc" />
                           <div className={styles.dashboard.header.spacer} />
                         </div>
 

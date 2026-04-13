@@ -17,7 +17,7 @@ import helmImg from '../../img/helm.svg';
 import { HelmReleasesTable } from './HelmReleasesTable';
 
 export function HelmPage() {
-  const styles = useStyles2(function (theme: GrafanaTheme2) {
+  const styles = useStyles2(function(theme: GrafanaTheme2) {
     return {
       title: {
         image: css({
@@ -43,18 +43,23 @@ export function HelmPage() {
   });
 
   return (
-    <PluginPage
-      renderTitle={() => (
-        <Stack gap={0} alignItems="center" direction="row">
-          <img className={styles.title.image} alt="Helm" src={helmImg} />
-          <h1>Helm</h1>
-        </Stack>
-      )}
-      subTitle="Manage your Helm releases."
+    <SceneContextProvider
+      timeRange={{ from: `now-1h`, to: 'now' }}
+      withQueryController
     >
-      <SceneContextProvider
-        timeRange={{ from: `now-1h`, to: 'now' }}
-        withQueryController
+      <PluginPage
+        renderTitle={() => (
+          <Stack gap={0} alignItems="center" direction="row">
+            <img className={styles.title.image} alt="Helm" src={helmImg} />
+            <h1>Helm</h1>
+          </Stack>
+        )}
+        subTitle="Manage your Helm releases."
+        actions={
+          <>
+            <RefreshPicker />
+          </>
+        }
       >
         <DataSourceVariable
           name="datasource"
@@ -82,7 +87,6 @@ export function HelmPage() {
                 <VariableControl name="datasource" />
                 <VariableControl name="namespace" />
                 <div className={styles.spacer} />
-                <RefreshPicker />
               </div>
               <div className={styles.table}>
                 <HelmReleasesTable />
@@ -90,7 +94,7 @@ export function HelmPage() {
             </Stack>
           </QueryVariable>
         </DataSourceVariable>
-      </SceneContextProvider>
-    </PluginPage>
+      </PluginPage>
+    </SceneContextProvider>
   );
 }

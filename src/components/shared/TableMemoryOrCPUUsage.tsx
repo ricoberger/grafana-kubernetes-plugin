@@ -188,7 +188,7 @@ export function TableMemoryOrCPUUsage({
         .overrideLinks([
           {
             title: '',
-            url: `${prefixRoute(ROUTES.MetricsNodes)}/\${__value.raw}\${__url.params:exclude:var-node,var-namespace,var-workloadtype,var-workload,var-pod,var-pvc}`,
+            url: `${prefixRoute(ROUTES.MetricsNodes)}/\${__value.raw}?\${__url_time_range}&var-datasource=$datasource`,
           },
         ])
         .build();
@@ -200,7 +200,7 @@ export function TableMemoryOrCPUUsage({
         .overrideLinks([
           {
             title: '',
-            url: `${prefixRoute(ROUTES.MetricsNamespaces)}/\${__value.raw}\${__url.params:exclude:var-node,var-namespace,var-workloadtype,var-workload,var-pod,var-pvc}`,
+            url: `${prefixRoute(ROUTES.MetricsNamespaces)}/\${__value.raw}?\${__url_time_range}&var-datasource=$datasource`,
           },
         ])
         .build();
@@ -212,7 +212,7 @@ export function TableMemoryOrCPUUsage({
         .overrideLinks([
           {
             title: '',
-            url: `${prefixRoute(ROUTES.MetricsWorkloads)}/\${__data.fields["namespace"].text}/\${__data.fields["workload_type"].text}/\${__value.raw}\${__url.params:exclude:var-node,var-namespace,var-workloadtype,var-workload,var-pod,var-pvc}`,
+            url: `${prefixRoute(ROUTES.MetricsWorkloads)}/\${__data.fields["namespace"].text}/\${__data.fields["workload_type"].text}/\${__value.raw}?\${__url_time_range}&var-datasource=$datasource`,
           },
         ])
         .build();
@@ -230,7 +230,7 @@ export function TableMemoryOrCPUUsage({
         .overrideLinks([
           {
             title: '',
-            url: `${prefixRoute(ROUTES.MetricsPods)}/\${__data.fields["namespace"].text}/\${__value.raw}\${__url.params:exclude:var-node,var-namespace,var-workloadtype,var-workload,var-pod,var-pvc}`,
+            url: `${prefixRoute(ROUTES.MetricsPods)}/\${__data.fields["namespace"].text}/\${__value.raw}?\${__url_time_range}&var-datasource=$datasource`,
           },
         ])
         .build();

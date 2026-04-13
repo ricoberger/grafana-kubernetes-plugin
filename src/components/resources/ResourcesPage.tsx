@@ -43,22 +43,27 @@ export function ResourcesPage() {
   });
 
   return (
-    <PluginPage
-      renderTitle={() => (
-        <Stack gap={0} alignItems="center" direction="row">
-          <img
-            className={styles.title.image}
-            alt="Resources"
-            src={resourcesImg}
-          />
-          <h1>Resources</h1>
-        </Stack>
-      )}
-      subTitle="Manage your Kubernetes resources."
+    <SceneContextProvider
+      timeRange={{ from: `now-1h`, to: 'now' }}
+      withQueryController
     >
-      <SceneContextProvider
-        timeRange={{ from: `now-1h`, to: 'now' }}
-        withQueryController
+      <PluginPage
+        renderTitle={() => (
+          <Stack gap={0} alignItems="center" direction="row">
+            <img
+              className={styles.title.image}
+              alt="Resources"
+              src={resourcesImg}
+            />
+            <h1>Resources</h1>
+          </Stack>
+        )}
+        subTitle="Manage your Kubernetes resources."
+        actions={
+          <>
+            <RefreshPicker />
+          </>
+        }
       >
         <DataSourceVariable
           name="datasource"
@@ -99,7 +104,6 @@ export function ResourcesPage() {
                   <VariableControl name="resourceId" />
                   <VariableControl name="namespace" />
                   <div className={styles.spacer} />
-                  <RefreshPicker />
                 </div>
                 <div className={styles.table}>
                   <ResourcesTable />
@@ -108,7 +112,7 @@ export function ResourcesPage() {
             </QueryVariable>
           </QueryVariable>
         </DataSourceVariable>
-      </SceneContextProvider>
-    </PluginPage>
+      </PluginPage>
+    </SceneContextProvider>
   );
 }
