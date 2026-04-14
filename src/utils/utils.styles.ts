@@ -46,6 +46,9 @@ export function getStyles(theme: GrafanaTheme2) {
         spacer: css({
           flex: 1,
         }),
+        search: css({
+          margin: 0,
+        }),
       },
       row: {
         height100percent: css({

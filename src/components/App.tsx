@@ -16,15 +16,17 @@ import { PersistentVolumeClaimPage } from './persistentcolumeclaims/PersistentVo
 import { PersistentVolumeClaimsPage } from './persistentcolumeclaims/PersistentVolumeClaimsPage';
 import { PodPage } from './pods/PodPage';
 import { PodsPage } from './pods/PodsPage';
+import { ResourcesPage } from './resources/ResourcesPage';
+import { SearchPage } from './search/SearchPage';
 import { WorkloadPage } from './workloads/WorkloadPage';
 import { WorkloadsPage } from './workloads/WorkloadsPage';
-import { ResourcesPage } from './resources/ResourcesPage';
 
 function App(props: AppRootProps) {
   return (
     <PluginPropsContext.Provider value={props}>
       <Routes>
         <Route path={ROUTES.Home} element={<HomePage />} />
+        <Route path={ROUTES.Search} element={<SearchPage />} />
         <Route path={ROUTES.MetricsNodes} element={<NodesPage />} />
         <Route path={`${ROUTES.MetricsNodes}/:node`} element={<NodePage />} />
         <Route path={ROUTES.MetricsNamespaces} element={<NamespacesPage />} />

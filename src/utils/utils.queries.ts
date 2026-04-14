@@ -4405,6 +4405,11 @@ label_join(
     )
   ) by(cluster,namespace,pod)
 ) by(cluster,namespace,workload,workload_type)`,
+    search: `sum(
+  namespace_workload_pod:kube_pod_owner:relabel{
+    cluster=~"$cluster",namespace=~".+",workload=~"$searchterm"
+  }
+) by(namespace,workload,workload_type)`,
   },
   pods: {
     count: `count(kube_pod_info{cluster=~"$cluster", namespace=~"$namespace", pod!=""})`,
@@ -5380,6 +5385,11 @@ sum(
     ) by(cluster,node)
   )[$__range:1h]
 )`,
+    search: `sum(
+  namespace_workload_pod:kube_pod_owner:relabel{
+    cluster=~"$cluster",namespace=~".+",pod=~"$searchterm"
+  }
+) by(namespace,pod)`,
   },
   containers: {
     labelsByClusterNamespacePod: `label_values(

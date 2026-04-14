@@ -19,6 +19,7 @@ import { StatWithFixedColorAndLink } from '../shared/StatWithFixedColorAndLink';
 import { TableCosts } from '../shared/TableCosts';
 import { TableResourceUsage } from '../shared/TableResourceUsage';
 import { TimeSeriesMemoryOrCPU } from '../shared/TimeSeriesMemoryOrCPU';
+import { HomePageOverviewSearch } from './HomePageOverviewSearch';
 
 export function HomePageOverview() {
   const styles = useStyles2(getStyles);
@@ -28,6 +29,7 @@ export function HomePageOverview() {
       <div className={styles.dashboard.header.container}>
         <VariableControl name="datasource" />
         <div className={styles.dashboard.header.spacer} />
+        <HomePageOverviewSearch />
         <LinkButton
           href={prefixRoute(ROUTES.Kubeconfig)}
           size="md"
