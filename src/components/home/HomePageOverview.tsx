@@ -45,27 +45,27 @@ export function HomePageOverview() {
           <StatWithFixedColorAndLink
             title="Nodes"
             expr={queries.nodes.count}
-            route={ROUTES.MetricsNodes}
+            route={ROUTES.Nodes}
           />
           <StatWithFixedColorAndLink
             title="Namespaces"
             expr={queries.namespaces.count}
-            route={ROUTES.MetricsNamespaces}
+            route={ROUTES.Namespaces}
           />
           <StatWithFixedColorAndLink
             title="Workloads"
             expr={queries.workloads.count}
-            route={ROUTES.MetricsWorkloads}
+            route={ROUTES.Workloads}
           />
           <StatWithFixedColorAndLink
             title="Pods"
             expr={queries.pods.count}
-            route={ROUTES.MetricsPods}
+            route={ROUTES.Pods}
           />
           <StatWithFixedColorAndLink
             title="PersistentVolumeClaims"
             expr={queries.persistentVolumeClaims.count}
-            route={ROUTES.MetricsPersistentVolumeClaims}
+            route={ROUTES.PersistentVolumeClaims}
           />
         </div>
         <div className={styles.dashboard.row.height400px}>

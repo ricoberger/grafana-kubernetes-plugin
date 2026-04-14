@@ -134,11 +134,11 @@ export function prometheusResourceToKubernetesResourceInfo(
   prometheusResource: string,
 ):
   | {
-      title: string;
-      resourceId: string;
-      parameterName: string;
-      parameterValue: string;
-    }
+    title: string;
+    resourceId: string;
+    parameterName: string;
+    parameterValue: string;
+  }
   | undefined {
   switch (prometheusResource.toLowerCase()) {
     case 'node':
@@ -247,32 +247,32 @@ export function resourceIdToPrometheusLink(
 ): string | undefined {
   switch (resourceId) {
     case 'node':
-      return `${prefixRoute(ROUTES.MetricsNodes)}/${name}`;
+      return `${prefixRoute(ROUTES.Nodes)}/${name}`;
     case 'namespace':
-      return `${prefixRoute(ROUTES.MetricsNamespaces)}/${name}`;
+      return `${prefixRoute(ROUTES.Namespaces)}/${name}`;
     case 'deployment.apps':
-      return `${prefixRoute(ROUTES.MetricsWorkloads)}/${namespace}/deployment/${name}`;
+      return `${prefixRoute(ROUTES.Workloads)}/${namespace}/deployment/${name}`;
     case 'statefulset.apps':
-      return `${prefixRoute(ROUTES.MetricsWorkloads)}/${namespace}/statefulset/${name}`;
+      return `${prefixRoute(ROUTES.Workloads)}/${namespace}/statefulset/${name}`;
     case 'daemonset.apps':
-      return `${prefixRoute(ROUTES.MetricsWorkloads)}/${namespace}/daemonset/${name}`;
+      return `${prefixRoute(ROUTES.Workloads)}/${namespace}/daemonset/${name}`;
     case 'replicaset.apps':
-      return `${prefixRoute(ROUTES.MetricsWorkloads)}/${namespace}/deployment/${name}`;
+      return `${prefixRoute(ROUTES.Workloads)}/${namespace}/deployment/${name}`;
     case 'cronjob.batch':
-      return `${prefixRoute(ROUTES.MetricsWorkloads)}/${namespace}/CronJob/${name}`;
+      return `${prefixRoute(ROUTES.Workloads)}/${namespace}/CronJob/${name}`;
     case 'job.batch':
-      return `${prefixRoute(ROUTES.MetricsWorkloads)}/${namespace}/job/${name}`;
+      return `${prefixRoute(ROUTES.Workloads)}/${namespace}/job/${name}`;
     case 'pod':
-      return `${prefixRoute(ROUTES.MetricsPods)}/${namespace}/${name}`;
+      return `${prefixRoute(ROUTES.Pods)}/${namespace}/${name}`;
     case 'persistentvolumeclaim':
-      return `${prefixRoute(ROUTES.MetricsPersistentVolumeClaims)}/${namespace}/${name}`;
+      return `${prefixRoute(ROUTES.PersistentVolumeClaims)}/${namespace}/${name}`;
     /**
      * The following resource types are none default Kubernetes resources, but
      * we want to support them as well, when the corresponding project is well
      * known and widely used.
      */
     case 'strimzipodset.core.strimzi.io':
-      return `${prefixRoute(ROUTES.MetricsWorkloads)}/${namespace}/StrimziPodSet/${name}`;
+      return `${prefixRoute(ROUTES.Workloads)}/${namespace}/StrimziPodSet/${name}`;
     default:
       return undefined;
   }

@@ -133,12 +133,10 @@ export function PersistentVolumeClaimPage() {
                         text: pvc,
                         parentItem: {
                           text: namespace,
-                          url: `${prefixRoute(ROUTES.MetricsNamespaces)}/${namespace}`,
+                          url: `${prefixRoute(ROUTES.Namespaces)}/${namespace}`,
                           parentItem: {
                             text: 'PersistentVolumeClaims',
-                            url: prefixRoute(
-                              ROUTES.MetricsPersistentVolumeClaims,
-                            ),
+                            url: prefixRoute(ROUTES.PersistentVolumeClaims),
                           },
                         },
                       }}

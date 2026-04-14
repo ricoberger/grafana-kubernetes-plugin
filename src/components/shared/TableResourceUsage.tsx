@@ -303,7 +303,7 @@ export function TableResourceUsage({
         .overrideLinks([
           {
             title: '',
-            url: `${prefixRoute(ROUTES.MetricsNodes)}/\${__value.raw}?\${__url_time_range}&var-datasource=$datasource`,
+            url: `${prefixRoute(ROUTES.Nodes)}/\${__value.raw}?\${__url_time_range}&var-datasource=$datasource`,
           },
         ])
         .build();
@@ -315,7 +315,7 @@ export function TableResourceUsage({
         .overrideLinks([
           {
             title: '',
-            url: `${prefixRoute(ROUTES.MetricsNamespaces)}/\${__value.raw}?\${__url_time_range}&var-datasource=$datasource`,
+            url: `${prefixRoute(ROUTES.Namespaces)}/\${__value.raw}?\${__url_time_range}&var-datasource=$datasource`,
           },
         ])
         .build();
@@ -327,7 +327,7 @@ export function TableResourceUsage({
         .overrideLinks([
           {
             title: '',
-            url: `${prefixRoute(ROUTES.MetricsWorkloads)}/\${__data.fields["namespace"].text}/\${__data.fields["workload_type"].text}/\${__value.raw}?\${__url_time_range}&var-datasource=$datasource`,
+            url: `${prefixRoute(ROUTES.Workloads)}/\${__data.fields["namespace"].text}/\${__data.fields["workload_type"].text}/\${__value.raw}?\${__url_time_range}&var-datasource=$datasource`,
           },
         ])
         .build();
@@ -345,7 +345,7 @@ export function TableResourceUsage({
         .overrideLinks([
           {
             title: '',
-            url: `${prefixRoute(ROUTES.MetricsPods)}/\${__data.fields["namespace"].text}/\${__value.raw}?\${__url_time_range}&var-datasource=$datasource`,
+            url: `${prefixRoute(ROUTES.Pods)}/\${__data.fields["namespace"].text}/\${__value.raw}?\${__url_time_range}&var-datasource=$datasource`,
           },
         ])
         .build();

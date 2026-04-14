@@ -160,7 +160,7 @@ export function NamespacePage() {
                             text: namespace,
                             parentItem: {
                               text: 'Namespaces',
-                              url: prefixRoute(ROUTES.MetricsNamespaces),
+                              url: prefixRoute(ROUTES.Namespaces),
                             },
                           }}
                           renderTitle={() => (

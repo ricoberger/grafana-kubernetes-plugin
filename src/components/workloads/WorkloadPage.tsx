@@ -200,10 +200,10 @@ export function WorkloadPage() {
                                 text: workload,
                                 parentItem: {
                                   text: namespace,
-                                  url: `${prefixRoute(ROUTES.MetricsNamespaces)}/${namespace}`,
+                                  url: `${prefixRoute(ROUTES.Namespaces)}/${namespace}`,
                                   parentItem: {
                                     text: 'Workloads',
-                                    url: prefixRoute(ROUTES.MetricsWorkloads),
+                                    url: prefixRoute(ROUTES.Workloads),
                                   },
                                 },
                               }}

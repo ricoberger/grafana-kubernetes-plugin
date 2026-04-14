@@ -27,29 +27,26 @@ function App(props: AppRootProps) {
       <Routes>
         <Route path={ROUTES.Home} element={<HomePage />} />
         <Route path={ROUTES.Search} element={<SearchPage />} />
-        <Route path={ROUTES.MetricsNodes} element={<NodesPage />} />
-        <Route path={`${ROUTES.MetricsNodes}/:node`} element={<NodePage />} />
-        <Route path={ROUTES.MetricsNamespaces} element={<NamespacesPage />} />
+        <Route path={ROUTES.Nodes} element={<NodesPage />} />
+        <Route path={`${ROUTES.Nodes}/:node`} element={<NodePage />} />
+        <Route path={ROUTES.Namespaces} element={<NamespacesPage />} />
         <Route
-          path={`${ROUTES.MetricsNamespaces}/:namespace`}
+          path={`${ROUTES.Namespaces}/:namespace`}
           element={<NamespacePage />}
         />
-        <Route path={ROUTES.MetricsWorkloads} element={<WorkloadsPage />} />
+        <Route path={ROUTES.Workloads} element={<WorkloadsPage />} />
         <Route
-          path={`${ROUTES.MetricsWorkloads}/:namespace/:workloadType/:workload`}
+          path={`${ROUTES.Workloads}/:namespace/:workloadType/:workload`}
           element={<WorkloadPage />}
         />
-        <Route path={ROUTES.MetricsPods} element={<PodsPage />} />
+        <Route path={ROUTES.Pods} element={<PodsPage />} />
+        <Route path={`${ROUTES.Pods}/:namespace/:pod`} element={<PodPage />} />
         <Route
-          path={`${ROUTES.MetricsPods}/:namespace/:pod`}
-          element={<PodPage />}
-        />
-        <Route
-          path={ROUTES.MetricsPersistentVolumeClaims}
+          path={ROUTES.PersistentVolumeClaims}
           element={<PersistentVolumeClaimsPage />}
         />
         <Route
-          path={`${ROUTES.MetricsPersistentVolumeClaims}/:namespace/:pvc`}
+          path={`${ROUTES.PersistentVolumeClaims}/:namespace/:pvc`}
           element={<PersistentVolumeClaimPage />}
         />
         <Route path={ROUTES.Resources} element={<ResourcesPage />} />

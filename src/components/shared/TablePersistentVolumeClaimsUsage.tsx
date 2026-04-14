@@ -134,7 +134,7 @@ export function TablePersistentVolumeClaimsUsage() {
         .overrideLinks([
           {
             title: '',
-            url: `${prefixRoute(ROUTES.MetricsNamespaces)}/\${__value.raw}?\${__url_time_range}&var-datasource=$datasource`,
+            url: `${prefixRoute(ROUTES.Namespaces)}/\${__value.raw}?\${__url_time_range}&var-datasource=$datasource`,
           },
         ])
         .build();
@@ -146,7 +146,7 @@ export function TablePersistentVolumeClaimsUsage() {
         .overrideLinks([
           {
             title: '',
-            url: `${prefixRoute(ROUTES.MetricsPersistentVolumeClaims)}/\${__data.fields["namespace"].text}/\${__value.raw}?\${__url_time_range}&var-datasource=$datasource`,
+            url: `${prefixRoute(ROUTES.PersistentVolumeClaims)}/\${__data.fields["namespace"].text}/\${__value.raw}?\${__url_time_range}&var-datasource=$datasource`,
           },
         ])
         .build();

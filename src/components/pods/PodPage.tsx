@@ -165,10 +165,10 @@ export function PodPage() {
                             text: pod,
                             parentItem: {
                               text: namespace,
-                              url: `${prefixRoute(ROUTES.MetricsNamespaces)}/${namespace}`,
+                              url: `${prefixRoute(ROUTES.Namespaces)}/${namespace}`,
                               parentItem: {
                                 text: 'Pods',
-                                url: prefixRoute(ROUTES.MetricsPods),
+                                url: prefixRoute(ROUTES.Pods),
                               },
                             },
                           }}

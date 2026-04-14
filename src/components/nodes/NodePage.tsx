@@ -128,7 +128,7 @@ export function NodePage() {
                         text: node,
                         parentItem: {
                           text: 'Nodes',
-                          url: prefixRoute(ROUTES.MetricsNodes),
+                          url: prefixRoute(ROUTES.Nodes),
                         },
                       }}
                       renderTitle={() => (

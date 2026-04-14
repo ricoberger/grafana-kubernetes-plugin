@@ -68,7 +68,7 @@ export function SearchPagePods() {
         .overrideLinks([
           {
             title: '',
-            url: `${prefixRoute(ROUTES.MetricsNamespaces)}/\${__value.raw}?\${__url_time_range}&var-datasource=$datasource`,
+            url: `${prefixRoute(ROUTES.Namespaces)}/\${__value.raw}?\${__url_time_range}&var-datasource=$datasource`,
           },
         ])
         .build();
@@ -79,7 +79,7 @@ export function SearchPagePods() {
         .overrideLinks([
           {
             title: '',
-            url: `${prefixRoute(ROUTES.MetricsPods)}/\${__data.fields["namespace"].text}/\${__value.raw}?\${__url_time_range}&var-datasource=$datasource`,
+            url: `${prefixRoute(ROUTES.Pods)}/\${__data.fields["namespace"].text}/\${__value.raw}?\${__url_time_range}&var-datasource=$datasource`,
           },
         ])
         .build();
