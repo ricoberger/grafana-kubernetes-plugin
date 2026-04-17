@@ -7,11 +7,19 @@ import {
 } from '@grafana/scenes';
 import { useTimeRange, useVariableInterpolator } from '@grafana/scenes-react';
 
+/**
+ * Correct the scene variable interpoldation.
+ *
+ * NOTE: The second replace (`replace(/(:in\()\{(.*?)\}/, '$1$2')`) is used, to
+ * make it also work for VictoriaLogs datasource.
+ */
 function correctSceneVariableInterpolation(input: string) {
-  return input.replace(
-    /(\w+)=~"\{([^}]+)\}"/g,
-    (_, key, values) => `${key}=~"${values.split(',').join('|')}"`,
-  );
+  return input
+    .replace(
+      /(\w+)=~"\{([^}]+)\}"/g,
+      (_, key, values) => `${key}=~"${values.split(',').join('|')}"`,
+    )
+    .replace(/(:in\()\{(.*?)\}/, '$1$2');
 }
 
 interface UseVizPanelMenuProps {
