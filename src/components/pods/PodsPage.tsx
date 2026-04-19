@@ -158,7 +158,6 @@ export function PodsPage() {
                           memoryUsageMaxPercentExpr={
                             queries.pods.memoryUsageMaxPercentOverTime
                           }
-                          alertsExpr={queries.pods.alertsCount}
                         />
                       </div>
                     </Stack>

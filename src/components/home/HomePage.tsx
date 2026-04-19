@@ -14,6 +14,7 @@ import React, { useState } from 'react';
 import datasourcePluginJson from '../../datasource/plugin.json';
 import pluginJson from '../../plugin.json';
 import { getStyles } from '../../utils/utils.styles';
+import { HomePageAlerts } from './HomePageAlerts';
 import { HomePageCost } from './HomePageCost';
 import { HomePageOverview } from './HomePageOverview';
 
@@ -111,6 +112,14 @@ export function HomePage() {
                           }}
                         />
                         <Tab
+                          label="Alerts"
+                          active={activeTab === 'alerts'}
+                          onChangeTab={(ev) => {
+                            ev?.preventDefault();
+                            setActiveTab('alerts');
+                          }}
+                        />
+                        <Tab
                           label="Cost"
                           active={activeTab === 'cost'}
                           onChangeTab={(ev) => {
@@ -121,6 +130,7 @@ export function HomePage() {
                       </TabsBar>
 
                       {activeTab === 'overview' && <HomePageOverview />}
+                      {activeTab === 'alerts' && <HomePageAlerts />}
                       {activeTab === 'cost' && <HomePageCost />}
                     </PluginPage>
                   </CustomVariable>
