@@ -99,7 +99,6 @@ function Pods() {
               memoryUsageMaxPercentExpr={
                 queries.pods.memoryUsageMaxPercentOverTime
               }
-              alertsExpr={queries.pods.alertsCount}
             />
           )}
           {selected === 'cost' && (

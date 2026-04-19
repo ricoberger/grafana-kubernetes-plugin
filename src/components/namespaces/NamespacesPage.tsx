@@ -11,8 +11,8 @@ import {
 import { Stack, useStyles2 } from '@grafana/ui';
 import React from 'react';
 
-import resourcesImg from '../../img/logo.svg';
 import datasourcePluginJson from '../../datasource/plugin.json';
+import resourcesImg from '../../img/logo.svg';
 import pluginJson from '../../plugin.json';
 import { queries, variableQuery } from '../../utils/utils.queries';
 import { getStyles } from '../../utils/utils.styles';
@@ -129,7 +129,6 @@ export function NamespacesPage() {
                       memoryUsageMaxPercentExpr={
                         queries.namespaces.memoryUsageMaxPercentOverTime
                       }
-                      alertsExpr={queries.namespaces.alertsCount}
                     />
                   </div>
                 </Stack>

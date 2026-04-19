@@ -152,7 +152,6 @@ export function WorkloadsPage() {
                         }
                         desiredPodsExpr={queries.workloads.desiredPods}
                         readyPodsExpr={queries.workloads.readyPods}
-                        alertsExpr={queries.workloads.alertsCount}
                       />
                     </div>
                   </Stack>

@@ -381,6 +381,170 @@ vector(0)`,
 )
   *
 30`,
+    alertsBySeverity: `count(
+  ALERTS{
+    alertname=~"(Kube.*|CPUThrottlingHigh)",
+    alertstate=~"firing",
+    cluster=~"$cluster",
+    severity!=""
+  }
+    or
+  GRAFANA_ALERTS{
+    alertname=~"(Kube.*|CPUThrottlingHigh)",
+    alertstate=~"firing",
+    cluster=~"$cluster",
+    severity!=""
+
+  }
+) by(severity)`,
+    alertsByNamespace: `count(
+  ALERTS{
+    alertname=~"(Kube.*|CPUThrottlingHigh)",
+    alertstate=~"firing",
+    cluster=~"$cluster",
+    namespace!=""
+
+  }
+    or
+  GRAFANA_ALERTS{
+    alertname=~"(Kube.*|CPUThrottlingHigh)",
+    alertstate=~"firing",
+    cluster=~"$cluster",
+    namespace!=""
+
+  }
+) by(namespace)`,
+    alerts: `(
+  (
+    (
+      (
+        label_replace(
+          label_replace(
+            ALERTS{
+              daemonset!="",
+              alertname=~"(Kube.*|CPUThrottlingHigh)",
+              alertstate=~"firing",
+              cluster=~"$cluster"
+            }
+              or
+            GRAFANA_ALERTS{
+              daemonset!="",
+              alertname=~"(Kube.*|CPUThrottlingHigh)",
+              alertstate=~"firing",
+              cluster=~"$cluster"
+            },
+            "workload_type",
+            "",
+            "daemonset",
+            ""
+          ),
+          "workload",
+          "$1",
+          "daemonset",
+          "(.*)"
+        )
+          or
+        label_replace(
+          label_replace(
+            ALERTS{
+              deployment!="",
+              alertname=~"(Kube.*|CPUThrottlingHigh)",
+              alertstate=~"firing",
+              cluster=~"$cluster"
+            }
+              or
+            GRAFANA_ALERTS{
+              deployment!="",
+              alertname=~"(Kube.*|CPUThrottlingHigh)",
+              alertstate=~"firing",
+              cluster=~"$cluster"
+            },
+            "workload_type",
+            "",
+            "deployment",
+            ""
+          ),
+          "workload",
+          "$1",
+          "deployment",
+          "(.*)"
+        )
+      )
+        or
+      label_replace(
+        label_replace(
+          ALERTS{
+            statefulset!="",
+            alertname=~"(Kube.*|CPUThrottlingHigh)",
+            alertstate=~"firing",
+            cluster=~"$cluster"
+          }
+            or
+          GRAFANA_ALERTS{
+            statefulset!="",
+            alertname=~"(Kube.*|CPUThrottlingHigh)",
+            alertstate=~"firing",
+            cluster=~"$cluster"
+          },
+          "workload_type",
+          "",
+          "statefulset",
+          ""
+        ),
+        "workload",
+        "$1",
+        "statefulset",
+        "(.*)"
+      )
+    )
+      or
+    label_replace(
+      label_replace(
+        ALERTS{
+          job_name!="",
+          alertname=~"(Kube.*|CPUThrottlingHigh)",
+          alertstate=~"firing",
+          cluster=~"$cluster"
+        }
+          or
+        GRAFANA_ALERTS{
+          job_name!="",
+          alertname=~"(Kube.*|CPUThrottlingHigh)",
+          alertstate=~"firing",
+          cluster=~"$cluster"
+        },
+        "workload_type",
+        "",
+        "job",
+        ""
+      ),
+      "workload",
+      "$1",
+      "job_name",
+      "(.*)"
+    )
+  )
+    or
+  ALERTS{
+    daemonset="",
+    deployment="",
+    statefulset="",
+    job_name="",
+    alertname=~"(Kube.*|CPUThrottlingHigh)",
+    alertstate=~"firing",
+    cluster=~"$cluster"
+  }
+)
+  or
+GRAFANA_ALERTS{
+  daemonset="",
+  deployment="",
+  statefulset="",
+  job_name="",
+  alertname=~"(Kube.*|CPUThrottlingHigh)",
+  alertstate=~"firing",
+  cluster=~"$cluster"
+}`,
   },
   nodes: {
     info: `avg_over_time(
@@ -699,22 +863,6 @@ max(
 max(
   kube_node_status_capacity{cluster=~"$cluster",resource=~"memory",node=~".+"}
 ) by(cluster,node,resource)`,
-    alertsCount: `count(
-  ALERTS{node!="",alertname=~"(Kube.*|CPUThrottlingHigh)",alertstate=~"firing"}
-    or
-  (
-    max(
-      ALERTS{
-        node="",
-        pod!="",
-        alertname=~"(Kube.*|CPUThrottlingHigh)",
-        alertstate=~"firing"
-      }
-    ) by(cluster,namespace,pod)
-      * on(cluster,namespace,pod) group_left(node)
-    max(kube_pod_info{node!="",node!=""}) by(cluster,namespace,pod,node)
-  )
-) by(cluster,node)`,
     cpuCapacity: `max(
   kube_node_status_capacity{
     cluster=~"$cluster",
@@ -1584,14 +1732,6 @@ sum(
 sum(
   namespace_memory:kube_pod_container_resource_requests:sum{
     cluster=~"$cluster",namespace=~"$namespace"
-  }
-) by(cluster,namespace)`,
-    alertsCount: `count(
-  ALERTS{
-    alertname=~"(Kube.*|CPUThrottlingHigh)",
-    alertstate=~"firing",
-    cluster=~"$cluster",
-    namespace=~"$namespace"
   }
 ) by(cluster,namespace)`,
     cpuAllocation: `max(
@@ -2981,143 +3121,6 @@ sum(
       resource="memory"
     }
   ) by(cluster,namespace,pod)
-) by(cluster,namespace,workload,workload_type)`,
-    alertsCount: `sum(
-  (
-    (
-      (
-        (
-          (
-            group(
-              ALERTS{
-                alertname=~"(Kube.*|CPUThrottlingHigh)",
-                alertstate=~"firing",
-                cluster=~"$cluster",
-                namespace=~"$namespace",
-                pod=~".+-.+"
-              }
-            ) by(cluster,namespace,pod)
-              * on(cluster,namespace,pod) group_left(workload,workload_type)
-            topk(
-              1,
-              group(
-                namespace_workload_pod:kube_pod_owner:relabel{
-                  cluster=~"$cluster",
-                  namespace=~"$namespace",
-                  workload=~"$workload"
-                }
-              ) by(cluster,namespace,workload,workload_type,pod)
-            ) by(cluster,namespace,pod)
-          )
-            or
-          label_replace(
-            label_replace(
-              ALERTS{
-                alertname=~"(Kube.*|CPUThrottlingHigh)",
-                alertstate=~"firing",
-                cluster=~"$cluster",
-                namespace=~"$namespace",
-                pod=~"",
-                replicaset=~"$workload"
-              },
-              "workload_type",
-              "",
-              "replicaset",
-              ""
-            ),
-            "workload",
-            "$1",
-            "replicaset",
-            "(.*)"
-          )
-        )
-          or
-        label_replace(
-          label_replace(
-            ALERTS{
-              alertname=~"(Kube.*|CPUThrottlingHigh)",
-              alertstate=~"firing",
-              cluster=~"$cluster",
-              namespace=~"$namespace",
-              pod=~"",
-              daemonset=~"$workload"
-            },
-            "workload_type",
-            "",
-            "daemonset",
-            ""
-          ),
-          "workload",
-          "$1",
-          "daemonset",
-          "(.*)"
-        )
-      )
-        or
-      label_replace(
-        label_replace(
-          ALERTS{
-            alertname=~"(Kube.*|CPUThrottlingHigh)",
-            alertstate=~"firing",
-            cluster=~"$cluster",
-            namespace=~"$namespace",
-            pod=~"",
-            deployment=~"$workload"
-          },
-          "workload_type",
-          "",
-          "deployment",
-          ""
-        ),
-        "workload",
-        "$1",
-        "deployment",
-        "(.*)"
-      )
-    )
-      or
-    label_replace(
-      label_replace(
-        ALERTS{
-          alertname=~"(Kube.*|CPUThrottlingHigh)",
-          alertstate=~"firing",
-          cluster=~"$cluster",
-          namespace=~"$namespace",
-          pod=~"",
-          statefulset=~"$workload"
-        },
-        "workload_type",
-        "",
-        "statefulset",
-        ""
-      ),
-      "workload",
-      "$1",
-      "statefulset",
-      "(.*)"
-    )
-  )
-    or
-  label_replace(
-    label_replace(
-      ALERTS{
-        alertname=~"(Kube.*|CPUThrottlingHigh)",
-        alertstate=~"firing",
-        cluster=~"$cluster",
-        namespace=~"$namespace",
-        pod=~"",
-        job_name=~"$workload"
-      },
-      "workload_type",
-      "",
-      "job",
-      ""
-    ),
-    "workload",
-    "$1",
-    "job_name",
-    "(.*)"
-  )
 ) by(cluster,namespace,workload,workload_type)`,
     cpuAllocation: `max(
   sum(
@@ -4629,13 +4632,6 @@ sum(
     resource="memory"
   }
 ) by(cluster,namespace,pod)`,
-    alertsCount: `ALERTS{
-  pod=~"$pod",
-  alertname=~"(Kube.*|CPUThrottlingHigh)",
-  alertstate=~"firing",
-  cluster=~"$cluster",
-  namespace=~"$namespace"
-}`,
     cpuAllocation: `max(
   sum(
     max(

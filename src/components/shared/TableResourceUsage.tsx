@@ -28,7 +28,6 @@ interface Props {
   memoryUsageMaxPercentExpr?: string;
   desiredPodsExpr?: string;
   readyPodsExpr?: string;
-  alertsExpr?: string;
 }
 
 export function TableResourceUsage({
@@ -47,7 +46,6 @@ export function TableResourceUsage({
   memoryUsageMaxPercentExpr,
   desiredPodsExpr,
   readyPodsExpr,
-  alertsExpr,
 }: Props) {
   const queries: SceneDataQuery[] = [];
 
@@ -163,14 +161,6 @@ export function TableResourceUsage({
       expr: readyPodsExpr,
     });
   }
-  if (alertsExpr) {
-    queries.push({
-      refId: 'alerts',
-      format: 'table',
-      instant: true,
-      expr: alertsExpr,
-    });
-  }
 
   const dataProvider = useQueryRunner({
     datasource: {
@@ -224,7 +214,6 @@ export function TableResourceUsage({
             ['Value #memory_usage_max']: true,
             ['Value #memory_usage_max_percent']: true,
             ['Value #ready_pods / Value #desired_pods']: true,
-            ['Value #alerts']: true,
           },
           indexByName: {
             ['namespace']: 0,
@@ -245,7 +234,6 @@ export function TableResourceUsage({
             ['Value #memory_usage_max']: 14,
             ['Value #memory_usage_max_percent']: 15,
             ['Value #ready_pods / Value #desired_pods']: 16,
-            ['Value #alerts']: 17,
           },
           renameByName: {
             ['node']: 'NODE',
@@ -266,7 +254,6 @@ export function TableResourceUsage({
             ['Value #memory_usage_max']: 'MEM MAX',
             ['Value #memory_usage_max_percent']: 'MEM MAX %',
             ['Value #ready_pods / Value #desired_pods']: 'READY',
-            ['Value #alerts']: 'ALERTS',
           },
         },
       },
@@ -550,23 +537,6 @@ export function TableResourceUsage({
             {
               color: 'green',
               value: 0.9,
-            },
-          ],
-        }),
-    )
-    .setOverrides((b) =>
-      b
-        .matchFieldsWithName('Value #alerts')
-        .overrideCustomFieldConfig('width', 100)
-        .overrideCustomFieldConfig('cellOptions', {
-          type: TableCellDisplayMode.ColorText,
-        })
-        .overrideThresholds({
-          mode: ThresholdsMode.Absolute,
-          steps: [
-            {
-              color: 'red',
-              value: 1,
             },
           ],
         }),

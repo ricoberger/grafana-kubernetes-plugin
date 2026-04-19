@@ -106,7 +106,6 @@ export function NodesPage() {
                     memoryUsageMaxPercentExpr={
                       queries.nodes.memoryUsageMaxPercentOverTime
                     }
-                    alertsExpr={queries.nodes.alertsCount}
                   />
                 </div>
               </Stack>

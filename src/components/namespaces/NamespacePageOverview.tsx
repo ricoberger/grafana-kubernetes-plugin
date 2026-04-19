@@ -106,7 +106,6 @@ function Workloads() {
               }
               desiredPodsExpr={queries.workloads.desiredPods}
               readyPodsExpr={queries.workloads.readyPods}
-              alertsExpr={queries.workloads.alertsCount}
             />
           )}
           {selected === 'cost' && (
