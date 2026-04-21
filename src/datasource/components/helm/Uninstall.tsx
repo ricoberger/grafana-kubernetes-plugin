@@ -58,7 +58,7 @@ export function Uninstall({
       const response = await fetch(
         `/api/datasources/uid/${datasource}/resources/helm/${namespace}/${name}/${version}/uninstall`,
         {
-          method: 'post',
+          method: 'POST',
           headers: {
             Accept: 'application/json, */*',
             'Content-Type': 'application/json',

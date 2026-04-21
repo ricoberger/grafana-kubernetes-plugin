@@ -50,7 +50,7 @@ export function Scale({
       const response = await fetch(
         `/api/datasources/uid/${datasource}/resources/kubernetes/proxy${resource.path}/namespaces/${namespace}/${resource.name}/${name}/scale`,
         {
-          method: 'put',
+          method: 'PUT',
           headers: {
             Accept: 'application/json, */*',
             'Content-Type': 'application/json',

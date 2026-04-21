@@ -47,7 +47,7 @@ export function CronJobSuspend({
       const response = await fetch(
         `/api/datasources/uid/${datasource}/resources/kubernetes/proxy${resource.path}/namespaces/${namespace}/${resource.name}/${name}?fieldManager=grafana-kubernetes-plugin`,
         {
-          method: 'patch',
+          method: 'PATCH',
           headers: {
             Accept: 'application/json, */*',
             'Content-Type': 'application/merge-patch+json',

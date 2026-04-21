@@ -53,7 +53,7 @@ export function Delete({
       const response = await fetch(
         `/api/datasources/uid/${datasource}/resources/kubernetes/proxy${resource.path}${resource.namespaced ? `/namespaces/${namespace}` : ''}/${resource.name}/${name}`,
         {
-          method: 'delete',
+          method: 'DELETE',
           headers: {
             Accept: 'application/json, */*',
             'Content-Type': 'application/json',

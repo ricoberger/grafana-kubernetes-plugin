@@ -45,7 +45,7 @@ export function CRDeny({
       const response = await fetch(
         `/api/datasources/uid/${datasource}/resources/kubernetes/proxy${resource.path}/${resource.name}/${name}/status?fieldManager=grafana-kubernetes-plugin`,
         {
-          method: 'patch',
+          method: 'PATCH',
           headers: {
             Accept: 'application/json, */*',
             'Content-Type': 'application/merge-patch+json',

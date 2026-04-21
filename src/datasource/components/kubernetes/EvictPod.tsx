@@ -47,7 +47,7 @@ export function EvictPod({
       const response = await fetch(
         `/api/datasources/uid/${datasource}/resources/kubernetes/proxy${resource.path}/namespaces/${namespace}/${resource.name}/${name}/eviction?fieldManager=grafana-kubernetes-plugin`,
         {
-          method: 'post',
+          method: 'POST',
           headers: {
             Accept: 'application/json, */*',
             'Content-Type': 'application/json',

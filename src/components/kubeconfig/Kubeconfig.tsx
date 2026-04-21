@@ -63,7 +63,7 @@ export function Kubeconfig({ datasource, onClose }: Props) {
     const response = await fetch(
       `/api/datasources/uid/${datasource}/resources/kubernetes/kubeconfig`,
       {
-        method: 'get',
+        method: 'GET',
       },
     );
     if (!response.ok) {

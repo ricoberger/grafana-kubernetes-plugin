@@ -35,7 +35,7 @@ export function Details({
     const response = await fetch(
       `/api/datasources/uid/${datasource}/resources/helm/${namespace}/${name}/${version}`,
       {
-        method: 'get',
+        method: 'GET',
         headers: {
           Accept: 'application/json, */*',
           'Content-Type': 'application/json',

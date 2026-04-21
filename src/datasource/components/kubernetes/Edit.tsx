@@ -81,7 +81,7 @@ export function Edit({
       const response = await fetch(
         `/api/datasources/uid/${datasource}/resources/kubernetes/proxy${resource.path}${resource.namespaced ? `/namespaces/${namespace}` : ''}/${resource.name}/${name}`,
         {
-          method: 'patch',
+          method: 'PATCH',
           headers: {
             Accept: 'application/json, */*',
             'Content-Type': 'application/json-patch+json',

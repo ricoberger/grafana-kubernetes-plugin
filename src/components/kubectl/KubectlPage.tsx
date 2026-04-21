@@ -34,7 +34,7 @@ export function KubectlPage() {
       url = `/api/datasources/uid/${datasource}/resources/kubernetes/kubeconfig/credentials?redirect=${redirect}`;
     }
 
-    const response = await fetch(url, { method: 'get' });
+    const response = await fetch(url, { method: 'GET' });
     if (!response.ok) {
       throw new Error(await response.text());
     }

@@ -84,7 +84,7 @@ export function CreateJob({
       const response = await fetch(
         `/api/datasources/uid/${datasource}/resources/kubernetes/proxy/apis/batch/v1/namespaces/${namespace}/jobs?fieldManager=grafana-kubernetes-plugin`,
         {
-          method: 'post',
+          method: 'POST',
           headers: {
             Accept: 'application/json, */*',
             'Content-Type': 'application/json',

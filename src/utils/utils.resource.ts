@@ -56,7 +56,7 @@ export async function getResourceManifest(
   const response = await fetch(
     `/api/datasources/uid/${datasource}/resources/kubernetes/proxy${resource.path}${resource.namespaced ? `/namespaces/${namespace}` : ''}/${resource.name}/${name}`,
     {
-      method: 'get',
+      method: 'GET',
       headers: {
         Accept: 'application/json, */*',
         'Content-Type': 'application/json',
@@ -82,7 +82,7 @@ export async function getEvents(
   const response = await fetch(
     `/api/datasources/uid/${datasource}/resources/kubernetes/proxy/api/v1${namespace ? `/namespaces/${namespace}` : ''}/events?fieldSelector=involvedObject.name=${name}`,
     {
-      method: 'get',
+      method: 'GET',
       headers: {
         Accept: 'application/json, */*',
         'Content-Type': 'application/json',

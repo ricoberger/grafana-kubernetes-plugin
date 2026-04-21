@@ -60,7 +60,7 @@ export function Rollback({
       const response = await fetch(
         `/api/datasources/uid/${datasource}/resources/helm/${namespace}/${name}/${options.version}/rollback`,
         {
-          method: 'post',
+          method: 'POST',
           headers: {
             Accept: 'application/json, */*',
             'Content-Type': 'application/json',
