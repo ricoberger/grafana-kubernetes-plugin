@@ -408,8 +408,7 @@ function TimeSeriesImages() {
     .setCustomFieldConfig('drawStyle', GraphDrawStyle.Bars)
     .setCustomFieldConfig('stacking', { mode: StackingMode.Normal })
     .setColor({
-      mode: FieldColorModeId.Shades,
-      fixedColor: 'green',
+      mode: FieldColorModeId.PaletteClassic,
     })
     .build();
 
