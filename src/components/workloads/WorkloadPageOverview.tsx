@@ -5,17 +5,7 @@ import {
   VariableControl,
   VizPanel,
 } from '@grafana/scenes-react';
-import {
-  FieldColorModeId,
-  GraphDrawStyle,
-  StackingMode,
-} from '@grafana/schema';
-import {
-  LegendDisplayMode,
-  RadioButtonGroup,
-  Stack,
-  useStyles2,
-} from '@grafana/ui';
+import { RadioButtonGroup, Stack, useStyles2 } from '@grafana/ui';
 import React, { useState } from 'react';
 
 import datasourcePluginJson from '../../datasource/plugin.json';
@@ -27,6 +17,7 @@ import { RowCosts } from '../shared/RowCosts';
 import { TableCosts } from '../shared/TableCosts';
 import { TableKubernetesResource } from '../shared/TableKubernetesResource';
 import { TableResourceUsage } from '../shared/TableResourceUsage';
+import { TimeSeriesImages } from '../shared/TimeSeriesImages';
 import { TimeSeriesMemoryOrCPU } from '../shared/TimeSeriesMemoryOrCPU';
 import { TimeSeriesWorkloadStatus } from '../shared/TimeSeriesWorkloadStatus';
 
@@ -78,7 +69,10 @@ export function WorkloadPageOverview({ workloadType }: Props) {
             },
           ]}
         />
-        <TimeSeriesImages />
+        <TimeSeriesImages
+          expr={queries.workloads.images}
+          legendFormat="{{image_spec}}"
+        />
         {workloadType === 'deployment' && (
           <TimeSeriesWorkloadStatus
             title="Status"
@@ -379,50 +373,5 @@ function TableKubernetesJobs() {
 
   return (
     <VizPanel title="Jobs" menu={menu} viz={viz} dataProvider={dataProvider} />
-  );
-}
-
-function TimeSeriesImages() {
-  const dataProvider = useQueryRunner({
-    datasource: {
-      type: 'prometheus',
-      uid: '$prometheus',
-    },
-    queries: [
-      {
-        refId: 'images',
-        format: 'time_series',
-        expr: queries.workloads.images,
-        legendFormat: '{{image_spec}}',
-      },
-    ],
-  });
-
-  const viz = VizConfigBuilders.timeseries()
-    .setMin(0)
-    .setOption('legend', {
-      asTable: false,
-      displayMode: LegendDisplayMode.List,
-      placement: 'bottom',
-    })
-    .setCustomFieldConfig('drawStyle', GraphDrawStyle.Bars)
-    .setCustomFieldConfig('stacking', { mode: StackingMode.Normal })
-    .setColor({
-      mode: FieldColorModeId.PaletteClassic,
-    })
-    .build();
-
-  const menu = useVizPanelMenu({
-    data: dataProvider.useState(),
-    viz,
-  });
-
-  return (
-    <VizPanel
-      title="Images"
-      menu={menu}
-      viz={viz}
-      dataProvider={dataProvider}
-    />
   );
 }

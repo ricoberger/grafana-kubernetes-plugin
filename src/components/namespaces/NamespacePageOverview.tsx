@@ -16,7 +16,9 @@ import { RowCosts } from '../shared/RowCosts';
 import { TableCosts } from '../shared/TableCosts';
 import { TableKubernetesResource } from '../shared/TableKubernetesResource';
 import { TableResourceUsage } from '../shared/TableResourceUsage';
+import { TimeSeriesImages } from '../shared/TimeSeriesImages';
 import { TimeSeriesMemoryOrCPU } from '../shared/TimeSeriesMemoryOrCPU';
+import { TimeSeriesWorkloadStatus } from '../shared/TimeSeriesWorkloadStatus';
 
 export function NamespacePageOverview() {
   const styles = useStyles2(getStyles);
@@ -24,6 +26,7 @@ export function NamespacePageOverview() {
   return (
     <Stack direction="column" gap={2}>
       <div className={styles.dashboard.header.container}>
+        <VariableControl name="workload" />
         <div className={styles.dashboard.header.spacer} />
       </div>
 
@@ -45,6 +48,24 @@ export function NamespacePageOverview() {
           limitsExpr={queries.namespaces.memoryLimits}
           requestsExpr={queries.namespaces.memoryRequests}
           usageExpr={queries.namespaces.memoryUsage}
+        />
+      </div>
+
+      <div className={styles.dashboard.row.height400px}>
+        <TimeSeriesWorkloadStatus
+          title="Pods"
+          queries={[
+            {
+              refId: 'pods',
+              format: 'time_series',
+              expr: queries.namespaces.podsCount,
+              legendFormat: '{{workload}} ({{workload_type}})',
+            },
+          ]}
+        />
+        <TimeSeriesImages
+          expr={queries.namespaces.images}
+          legendFormat="{{image_spec}}"
         />
       </div>
 
@@ -78,9 +99,6 @@ function Workloads() {
             value={selected}
             onChange={(value) => setSelected(value)}
           />
-          {(selected === 'usage' || selected === 'cost') && (
-            <VariableControl name="workload" />
-          )}
           <div className={styles.dashboard.header.spacer} />
           {selected === 'usage' && <LegendResourceUsage />}
         </div>

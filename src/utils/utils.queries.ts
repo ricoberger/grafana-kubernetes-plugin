@@ -1827,6 +1827,21 @@ sum(
     }
   ) by(cluster,namespace,pod,container)
 )`,
+    podsCount: `count(
+  namespace_workload_pod:kube_pod_owner:relabel{
+    cluster=~"$cluster",
+    namespace=~"$namespace",
+    workload=~"$workload",
+    workload_type=~"$workloadtype"
+  }
+) by(cluster,namespace,workload,workload_type)`,
+    images: `count(
+  count(kube_pod_container_info) by(pod,image_spec)
+    * on(pod) group_left(namespace)
+  namespace_workload_pod:kube_pod_owner:relabel{
+    pod=~"$pod",cluster=~"$cluster",namespace="$namespace",workload=~"$workload"
+  }
+) by(image_spec)`,
     networkBandwidthRx: `sum(
   max(
     rate(
