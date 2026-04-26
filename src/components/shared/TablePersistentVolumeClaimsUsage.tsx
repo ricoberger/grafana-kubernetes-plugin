@@ -189,7 +189,7 @@ export function TablePersistentVolumeClaimsUsage() {
         .matchFieldsWithName('Value #phase')
         .overrideCustomFieldConfig('width', 100)
         .overrideCustomFieldConfig('cellOptions', {
-          type: TableCellDisplayMode.ColorBackground,
+          type: TableCellDisplayMode.ColorText,
         })
         .overrideMappings([
           {
