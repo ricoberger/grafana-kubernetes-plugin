@@ -22,7 +22,7 @@ export function TableKubernetesResource({ resource }: { resource: string }) {
         <h4>{info.title} Information</h4>
         <div className={styles.dashboard.header.spacer} />
       </div>
-      <div className={styles.dashboard.row.height115px}>
+      <div className={styles.dashboard.row.height130px}>
         <TableKubernetesResourceInternal
           title={info.title}
           resourceId={info.resourceId}

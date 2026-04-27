@@ -62,10 +62,10 @@ export function getStyles(theme: GrafanaTheme2) {
           gap: theme.spacing(1),
           alignContent: 'baseline',
         }),
-        height115px: css({
+        height130px: css({
           display: 'flex',
           flexFlow: 'row',
-          height: '115px',
+          height: '130px',
           alignSelf: 'stretch',
           gap: theme.spacing(1),
           alignContent: 'baseline',
