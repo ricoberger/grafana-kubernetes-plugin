@@ -27,6 +27,9 @@ export function TimeSeriesWorkloadStatus({ title, queries }: Props) {
       placement: 'bottom',
     })
     .setCustomFieldConfig('lineWidth', 1)
+    .setColor({
+      mode: 'palette-classic',
+    })
     .setOverrides((b) =>
       b
         .matchFieldsByQuery('pods')

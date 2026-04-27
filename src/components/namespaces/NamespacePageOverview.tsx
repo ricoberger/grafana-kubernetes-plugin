@@ -56,7 +56,7 @@ export function NamespacePageOverview() {
           title="Pods"
           queries={[
             {
-              refId: 'pods',
+              refId: 'pods_per_workload',
               format: 'time_series',
               expr: queries.namespaces.podsCount,
               legendFormat: '{{workload}} ({{workload_type}})',
