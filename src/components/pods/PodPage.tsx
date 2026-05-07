@@ -21,7 +21,6 @@ import { queries, variableQuery } from '../../utils/utils.queries';
 import { prefixRoute } from '../../utils/utils.routing';
 import { getStyles } from '../../utils/utils.styles';
 import { TabLogs } from '../shared/TabLogs';
-import { TabLogsContent } from '../shared/TabLogsContent';
 import { PodPageCPU } from './PodPageCPU';
 import { PodPageMemory } from './PodPageMemory';
 import { PodPageNetwork } from './PodPageNetwork';
@@ -236,8 +235,8 @@ export function PodPage() {
                                 setActiveTab('storage');
                               }}
                             />
-                            <TabLogs
-                              resource="pod"
+                            <Tab
+                              label="Logs"
                               active={activeTab === 'logs'}
                               onChangeTab={(ev) => {
                                 ev?.preventDefault();
@@ -251,7 +250,7 @@ export function PodPage() {
                           {activeTab === 'network' && <PodPageNetwork />}
                           {activeTab === 'storage' && <PodPageStorage />}
                           {activeTab === 'logs' && (
-                            <TabLogsContent page="pod" resource="pod" />
+                            <TabLogs page="pod" resource="pod" />
                           )}
                         </PluginPage>
                       </AnnotationLayer>

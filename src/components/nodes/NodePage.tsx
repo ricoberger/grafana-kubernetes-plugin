@@ -20,7 +20,6 @@ import { queries, variableQuery } from '../../utils/utils.queries';
 import { prefixRoute } from '../../utils/utils.routing';
 import { getStyles } from '../../utils/utils.styles';
 import { TabLogs } from '../shared/TabLogs';
-import { TabLogsContent } from '../shared/TabLogsContent';
 import { NodePageCPU } from './NodePageCPU';
 import { NodePageMemory } from './NodePageMemory';
 import { NodePageNetwork } from './NodePageNetwork';
@@ -195,8 +194,8 @@ export function NodePage() {
                             setActiveTab('storage');
                           }}
                         />
-                        <TabLogs
-                          resource="node"
+                        <Tab
+                          label="Logs"
                           active={activeTab === 'logs'}
                           onChangeTab={(ev) => {
                             ev?.preventDefault();
@@ -210,7 +209,7 @@ export function NodePage() {
                       {activeTab === 'network' && <NodePageNetwork />}
                       {activeTab === 'storage' && <NodePageStorage />}
                       {activeTab === 'logs' && (
-                        <TabLogsContent page="node" resource="node" />
+                        <TabLogs page="node" resource="node" />
                       )}
                     </PluginPage>
                   </QueryVariable>

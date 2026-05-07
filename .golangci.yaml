@@ -19,6 +19,8 @@ linters:
       - common-false-positives
       - legacy
       - std-error-handling
+    paths:
+      - 'node_modules'
 formatters:
   enable:
     - gofmt

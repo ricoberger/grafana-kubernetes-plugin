@@ -20,7 +20,6 @@ import { queries, variableQuery } from '../../utils/utils.queries';
 import { prefixRoute } from '../../utils/utils.routing';
 import { getStyles } from '../../utils/utils.styles';
 import { TabLogs } from '../shared/TabLogs';
-import { TabLogsContent } from '../shared/TabLogsContent';
 import { NamespacePageCPU } from './NamespacePageCPU';
 import { NamespacePageMemory } from './NamespacePageMemory';
 import { NamespacePageNetwork } from './NamespacePageNetwork';
@@ -227,8 +226,8 @@ export function NamespacePage() {
                                 setActiveTab('storage');
                               }}
                             />
-                            <TabLogs
-                              resource="namespace"
+                            <Tab
+                              label="Logs"
                               active={activeTab === 'logs'}
                               onChangeTab={(ev) => {
                                 ev?.preventDefault();
@@ -244,10 +243,7 @@ export function NamespacePage() {
                           {activeTab === 'network' && <NamespacePageNetwork />}
                           {activeTab === 'storage' && <NamespacePageStorage />}
                           {activeTab === 'logs' && (
-                            <TabLogsContent
-                              page="namespace"
-                              resource="namespace"
-                            />
+                            <TabLogs page="namespace" resource="namespace" />
                           )}
                         </PluginPage>
                       </QueryVariable>

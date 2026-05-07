@@ -21,7 +21,6 @@ import { queries, variableQuery } from '../../utils/utils.queries';
 import { prefixRoute } from '../../utils/utils.routing';
 import { getStyles } from '../../utils/utils.styles';
 import { TabLogs } from '../shared/TabLogs';
-import { TabLogsContent } from '../shared/TabLogsContent';
 import { WorkloadPageCPU } from './WorkloadPageCPU';
 import { WorkloadPageMemory } from './WorkloadPageMemory';
 import { WorkloadPageNetwork } from './WorkloadPageNetwork';
@@ -275,8 +274,8 @@ export function WorkloadPage() {
                                     setActiveTab('storage');
                                   }}
                                 />
-                                <TabLogs
-                                  resource={workloadType}
+                                <Tab
+                                  label="Logs"
                                   active={activeTab === 'logs'}
                                   onChangeTab={(ev) => {
                                     ev?.preventDefault();
@@ -298,7 +297,7 @@ export function WorkloadPage() {
                                 <WorkloadPageStorage />
                               )}
                               {activeTab === 'logs' && (
-                                <TabLogsContent
+                                <TabLogs
                                   page="workload"
                                   resource={workloadType}
                                 />
