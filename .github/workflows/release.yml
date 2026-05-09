@@ -30,7 +30,7 @@ jobs:
         env:
           SKIP_OSV_SCANNER: 'true'
         with:
-          go-version: '1.26.0'
+          go-version: '1.26.2'
           node-version: '22'
           attestation: true
           use_changelog_generator: true
