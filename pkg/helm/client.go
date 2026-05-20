@@ -14,9 +14,11 @@ import (
 	"github.com/grafana/grafana-plugin-sdk-go/data"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
-	"helm.sh/helm/v3/pkg/action"
-	"helm.sh/helm/v3/pkg/registry"
-	"helm.sh/helm/v3/pkg/release"
+	"helm.sh/helm/v4/pkg/action"
+	"helm.sh/helm/v4/pkg/kube"
+	"helm.sh/helm/v4/pkg/registry"
+	releaser "helm.sh/helm/v4/pkg/release"
+	release "helm.sh/helm/v4/pkg/release/v1"
 	"k8s.io/client-go/rest"
 )
 
@@ -26,7 +28,6 @@ type RollbackOptions struct {
 	Force         bool   `json:"force"`
 	MaxHistory    int    `json:"maxHistory"`
 	DisableHooks  bool   `json:"disableHooks"`
-	Recreate      bool   `json:"recreate"`
 	Timeout       string `json:"timeout"`
 	Wait          bool   `json:"wait"`
 	WaitForJobs   bool   `json:"waitForJobs"`
@@ -67,7 +68,14 @@ func (c *client) ListReleases(ctx context.Context) (*data.Frame, error) {
 		return nil, err
 	}
 
-	return createReleasesDataFrame(releases), nil
+	v1Releases, err := releasersToV1Releases(releases)
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return nil, err
+	}
+
+	return createReleasesDataFrame(v1Releases), nil
 }
 
 func (c *client) GetRelease(ctx context.Context, name string, version int64) (*release.Release, error) {
@@ -79,14 +87,21 @@ func (c *client) GetRelease(ctx context.Context, name string, version int64) (*r
 	getReleaseClient := action.NewGet(c.ActionConfig)
 	getReleaseClient.Version = int(version)
 
-	release, err := getReleaseClient.Run(name)
+	rel, err := getReleaseClient.Run(name)
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 
-	return release, nil
+	v1Release, err := releaserToV1Release(rel)
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return nil, err
+	}
+
+	return v1Release, nil
 }
 
 func (c *client) ListReleaseHistory(ctx context.Context, name string) (*data.Frame, error) {
@@ -102,11 +117,18 @@ func (c *client) ListReleaseHistory(ctx context.Context, name string) (*data.Fra
 		return nil, err
 	}
 
-	sort.Slice(releases, func(i, j int) bool {
-		return releases[i].Version < releases[j].Version
+	v1Releases, err := releasersToV1Releases(releases)
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return nil, err
+	}
+
+	sort.Slice(v1Releases, func(i, j int) bool {
+		return v1Releases[i].Version < v1Releases[j].Version
 	})
 
-	return createReleasesDataFrame(releases), nil
+	return createReleasesDataFrame(v1Releases), nil
 }
 
 func (c *client) RollbackRelease(ctx context.Context, name string, version int64, options RollbackOptions) error {
@@ -126,13 +148,16 @@ func (c *client) RollbackRelease(ctx context.Context, name string, version int64
 	}
 
 	rollbackClient.CleanupOnFail = options.CleanupOnFail
-	rollbackClient.DryRun = options.DryRun
-	rollbackClient.Force = options.Force
+	if options.DryRun {
+		rollbackClient.DryRunStrategy = action.DryRunClient
+	}
+	rollbackClient.ForceReplace = options.Force
 	rollbackClient.MaxHistory = options.MaxHistory
 	rollbackClient.DisableHooks = options.DisableHooks
-	rollbackClient.Recreate = options.Recreate
 	rollbackClient.Timeout = timeoutDuration
-	rollbackClient.Wait = options.Wait
+	if options.Wait {
+		rollbackClient.WaitStrategy = kube.StatusWatcherStrategy
+	}
 	rollbackClient.WaitForJobs = options.WaitForJobs
 
 	err = rollbackClient.Run(name)
@@ -164,7 +189,9 @@ func (c *client) UninstallRelease(ctx context.Context, name string, options Unin
 	uninstallClient.KeepHistory = options.KeepHistory
 	uninstallClient.DisableHooks = options.DisableHooks
 	uninstallClient.Timeout = timeoutDuration
-	uninstallClient.Wait = options.Wait
+	if options.Wait {
+		uninstallClient.WaitStrategy = kube.StatusWatcherStrategy
+	}
 
 	resp, err := uninstallClient.Run(name)
 	if err != nil {
@@ -185,14 +212,11 @@ func NewClient(ctx context.Context, user string, groups []string, namespace stri
 
 	clientGetter := NewRESTClientGetter(user, groups, namespace, restConfig)
 
-	actionConfig := new(action.Configuration)
+	actionConfig := action.NewConfiguration()
 	err := actionConfig.Init(
 		clientGetter,
 		namespace,
 		os.Getenv("HELM_DRIVER"),
-		func(format string, v ...any) {
-			logger.Info(fmt.Sprintf(format, v...))
-		},
 	)
 	if err != nil {
 		span.RecordError(err)
@@ -212,4 +236,29 @@ func NewClient(ctx context.Context, user string, groups []string, namespace stri
 	return &client{
 		ActionConfig: actionConfig,
 	}, nil
+}
+
+func releaserToV1Release(rel releaser.Releaser) (*release.Release, error) {
+	switch r := rel.(type) {
+	case *release.Release:
+		return r, nil
+	case release.Release:
+		return &r, nil
+	case nil:
+		return nil, nil
+	default:
+		return nil, fmt.Errorf("unsupported release type: %T", rel)
+	}
+}
+
+func releasersToV1Releases(rels []releaser.Releaser) ([]*release.Release, error) {
+	out := make([]*release.Release, 0, len(rels))
+	for _, r := range rels {
+		v1, err := releaserToV1Release(r)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, v1)
+	}
+	return out, nil
 }

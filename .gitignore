@@ -42,8 +42,8 @@ ci/
 
 # Editor
 .idea
-
 .eslintcache
+.claude
 
 # Kubeconfig and validate plugin output
 kubeconfig.yaml

@@ -100,7 +100,6 @@ export interface RollbackOptions {
   force: boolean;
   maxHistory: number;
   disableHooks: boolean;
-  recreate: boolean;
   timeout: string;
   wait: boolean;
   waitForJobs: boolean;

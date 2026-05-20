@@ -15,7 +15,7 @@ import (
 
 	data "github.com/grafana/grafana-plugin-sdk-go/data"
 	gomock "go.uber.org/mock/gomock"
-	release "helm.sh/helm/v3/pkg/release"
+	release "helm.sh/helm/v4/pkg/release/v1"
 )
 
 // MockClient is a mock of Client interface.
