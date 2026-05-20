@@ -47,7 +47,6 @@ export function Rollback({
     force: false,
     maxHistory: 10,
     disableHooks: false,
-    recreate: false,
     timeout: '10m',
     wait: false,
     waitForJobs: false,
@@ -162,18 +161,6 @@ export function Rollback({
                   setOptions({
                     ...options,
                     disableHooks: event.target.checked,
-                  })
-                }
-                disabled={isLoading}
-              />
-            </InlineField>
-            <InlineField label="Recreate">
-              <InlineSwitch
-                value={options.recreate}
-                onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                  setOptions({
-                    ...options,
-                    recreate: event.target.checked,
                   })
                 }
                 disabled={isLoading}

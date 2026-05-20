@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/grafana/grafana-plugin-sdk-go/data"
-	"helm.sh/helm/v3/pkg/release"
+	release "helm.sh/helm/v4/pkg/release/v1"
 )
 
 func createReleasesDataFrame(releases []*release.Release) *data.Frame {
@@ -27,7 +27,7 @@ func createReleasesDataFrame(releases []*release.Release) *data.Frame {
 		var description string
 
 		if release.Info != nil {
-			lastDeployed = release.Info.LastDeployed.Time
+			lastDeployed = release.Info.LastDeployed
 			status = release.Info.Status.String()
 			description = release.Info.Description
 		}
