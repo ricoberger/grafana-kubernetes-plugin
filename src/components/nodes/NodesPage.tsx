@@ -17,6 +17,7 @@ import pluginJson from '../../plugin.json';
 import { queries } from '../../utils/utils.queries';
 import { getStyles } from '../../utils/utils.styles';
 import { LegendResourceUsage } from '../shared/LegendResourceUsage';
+import { PageOptions } from '../shared/PageOptions';
 import { TableResourceUsage } from '../shared/TableResourceUsage';
 
 export function NodesPage() {
@@ -77,6 +78,7 @@ export function NodesPage() {
                 <>
                   <TimeRangePicker />
                   <RefreshPicker />
+                  <PageOptions />
                 </>
               }
             >
