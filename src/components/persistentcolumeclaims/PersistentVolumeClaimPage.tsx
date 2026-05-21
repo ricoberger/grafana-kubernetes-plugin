@@ -23,6 +23,7 @@ import pluginJson from '../../plugin.json';
 import { queries, variableQuery } from '../../utils/utils.queries';
 import { prefixRoute } from '../../utils/utils.routing';
 import { getStyles } from '../../utils/utils.styles';
+import { PageOptions } from '../shared/PageOptions';
 import { TableKubernetesResource } from '../shared/TableKubernetesResource';
 import { TableResourceUsage } from '../shared/TableResourceUsage';
 import { TimeSeriesMemoryOrCPU } from '../shared/TimeSeriesMemoryOrCPU';
@@ -160,6 +161,7 @@ export function PersistentVolumeClaimPage() {
                         <>
                           <TimeRangePicker />
                           <RefreshPicker />
+                          <PageOptions />
                         </>
                       }
                     >

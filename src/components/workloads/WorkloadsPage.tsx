@@ -17,6 +17,7 @@ import pluginJson from '../../plugin.json';
 import { queries, variableQuery } from '../../utils/utils.queries';
 import { getStyles } from '../../utils/utils.styles';
 import { LegendResourceUsage } from '../shared/LegendResourceUsage';
+import { PageOptions } from '../shared/PageOptions';
 import { TableResourceUsage } from '../shared/TableResourceUsage';
 
 export function WorkloadsPage() {
@@ -116,6 +117,7 @@ export function WorkloadsPage() {
                     <>
                       <TimeRangePicker />
                       <RefreshPicker />
+                      <PageOptions />
                     </>
                   }
                 >

@@ -25,6 +25,7 @@ import { NamespacePageMemory } from './NamespacePageMemory';
 import { NamespacePageNetwork } from './NamespacePageNetwork';
 import { NamespacePageOverview } from './NamespacePageOverview';
 import { NamespacePageStorage } from './NamespacePageStorage';
+import { PageOptions } from '../shared/PageOptions';
 
 export function NamespacePage() {
   const styles = useStyles2(getStyles);
@@ -182,6 +183,7 @@ export function NamespacePage() {
                             <>
                               <TimeRangePicker />
                               <RefreshPicker />
+                              <PageOptions />
                             </>
                           }
                         >

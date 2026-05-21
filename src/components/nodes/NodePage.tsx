@@ -19,6 +19,7 @@ import pluginJson from '../../plugin.json';
 import { queries, variableQuery } from '../../utils/utils.queries';
 import { prefixRoute } from '../../utils/utils.routing';
 import { getStyles } from '../../utils/utils.styles';
+import { PageOptions } from '../shared/PageOptions';
 import { TabLogs } from '../shared/TabLogs';
 import { NodePageCPU } from './NodePageCPU';
 import { NodePageMemory } from './NodePageMemory';
@@ -150,6 +151,7 @@ export function NodePage() {
                         <>
                           <TimeRangePicker />
                           <RefreshPicker />
+                          <PageOptions />
                         </>
                       }
                     >

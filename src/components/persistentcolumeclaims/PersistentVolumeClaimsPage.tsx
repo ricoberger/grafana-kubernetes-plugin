@@ -16,6 +16,7 @@ import resourcesImg from '../../img/logo.svg';
 import pluginJson from '../../plugin.json';
 import { queries, variableQuery } from '../../utils/utils.queries';
 import { getStyles } from '../../utils/utils.styles';
+import { PageOptions } from '../shared/PageOptions';
 import { TablePersistentVolumeClaimsUsage } from '../shared/TablePersistentVolumeClaimsUsage';
 import { PersistentVolumeClaimsStat } from './PersistentVolumeClaimsStat';
 
@@ -115,6 +116,7 @@ export function PersistentVolumeClaimsPage() {
                     <>
                       <TimeRangePicker />
                       <RefreshPicker />
+                      <PageOptions />
                     </>
                   }
                 >

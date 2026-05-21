@@ -20,6 +20,7 @@ import pluginJson from '../../plugin.json';
 import { queries, variableQuery } from '../../utils/utils.queries';
 import { prefixRoute } from '../../utils/utils.routing';
 import { getStyles } from '../../utils/utils.styles';
+import { PageOptions } from '../shared/PageOptions';
 import { TabLogs } from '../shared/TabLogs';
 import { PodPageCPU } from './PodPageCPU';
 import { PodPageMemory } from './PodPageMemory';
@@ -191,6 +192,7 @@ export function PodPage() {
                             <>
                               <TimeRangePicker />
                               <RefreshPicker />
+                              <PageOptions />
                             </>
                           }
                         >

@@ -17,6 +17,7 @@ import { getStyles } from '../../utils/utils.styles';
 import { HomePageAlerts } from './HomePageAlerts';
 import { HomePageCost } from './HomePageCost';
 import { HomePageOverview } from './HomePageOverview';
+import { PageOptions } from '../shared/PageOptions';
 
 export function HomePage() {
   const styles = useStyles2(getStyles);
@@ -99,6 +100,7 @@ export function HomePage() {
                         <>
                           <TimeRangePicker />
                           <RefreshPicker />
+                          <PageOptions />
                         </>
                       }
                     >
