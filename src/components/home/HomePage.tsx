@@ -9,19 +9,20 @@ import {
   TimeRangePicker,
 } from '@grafana/scenes-react';
 import { Tab, TabsBar, useStyles2 } from '@grafana/ui';
-import React, { useState } from 'react';
+import React from 'react';
 
 import datasourcePluginJson from '../../datasource/plugin.json';
+import { useActiveTab } from '../../hooks/useActiveTab';
 import pluginJson from '../../plugin.json';
 import { getStyles } from '../../utils/utils.styles';
+import { PageOptions } from '../shared/PageOptions';
 import { HomePageAlerts } from './HomePageAlerts';
 import { HomePageCost } from './HomePageCost';
 import { HomePageOverview } from './HomePageOverview';
-import { PageOptions } from '../shared/PageOptions';
 
 export function HomePage() {
   const styles = useStyles2(getStyles);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useActiveTab('overview');
 
   return (
     <SceneContextProvider
