@@ -9,28 +9,29 @@ import {
   TimeRangePicker,
 } from '@grafana/scenes-react';
 import { Alert, Badge, Stack, Tab, TabsBar, useStyles2 } from '@grafana/ui';
-import React, { useState } from 'react';
+import React from 'react';
 import { useParams } from 'react-router-dom';
 
 import { ROUTES } from '../../constants';
 import datasourcePluginJson from '../../datasource/plugin.json';
+import { useActiveTab } from '../../hooks/useActiveTab';
 import resourcesImg from '../../img/logo.svg';
 import pluginJson from '../../plugin.json';
 import { queries, variableQuery } from '../../utils/utils.queries';
 import { prefixRoute } from '../../utils/utils.routing';
 import { getStyles } from '../../utils/utils.styles';
+import { PageOptions } from '../shared/PageOptions';
 import { TabLogs } from '../shared/TabLogs';
 import { NamespacePageCPU } from './NamespacePageCPU';
 import { NamespacePageMemory } from './NamespacePageMemory';
 import { NamespacePageNetwork } from './NamespacePageNetwork';
 import { NamespacePageOverview } from './NamespacePageOverview';
 import { NamespacePageStorage } from './NamespacePageStorage';
-import { PageOptions } from '../shared/PageOptions';
 
 export function NamespacePage() {
   const styles = useStyles2(getStyles);
   const { namespace } = useParams<{ namespace: string }>();
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useActiveTab('overview');
 
   if (!namespace) {
     return <Alert title="Namespace not found" severity="error" />;
