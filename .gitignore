@@ -43,9 +43,8 @@ ci/
 # Editor
 .idea
 .eslintcache
-.claude
 
-# Kubeconfig and validate plugin output
+# Misc
+.cache
 kubeconfig.yaml
-/.cache
 ricoberger-kubernetes-app*
