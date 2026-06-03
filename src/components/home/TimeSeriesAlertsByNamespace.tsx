@@ -41,7 +41,7 @@ export function TimeSeriesAlertsByNamespace() {
 
   return (
     <VizPanel
-      title="Alert Severity"
+      title="Alerts by Namespace"
       menu={menu}
       viz={viz}
       dataProvider={dataProvider}

@@ -71,7 +71,7 @@ export function TimeSeriesAlertsBySeverity() {
 
   return (
     <VizPanel
-      title="Alert Severity"
+      title="Alerts by Severity"
       menu={menu}
       viz={viz}
       dataProvider={dataProvider}
