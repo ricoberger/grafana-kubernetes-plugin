@@ -3,19 +3,25 @@ import {
   DataSourcePluginOptionsEditorProps,
   GrafanaTheme2,
 } from '@grafana/data';
-import { InlineField, Input, SecretInput, useStyles2 } from '@grafana/ui';
+import {
+  InlineField,
+  Input,
+  RadioButtonGroup,
+  SecretInput,
+  useStyles2,
+} from '@grafana/ui';
 import React, { ChangeEvent } from 'react';
 
 import {
   DataSourceOptions,
+  GrafanaServiceAccountRole,
   KubernetesSecureJsonData,
 } from '../../types/settings';
 
-interface Props
-  extends DataSourcePluginOptionsEditorProps<
-    DataSourceOptions,
-    KubernetesSecureJsonData
-  > { }
+interface Props extends DataSourcePluginOptionsEditorProps<
+  DataSourceOptions,
+  KubernetesSecureJsonData
+> { }
 
 export function Grafana({ options, onOptionsChange }: Props) {
   const styles = useStyles2((theme: GrafanaTheme2) => {
@@ -70,6 +76,25 @@ export function Grafana({ options, onOptionsChange }: Props) {
             });
           }}
           width={65}
+        />
+      </InlineField>
+      <InlineField label="Service Account Role" labelWidth={20} interactive>
+        <RadioButtonGroup<GrafanaServiceAccountRole>
+          options={[
+            { label: 'Admin', value: 'Admin' },
+            { label: 'Editor', value: 'Editor' },
+            { label: 'Viewer', value: 'Viewer' },
+          ]}
+          value={options.jsonData.grafanaServiceAccountRole ?? 'Viewer'}
+          onChange={(value: GrafanaServiceAccountRole) => {
+            onOptionsChange({
+              ...options,
+              jsonData: {
+                ...options.jsonData,
+                grafanaServiceAccountRole: value,
+              },
+            });
+          }}
         />
       </InlineField>
     </div>

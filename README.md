@@ -115,6 +115,12 @@ Afterwards you have to provide a Grafana username and password for the plugin,
 so that the plugin can interact with the Grafana API. The provided user should
 have the `Admin` role.
 
+You can also configure the role (`Admin`, `Editor` or `Viewer`) which is
+assigned to the Grafana service accounts that are created for each user when the
+**Generate Kubeconfig** feature is enabled. This role only affects the
+permissions of the service account inside Grafana, it does not change the
+Kubernetes permissions. The role defaults to `Viewer`.
+
 ### Impersonate
 
 The plugin can impersonate a Grafana user and the groups of the user when making

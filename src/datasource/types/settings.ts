@@ -8,6 +8,13 @@ import { DataSourceJsonData } from '@grafana/data';
 export type ClusterProvider = 'incluster' | 'path' | 'kubeconfig';
 
 /**
+ * GrafanaServiceAccountRole defines the role which is assigned to the Grafana
+ * service accounts that the plugin creates for each user when generating a
+ * kubeconfig.
+ */
+export type GrafanaServiceAccountRole = 'Admin' | 'Editor' | 'Viewer';
+
+/**
  * These are options configured for each DataSource instance. A user must select
  * a provider and depending on the selected provider a user must provide the
  * path to a Kubeconfig or upload a Kubeconfig.
@@ -17,6 +24,7 @@ export interface DataSourceOptions extends DataSourceJsonData {
   clusterPath?: string;
   clusterContext?: string;
   grafanaUsername?: string;
+  grafanaServiceAccountRole?: GrafanaServiceAccountRole;
   impersonateUser?: boolean;
   impersonateGroups?: boolean;
   generateKubeconfig?: boolean;
