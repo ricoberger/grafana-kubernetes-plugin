@@ -25,7 +25,8 @@ import (
 )
 
 const (
-	serviceAccountPrefix = "kubernetes-"
+	serviceAccountPrefix      = "kubernetes-"
+	defaultServiceAccountRole = "Viewer"
 )
 
 type Client interface {
@@ -38,6 +39,7 @@ type Client interface {
 type client struct {
 	impersonateUser      bool
 	impersonateGroups    bool
+	serviceAccountRole   string
 	appUrl               *url.URL
 	client               *goapi.GrafanaHTTPAPI
 	usersCache           *expirable.LRU[int64, string]
@@ -45,7 +47,7 @@ type client struct {
 	groupsCache          *expirable.LRU[string, []string]
 }
 
-func NewClient(ctx context.Context, impersonateUser, impersonateGroups bool, username, password string) (Client, error) {
+func NewClient(ctx context.Context, impersonateUser, impersonateGroups bool, username, password, serviceAccountRole string) (Client, error) {
 	pCtx := backend.PluginConfigFromContext(ctx)
 
 	grafanaAppUrl, err := pCtx.GrafanaConfig.AppURL()
@@ -77,10 +79,18 @@ func NewClient(ctx context.Context, impersonateUser, impersonateGroups bool, use
 	serviceAccountsCache := expirable.NewLRU[int64, string](100, nil, 60*time.Minute)
 	groupsCache := expirable.NewLRU[string, []string](100, nil, 60*time.Minute)
 
+	// The service account role used when creating new service accounts for
+	// users defaults to "Viewer" when no role is configured in the data
+	// source settings.
+	if serviceAccountRole == "" {
+		serviceAccountRole = defaultServiceAccountRole
+	}
+
 	return &client{
-		impersonateUser:   impersonateUser,
-		impersonateGroups: impersonateGroups,
-		appUrl:            parsedGrafanaAppUrl,
+		impersonateUser:    impersonateUser,
+		impersonateGroups:  impersonateGroups,
+		serviceAccountRole: serviceAccountRole,
+		appUrl:             parsedGrafanaAppUrl,
 		client: goapi.NewHTTPClientWithConfig(strfmt.Default, &goapi.TransportConfig{
 			Host:      parsedGrafanaAppUrl.Host,
 			BasePath:  strings.TrimLeft(parsedGrafanaAppUrl.Path+"/api", "/"),
@@ -368,7 +378,7 @@ func (c *client) getServiceAccount(ctx context.Context, user string) (*models.Se
 		Body: &models.CreateServiceAccountForm{
 			IsDisabled: false,
 			Name:       user,
-			Role:       "Viewer",
+			Role:       c.serviceAccountRole,
 		},
 		Context: ctx,
 	})

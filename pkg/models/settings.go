@@ -18,6 +18,7 @@ type PluginSettings struct {
 	ClusterPath                      string                `json:"clusterPath"`
 	ClusterContext                   string                `json:"clusterContext"`
 	GrafanaUsername                  string                `json:"grafanaUsername"`
+	GrafanaServiceAccountRole        string                `json:"grafanaServiceAccountRole"`
 	ImpersonateUser                  bool                  `json:"impersonateUser"`
 	ImpersonateGroups                bool                  `json:"impersonateGroups"`
 	GenerateKubeconfig               bool                  `json:"generateKubeconfig"`

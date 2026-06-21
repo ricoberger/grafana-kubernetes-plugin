@@ -57,7 +57,7 @@ func NewDatasource(ctx context.Context, pCtx backend.DataSourceInstanceSettings)
 		return nil, err
 	}
 
-	grafanaClient, err := grafana.NewClient(ctx, config.ImpersonateUser, config.ImpersonateGroups, config.GrafanaUsername, config.Secrets.GrafanaPassword)
+	grafanaClient, err := grafana.NewClient(ctx, config.ImpersonateUser, config.ImpersonateGroups, config.GrafanaUsername, config.Secrets.GrafanaPassword, config.GrafanaServiceAccountRole)
 	if err != nil {
 		logger.Error("Failed to create Grafana client", "error", err.Error())
 		return nil, err
