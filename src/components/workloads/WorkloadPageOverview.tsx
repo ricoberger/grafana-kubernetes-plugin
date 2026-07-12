@@ -8,6 +8,7 @@ import {
 import { RadioButtonGroup, Stack, useStyles2 } from '@grafana/ui';
 import React, { useState } from 'react';
 
+import { TimeSeriesMemoryOrCPUByContainer } from 'components/shared/TimeSeriesMemoryOrCPUByContainer';
 import datasourcePluginJson from '../../datasource/plugin.json';
 import { useVizPanelMenu } from '../../hooks/useVizPanelMenu';
 import { queries } from '../../utils/utils.queries';
@@ -239,6 +240,8 @@ export function WorkloadPageOverview({ workloadType }: Props) {
 
       <Pods />
 
+      <Containers />
+
       {workloadType === 'cronjob' && <Jobs />}
     </Stack>
   );
@@ -295,6 +298,41 @@ function Pods() {
             />
           )}
           {selected === 'info' && <TableKubernetesPods />}
+        </div>
+      </Stack>
+    </div>
+  );
+}
+
+function Containers() {
+  const styles = useStyles2(getStyles);
+
+  return (
+    <div className={styles.pluginPage.section}>
+      <h4>Containers</h4>
+      <Stack direction="column" gap={2}>
+        <div className={styles.dashboard.header.container}>
+          <VariableControl name="container" />
+        </div>
+        <div className={styles.dashboard.row.height400px}>
+          <TimeSeriesMemoryOrCPUByContainer
+            title="CPU Usage"
+            unit="cores"
+            limitsExpr={queries.workloads.cpuLimitsByContainer}
+            requestsExpr={queries.workloads.cpuRequestsByContainer}
+            usageAvgExpr={queries.workloads.cpuUsageAvgByContainer}
+            usageMaxExpr={queries.workloads.cpuUsageMaxByContainer}
+            usageMinExpr={queries.workloads.cpuUsageMinByContainer}
+          />
+          <TimeSeriesMemoryOrCPUByContainer
+            title="Memory Usage"
+            unit="bytes"
+            limitsExpr={queries.workloads.memoryLimitsByContainer}
+            requestsExpr={queries.workloads.memoryRequestsByContainer}
+            usageAvgExpr={queries.workloads.memoryUsageAvgByContainer}
+            usageMaxExpr={queries.workloads.memoryUsageMaxByContainer}
+            usageMinExpr={queries.workloads.memoryUsageMinByContainer}
+          />
         </div>
       </Stack>
     </div>

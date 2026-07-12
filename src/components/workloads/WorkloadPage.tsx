@@ -156,157 +156,178 @@ export function WorkloadPage() {
                         sort={VariableSort.alphabeticalCaseInsensitiveAsc}
                       >
                         <QueryVariable
-                          name="pvc"
-                          label="PersistentVolumeClaim"
+                          name="container"
+                          label="Container"
                           datasource={{
                             type: 'prometheus',
                             uid: '$prometheus',
                           }}
                           query={{
-                            refId: 'pvcs',
+                            refId: 'containers',
                             query: variableQuery(
-                              queries.persistentVolumeClaims
-                                .labelsByClusterNamespacePod,
+                              queries.containers.labelsByClusterNamespacePod,
                             ),
                           }}
                           refresh={VariableRefresh.onTimeRangeChanged}
-                          isMulti={true}
-                          includeAll={true}
-                          initialValue={'$__all'}
+                          isMulti={false}
+                          includeAll={false}
                           sort={VariableSort.alphabeticalCaseInsensitiveAsc}
                         >
-                          <AnnotationLayer
-                            name="Restarts"
-                            query={{
-                              datasource: {
-                                type: 'prometheus',
-                                uid: '$prometheus',
-                              },
-                              enable: true,
-                              iconColor: 'orange',
-                              name: 'Restarts',
-                              textFormat: '{{pod}} restarted',
-                              target: {
-                                // @ts-ignore
-                                expr: queries.pods.restarts,
-                                limit: 100,
-                                matchAny: false,
-                                refId: 'Anno',
-                                type: 'dashboard',
-                              },
+                          <QueryVariable
+                            name="pvc"
+                            label="PersistentVolumeClaim"
+                            datasource={{
+                              type: 'prometheus',
+                              uid: '$prometheus',
                             }}
+                            query={{
+                              refId: 'pvcs',
+                              query: variableQuery(
+                                queries.persistentVolumeClaims
+                                  .labelsByClusterNamespacePod,
+                              ),
+                            }}
+                            refresh={VariableRefresh.onTimeRangeChanged}
+                            isMulti={true}
+                            includeAll={true}
+                            initialValue={'$__all'}
+                            sort={VariableSort.alphabeticalCaseInsensitiveAsc}
                           >
-                            <PluginPage
-                              pageNav={{
-                                text: workload,
-                                parentItem: {
-                                  text: namespace,
-                                  url: `${prefixRoute(ROUTES.Namespaces)}/${namespace}`,
-                                  parentItem: {
-                                    text: 'Workloads',
-                                    url: prefixRoute(ROUTES.Workloads),
-                                  },
+                            <AnnotationLayer
+                              name="Restarts"
+                              query={{
+                                datasource: {
+                                  type: 'prometheus',
+                                  uid: '$prometheus',
+                                },
+                                enable: true,
+                                iconColor: 'orange',
+                                name: 'Restarts',
+                                textFormat: '{{pod}} restarted',
+                                target: {
+                                  // @ts-ignore
+                                  expr: queries.pods.restarts,
+                                  limit: 100,
+                                  matchAny: false,
+                                  refId: 'Anno',
+                                  type: 'dashboard',
                                 },
                               }}
-                              renderTitle={() => (
-                                <Stack
-                                  gap={0}
-                                  alignItems="center"
-                                  direction="row"
-                                >
-                                  <img
-                                    className={styles.pluginPage.title.image}
-                                    alt={workload}
-                                    src={resourcesImg}
-                                  />
-                                  <h1>{workload}</h1>
-                                  <Badge
-                                    className={styles.pluginPage.title.badge}
-                                    color="blue"
-                                    text={workloadType.toLowerCase()}
-                                  />
-                                </Stack>
-                              )}
-                              subTitle={pluginJson.info.description}
-                              actions={
-                                <>
-                                  <TimeRangePicker />
-                                  <RefreshPicker />
-                                  <PageOptions />
-                                </>
-                              }
                             >
-                              <TabsBar className={styles.dashboard.tabsBar}>
-                                <Tab
-                                  label="Overview"
-                                  active={activeTab === 'overview'}
-                                  onChangeTab={(ev) => {
-                                    ev?.preventDefault();
-                                    setActiveTab('overview');
-                                  }}
-                                />
-                                <Tab
-                                  label="CPU"
-                                  active={activeTab === 'cpu'}
-                                  onChangeTab={(ev) => {
-                                    ev?.preventDefault();
-                                    setActiveTab('cpu');
-                                  }}
-                                />
-                                <Tab
-                                  label="Memory"
-                                  active={activeTab === 'memory'}
-                                  onChangeTab={(ev) => {
-                                    ev?.preventDefault();
-                                    setActiveTab('memory');
-                                  }}
-                                />
-                                <Tab
-                                  label="Network"
-                                  active={activeTab === 'network'}
-                                  onChangeTab={(ev) => {
-                                    ev?.preventDefault();
-                                    setActiveTab('network');
-                                  }}
-                                />
-                                <Tab
-                                  label="Storage"
-                                  active={activeTab === 'storage'}
-                                  onChangeTab={(ev) => {
-                                    ev?.preventDefault();
-                                    setActiveTab('storage');
-                                  }}
-                                />
-                                <Tab
-                                  label="Logs"
-                                  active={activeTab === 'logs'}
-                                  onChangeTab={(ev) => {
-                                    ev?.preventDefault();
-                                    setActiveTab('logs');
-                                  }}
-                                />
-                              </TabsBar>
-                              {activeTab === 'overview' && (
-                                <WorkloadPageOverview
-                                  workloadType={workloadType.toLowerCase()}
-                                />
-                              )}
-                              {activeTab === 'cpu' && <WorkloadPageCPU />}
-                              {activeTab === 'memory' && <WorkloadPageMemory />}
-                              {activeTab === 'network' && (
-                                <WorkloadPageNetwork />
-                              )}
-                              {activeTab === 'storage' && (
-                                <WorkloadPageStorage />
-                              )}
-                              {activeTab === 'logs' && (
-                                <TabLogs
-                                  page="workload"
-                                  resource={workloadType}
-                                />
-                              )}
-                            </PluginPage>
-                          </AnnotationLayer>
+                              <PluginPage
+                                pageNav={{
+                                  text: workload,
+                                  parentItem: {
+                                    text: namespace,
+                                    url: `${prefixRoute(ROUTES.Namespaces)}/${namespace}`,
+                                    parentItem: {
+                                      text: 'Workloads',
+                                      url: prefixRoute(ROUTES.Workloads),
+                                    },
+                                  },
+                                }}
+                                renderTitle={() => (
+                                  <Stack
+                                    gap={0}
+                                    alignItems="center"
+                                    direction="row"
+                                  >
+                                    <img
+                                      className={styles.pluginPage.title.image}
+                                      alt={workload}
+                                      src={resourcesImg}
+                                    />
+                                    <h1>{workload}</h1>
+                                    <Badge
+                                      className={styles.pluginPage.title.badge}
+                                      color="blue"
+                                      text={workloadType.toLowerCase()}
+                                    />
+                                  </Stack>
+                                )}
+                                subTitle={pluginJson.info.description}
+                                actions={
+                                  <>
+                                    <TimeRangePicker />
+                                    <RefreshPicker />
+                                    <PageOptions />
+                                  </>
+                                }
+                              >
+                                <TabsBar className={styles.dashboard.tabsBar}>
+                                  <Tab
+                                    label="Overview"
+                                    active={activeTab === 'overview'}
+                                    onChangeTab={(ev) => {
+                                      ev?.preventDefault();
+                                      setActiveTab('overview');
+                                    }}
+                                  />
+                                  <Tab
+                                    label="CPU"
+                                    active={activeTab === 'cpu'}
+                                    onChangeTab={(ev) => {
+                                      ev?.preventDefault();
+                                      setActiveTab('cpu');
+                                    }}
+                                  />
+                                  <Tab
+                                    label="Memory"
+                                    active={activeTab === 'memory'}
+                                    onChangeTab={(ev) => {
+                                      ev?.preventDefault();
+                                      setActiveTab('memory');
+                                    }}
+                                  />
+                                  <Tab
+                                    label="Network"
+                                    active={activeTab === 'network'}
+                                    onChangeTab={(ev) => {
+                                      ev?.preventDefault();
+                                      setActiveTab('network');
+                                    }}
+                                  />
+                                  <Tab
+                                    label="Storage"
+                                    active={activeTab === 'storage'}
+                                    onChangeTab={(ev) => {
+                                      ev?.preventDefault();
+                                      setActiveTab('storage');
+                                    }}
+                                  />
+                                  <Tab
+                                    label="Logs"
+                                    active={activeTab === 'logs'}
+                                    onChangeTab={(ev) => {
+                                      ev?.preventDefault();
+                                      setActiveTab('logs');
+                                    }}
+                                  />
+                                </TabsBar>
+                                {activeTab === 'overview' && (
+                                  <WorkloadPageOverview
+                                    workloadType={workloadType.toLowerCase()}
+                                  />
+                                )}
+                                {activeTab === 'cpu' && <WorkloadPageCPU />}
+                                {activeTab === 'memory' && (
+                                  <WorkloadPageMemory />
+                                )}
+                                {activeTab === 'network' && (
+                                  <WorkloadPageNetwork />
+                                )}
+                                {activeTab === 'storage' && (
+                                  <WorkloadPageStorage />
+                                )}
+                                {activeTab === 'logs' && (
+                                  <TabLogs
+                                    page="workload"
+                                    resource={workloadType}
+                                  />
+                                )}
+                              </PluginPage>
+                            </AnnotationLayer>
+                          </QueryVariable>
                         </QueryVariable>
                       </QueryVariable>
                     </CustomVariable>
