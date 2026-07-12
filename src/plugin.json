@@ -58,20 +58,16 @@
         "path": "img/screenshots/kubernetes-logs.png"
       },
       {
-        "name": "Kubeconfig",
-        "path": "img/screenshots/kubeconfig.png"
+        "name": "Dashboard - Cluster",
+        "path": "img/screenshots/dashboard-cluster.png"
       },
       {
-        "name": "Helm",
-        "path": "img/screenshots/helm.png"
+        "name": "Dashboard - Workloads",
+        "path": "img/screenshots/dashboard-workloads.png"
       },
       {
-        "name": "Flux",
-        "path": "img/screenshots/flux.png"
-      },
-      {
-        "name": "Datasource Configuration",
-        "path": "img/screenshots/datasource-configuration.png"
+        "name": "Dashboard - Workload Details",
+        "path": "img/screenshots/dashboard-workload-details.png"
       }
     ],
     "version": "%VERSION%",

@@ -6,17 +6,19 @@ interact with your resources, including editing, deleting, and scaling them.
 Last but not least, the plugin also supports other cloud native tools such as
 Helm and Flux.
 
+![Dashboard - Cluster](https://raw.githubusercontent.com/ricoberger/grafana-kubernetes-plugin/refs/heads/main/src/img/screenshots/dashboard-cluster.png)
+
 <div align="center">
   <table>
     <tr>
+      <td><img src="https://raw.githubusercontent.com/ricoberger/grafana-kubernetes-plugin/refs/heads/main/src/img/screenshots/dashboard-workloads.png" /></td>
+      <td><img src="https://raw.githubusercontent.com/ricoberger/grafana-kubernetes-plugin/refs/heads/main/src/img/screenshots/dashboard-workload-details.png" /></td>
       <td><img src="https://raw.githubusercontent.com/ricoberger/grafana-kubernetes-plugin/refs/heads/main/src/img/screenshots/kubernetes-resources.png" /></td>
-      <td><img src="https://raw.githubusercontent.com/ricoberger/grafana-kubernetes-plugin/refs/heads/main/src/img/screenshots/kubernetes-resources-details.png" /></td>
-      <td><img src="https://raw.githubusercontent.com/ricoberger/grafana-kubernetes-plugin/refs/heads/main/src/img/screenshots/kubernetes-resources-actions.png" /></td>
     </tr>
     <tr>
+      <td><img src="https://raw.githubusercontent.com/ricoberger/grafana-kubernetes-plugin/refs/heads/main/src/img/screenshots/kubernetes-resources-details.png" /></td>
+      <td><img src="https://raw.githubusercontent.com/ricoberger/grafana-kubernetes-plugin/refs/heads/main/src/img/screenshots/kubernetes-resources-actions.png" /></td>
       <td><img src="https://raw.githubusercontent.com/ricoberger/grafana-kubernetes-plugin/refs/heads/main/src/img/screenshots/kubernetes-logs.png" /></td>
-      <td><img src="https://raw.githubusercontent.com/ricoberger/grafana-kubernetes-plugin/refs/heads/main/src/img/screenshots/helm.png" /></td>
-      <td><img src="https://raw.githubusercontent.com/ricoberger/grafana-kubernetes-plugin/refs/heads/main/src/img/screenshots/flux.png" /></td>
     </tr>
   </table>
 </div>
@@ -41,12 +43,14 @@ Helm and Flux.
   authorize all Kubernetes requests.
 - Generate Kubeconfig files, so users can access the Kubernetes API using tools
   like `kubectl` for exec and port-forward actions.
-- Analyse and debug Kubernetes workloads using the
-  [Grafana LLM](https://grafana.com/grafana/plugins/grafana-llm-app/) plugin.
 - Integrations for metrics and traces:
   - Metrics: View metrics for Kubernetes resources like Pods, Nodes,
     Deployments, etc. using a Prometheus datasource.
-  - Traces: Link traces from Pod logs to a tracing datasource like Jaeger.
+  - Logs: Instead of the built-in log viewer, you can also use another log
+    datasource like VictoriaLogs to view the logs of Pods, DaemonSets,
+    Deployments, StatefulSets and Jobs.
+  - Traces: Link traces from Pod logs to a tracing datasource like
+    VictoriaTraces.
 - Integrations for other cloud-native tools like Helm and Flux:
   - Helm: View Helm releases including the history, rollback and uninstall Helm
     releases.
@@ -185,16 +189,91 @@ kubectl grafana kubeconfig --grafana-url <GRAFANA-INSTANCE-URL> --grafana-dataso
 ### Integrations
 
 Integrations allow you to integrate the Kubernetes datasource with other
-datasources to view metrics or traces related to your Kubernetes resources.
+datasources to view metrics, logs or traces related to your Kubernetes
+resources.
+
+#### Metrics
 
 To view the metrics of your Kubernetes resources you have to provide the UID of
 a Prometheus datasource and the cluster label for the kubelet,
-kube-state-metrics and node-exporter metrics.
+kube-state-metrics and opencost metrics.
 
-To view the traces of your Kubernetes logs you have to provide a query for your
-traces. In the query you can use the `${__value.raw}` variable which will be
-replaced with the actual trace id. For example, the following query can be used
-to link to a Jaeger datasource:
+#### Logs
+
+By default the built-in logs datasource is used in the Kubernetes dashboards.
+You can also use another log datasource like VictoriaLogs to view the logs of
+Pods, Workloads, Namespaces and Nodes. An example configuration for VictoriaLogs
+is shown below. You can use the `${pod}`, `${namespace}` and `${node}` variables
+in the queries to filter the logs by the selected resource.
+
+```json
+{
+  "pod": {
+    "datasource": {
+      "type": "victoriametrics-logs-datasource",
+      "uid": "victorialogs"
+    },
+    "queries": [
+      {
+        "refId": "A",
+        "expr": "k8s.pod.name:=\"${pod}\" | sort by (_time) desc",
+        "queryType": "instant",
+        "maxLines": 1000
+      }
+    ]
+  },
+  "workload": {
+    "datasource": {
+      "type": "victoriametrics-logs-datasource",
+      "uid": "victorialogs"
+    },
+    "queries": [
+      {
+        "refId": "A",
+        "expr": "k8s.pod.name:in(${pod}) | sort by (_time) desc",
+        "queryType": "instant",
+        "maxLines": 1000
+      }
+    ]
+  },
+  "namespace": {
+    "datasource": {
+      "type": "victoriametrics-logs-datasource",
+      "uid": "victorialogs"
+    },
+    "queries": [
+      {
+        "refId": "A",
+        "expr": "k8s.namespace.name:=\"${namespace}\" | sort by (_time) desc",
+        "queryType": "instant",
+        "maxLines": 1000
+      }
+    ]
+  },
+  "node": {
+    "datasource": {
+      "type": "victoriametrics-logs-datasource",
+      "uid": "victorialogs"
+    },
+    "queries": [
+      {
+        "refId": "A",
+        "expr": "k8s.node.name:=\"${node}\" | sort by (_time) desc",
+        "queryType": "instant",
+        "maxLines": 1000
+      }
+    ]
+  }
+}
+```
+
+#### Traces
+
+To connect traces to the logs of your Kubernetes resources in the built-in logs
+viewer, you have to provide a traces query, which contains the datasource and
+the query for your traces. In the query you can use the `${__value.raw}`
+variable which will be replaced with the actual trace id. For example, the
+following query can be used to link to a Jaeger datasource:
 `{"datasource":"jaeger","queries":[{"query":"${__value.raw}","refId":"A"}]}`.
 
 ![Metrics](https://raw.githubusercontent.com/ricoberger/grafana-kubernetes-plugin/refs/heads/main/src/img/screenshots/kubernetes-resources-metrics.png)
