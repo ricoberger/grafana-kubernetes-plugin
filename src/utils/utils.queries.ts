@@ -4428,6 +4428,86 @@ label_join(
     cluster=~"$cluster",namespace=~".+",workload=~"$searchterm"
   }
 ) by(namespace,workload,workload_type)`,
+    cpuLimitsByContainer: `max(
+  cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits{
+    cluster=~"$cluster",
+    namespace=~"$namespace",
+    pod=~"$pod",
+    container="$container"
+  }
+) by(container)`,
+    cpuRequestsByContainer: `max(
+  cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{
+    cluster=~"$cluster",
+    namespace=~"$namespace",
+    pod=~"$pod",
+    container="$container"
+  }
+) by(container)`,
+    cpuUsageAvgByContainer: `avg(
+  node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{
+    cluster=~"$cluster",
+    namespace=~"$namespace",
+    pod=~"$pod",
+    container="$container"
+  }
+) by(container)`,
+    cpuUsageMaxByContainer: `max(
+  node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{
+    cluster=~"$cluster",
+    namespace=~"$namespace",
+    pod=~"$pod",
+    container="$container"
+  }
+) by(container)`,
+    cpuUsageMinByContainer: `min(
+  node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{
+    cluster=~"$cluster",
+    namespace=~"$namespace",
+    pod=~"$pod",
+    container="$container"
+  }
+) by(container)`,
+    memoryLimitsByContainer: `max(
+  cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{
+    cluster=~"$cluster",
+    namespace=~"$namespace",
+    pod=~"$pod",
+    container="$container"
+  }
+) by (container)`,
+    memoryRequestsByContainer: `max(
+  cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{
+    cluster=~"$cluster",
+    namespace=~"$namespace",
+    pod=~"$pod",
+    container="$container"
+  }
+) by(container)`,
+    memoryUsageAvgByContainer: `avg(
+  container_memory_working_set_bytes{
+    cluster=~"$cluster",
+    namespace="$namespace",
+    pod=~"$pod",
+    container="$container"
+  }
+) by(container)`,
+    memoryUsageMaxByContainer: `max(
+  container_memory_working_set_bytes{
+    cluster=~"$cluster",
+    namespace="$namespace",
+    pod=~"$pod",
+    container="$container"
+  }
+) by(container)`,
+    memoryUsageMinByContainer: `min(
+  container_memory_working_set_bytes{
+    cluster=~"$cluster",
+    namespace="$namespace",
+    pod=~"$pod",
+    container="$container"
+  }
+) by(container)`,
   },
   pods: {
     count: `count(kube_pod_info{cluster=~"$cluster", namespace=~"$namespace", pod!=""})`,
