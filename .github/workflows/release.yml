@@ -40,7 +40,10 @@ jobs:
     name: kubectl-grafana
     runs-on: ubuntu-latest
     permissions:
+      id-token: write
       contents: write
+      attestations: write
+      artifact-metadata: write
     needs: release
     strategy:
       matrix:
@@ -76,6 +79,12 @@ jobs:
           cd ./dist/kubectl-grafana
           mv kubectl-grafana-* kubectl-grafana
           tar -czf kubectl-grafana-${{ matrix.platform.os }}-${{ matrix.platform.arch }}.tar.gz kubectl-grafana
+
+      - name: Generate Artifact Attestation
+        uses: actions/attest@v4
+        with:
+          subject-path: |
+            ./dist/kubectl-grafana/kubectl-grafana-${{ matrix.platform.os }}-${{ matrix.platform.arch }}.tar.gz
 
       - name: Upload Artifact
         env:
