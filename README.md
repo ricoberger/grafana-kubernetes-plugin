@@ -198,6 +198,10 @@ To view the metrics of your Kubernetes resources you have to provide the UID of
 a Prometheus datasource and the cluster label for the kubelet,
 kube-state-metrics and opencost metrics.
 
+**Note:** The metrics used by the plugin, require some recording rules from the
+[Prometheus Monitoring Mixin for Kubernetes](https://github.com/kubernetes-monitoring/kubernetes-mixin)
+project.
+
 #### Logs
 
 By default the built-in logs datasource is used in the Kubernetes dashboards.
@@ -275,8 +279,6 @@ the query for your traces. In the query you can use the `${__value.raw}`
 variable which will be replaced with the actual trace id. For example, the
 following query can be used to link to a Jaeger datasource:
 `{"datasource":"jaeger","queries":[{"query":"${__value.raw}","refId":"A"}]}`.
-
-![Metrics](https://raw.githubusercontent.com/ricoberger/grafana-kubernetes-plugin/refs/heads/main/src/img/screenshots/kubernetes-resources-metrics.png)
 
 ## Contributing
 
