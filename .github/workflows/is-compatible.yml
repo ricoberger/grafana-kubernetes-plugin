@@ -17,7 +17,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: 'npm'
@@ -35,7 +35,7 @@ jobs:
       #     echo "modulets=${MODULETS}" >> $GITHUB_OUTPUT
 
       - name: Compatibility Check
-        uses: grafana/plugin-actions/is-compatible@is-compatible/v1.0.3
+        uses: grafana/plugin-actions/is-compatible@is-compatible/v1.0.4
         with:
           # module: ${{ steps.find-module-ts.outputs.modulets }}
           module: ./src/module.tsx
