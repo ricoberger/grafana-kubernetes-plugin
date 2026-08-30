@@ -4,12 +4,7 @@
   "name": "Kubernetes",
   "id": "ricoberger-kubernetes-app",
   "info": {
-    "keywords": [
-      "app",
-      "datasource",
-      "kubernetes",
-      "logs"
-    ],
+    "keywords": ["app", "datasource", "kubernetes", "logs"],
     "description": "Kubernetes plugin for Grafana. Explore your Kubernetes resources and logs.",
     "author": {
       "name": "Rico Berger"
@@ -151,7 +146,7 @@
     }
   ],
   "dependencies": {
-    "grafanaDependency": ">=11.2.0",
+    "grafanaDependency": ">=11.6.11 <12 || >=12.0.10 <12.1 || >=12.1.7 <12.2 || >=12.2.5",
     "plugins": []
   }
 }
