@@ -143,7 +143,7 @@ export function PersistentVolumeClaimsPage() {
                         expr={queries.persistentVolumeClaims.fullIn2Days}
                       />
                       <PersistentVolumeClaimsStat
-                        title="PVCs Unused"
+                        title="PVCs Unreferenced"
                         expr={queries.persistentVolumeClaims.unused}
                       />
                       <PersistentVolumeClaimsStat

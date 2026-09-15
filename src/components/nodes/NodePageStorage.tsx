@@ -60,13 +60,13 @@ export function NodePageStorage() {
       <div className={styles.dashboard.row.height400px}>
         <TimeSeriesMemoryOrCPUDistribution
           title="Pressure: Pod Waiting"
-          unit="s"
+          unit="suffix:s/s"
           expr={queries.pods.ioPressureWaiting}
           legend="{{ namespace }}/{{ pod }}"
         />
         <TimeSeriesMemoryOrCPUDistribution
           title="Pressure: Pod Stalled"
-          unit="s"
+          unit="suffix:s/s"
           expr={queries.pods.ioPressureStalled}
           legend="{{ namespace }}/{{ pod }}"
         />

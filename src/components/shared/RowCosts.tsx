@@ -23,19 +23,19 @@ export function RowCosts({
     <div className={styles.dashboard.row.height100px}>
       <StatCosts
         title="CPU Allocation Costs"
-        description="Allocation is the greater amount of either the actual CPU usage or the requested amount. The sum of the CPU allocation in each hour is multiplied by the hourly CPU cost, which is estimated by OpenCost."
+        description="Allocation is the greater amount of either the actual CPU usage or the requested amount. CPU allocation is multiplied by the hourly CPU cost estimated by OpenCost, sampled every five minutes, and summed with each sample weighted by 1/12 hour."
         refId="cpu"
         expr={costsCPUAllocation}
       />
       <StatCosts
         title="Memory Allocation Costs"
-        description="Allocation is the greater amount of either the actual memory usage or the requested amount. The sum of the memory allocation in each hour is multiplied by the hourly memory cost, which is estimated by OpenCost."
+        description="Allocation is the greater amount of either the actual memory usage or the requested amount. Memory allocation is multiplied by the hourly memory cost estimated by OpenCost, sampled every five minutes, and summed with each sample weighted by 1/12 hour."
         refId="memory"
         expr={costsMemoryAllocation}
       />
       <StatCosts
         title="Total Allocation Costs"
-        description="Allocation is the greater amount of either the actual CPU and memory usage or the requested amount. The sum of the CPU and memory allocation in each hour is multiplied by the hourly CPU and memory cost, which is estimated by OpenCost."
+        description="Allocation is the greater amount of either the actual CPU and memory usage or the requested amount. CPU and memory allocation are multiplied by their hourly costs estimated by OpenCost, sampled every five minutes, and summed with each sample weighted by 1/12 hour."
         refId="total"
         expr={`(${costsCPUAllocation}) + (${costsMemoryAllocation})`}
       />
