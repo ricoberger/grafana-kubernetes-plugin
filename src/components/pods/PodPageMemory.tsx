@@ -44,13 +44,13 @@ export function PodPageMemory() {
       <div className={styles.dashboard.row.height400px}>
         <TimeSeriesMemoryOrCPUDistribution
           title="Pressure: Container Waiting"
-          unit="s"
+          unit="percentunit"
           expr={queries.containers.memoryPressureWaiting}
           legend="{{ container }}"
         />
         <TimeSeriesMemoryOrCPUDistribution
           title="Pressure: Container Stalled"
-          unit="s"
+          unit="percentunit"
           expr={queries.containers.memoryPressureStalled}
           legend="{{ container }}"
         />

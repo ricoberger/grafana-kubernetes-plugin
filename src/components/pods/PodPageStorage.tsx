@@ -61,13 +61,13 @@ export function PodPageStorage() {
       <div className={styles.dashboard.row.height400px}>
         <TimeSeriesMemoryOrCPUDistribution
           title="Pressure: Container Waiting"
-          unit="s"
+          unit="percentunit"
           expr={queries.containers.ioPressureWaiting}
           legend="{{ container }}"
         />
         <TimeSeriesMemoryOrCPUDistribution
           title="Pressure: Container Stalled"
-          unit="s"
+          unit="percentunit"
           expr={queries.containers.ioPressureStalled}
           legend="{{ container }}"
         />

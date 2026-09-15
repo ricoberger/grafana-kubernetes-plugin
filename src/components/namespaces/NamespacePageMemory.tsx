@@ -44,13 +44,13 @@ export function NamespacePageMemory() {
       <div className={styles.dashboard.row.height400px}>
         <TimeSeriesMemoryOrCPUDistribution
           title="Pressure: Workload Waiting"
-          unit="s"
+          unit="suffix:s/s"
           expr={queries.workloads.memoryPressureWaiting}
           legend="{{ workload_type }}/{{ workload }}"
         />
         <TimeSeriesMemoryOrCPUDistribution
           title="Pressure: Workload Stalled"
-          unit="s"
+          unit="suffix:s/s"
           expr={queries.workloads.memoryPressureStalled}
           legend="{{ workload_type }}/{{ workload }}"
         />

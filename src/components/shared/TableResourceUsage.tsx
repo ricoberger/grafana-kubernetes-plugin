@@ -1,4 +1,9 @@
-import { DataTransformerID, MappingType, ThresholdsMode } from '@grafana/data';
+import {
+  DataTransformerID,
+  MappingType,
+  SpecialValueMatch,
+  ThresholdsMode,
+} from '@grafana/data';
 import { SceneDataQuery, VizConfigBuilders } from '@grafana/scenes';
 import {
   useDataTransformer,
@@ -519,6 +524,16 @@ export function TableResourceUsage({
       b
         .matchFieldsWithName('Value #ready_pods / Value #desired_pods')
         .overrideUnit('percentunit')
+        .overrideNoValue('N/A')
+        .overrideMappings([
+          {
+            type: MappingType.SpecialValue,
+            options: {
+              match: SpecialValueMatch.NullAndNaN,
+              result: { text: 'N/A', color: 'text' },
+            },
+          },
+        ])
         .overrideCustomFieldConfig('width', 100)
         .overrideCustomFieldConfig('cellOptions', {
           type: TableCellDisplayMode.ColorText,

@@ -16,14 +16,46 @@ export const queries = {
   ) by(cluster,node,resource)
 )`,
     cpuLimits: `sum(
-  max(
-    namespace_cpu:kube_pod_container_resource_limits:sum{cluster=~"$cluster"}
-  ) by(cluster,namespace)
+  label_replace(
+    (
+      (max by(cluster,namespace,pod,node)(
+          kube_pod_resource_limit{cluster=~"$cluster",resource="cpu",unit="cores"}
+        )
+        and on(cluster,namespace,pod)
+        max by(cluster,namespace,pod)(
+          kube_pod_status_phase{cluster=~"$cluster",phase=~"Pending|Running"} == 1
+        )
+      )
+      or on(cluster,namespace,pod,node)
+      sum by(cluster,namespace,pod,node)(
+        max by(cluster,namespace,pod,node,container)(
+          cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits{cluster=~"$cluster"}
+        )
+      )
+    ),
+    "resource", "cpu", "", ""
+  )
 )`,
     cpuRequests: `sum(
-  max(
-    namespace_cpu:kube_pod_container_resource_requests:sum{cluster=~"$cluster"}
-  ) by(cluster,namespace)
+  label_replace(
+    (
+      (max by(cluster,namespace,pod,node)(
+          kube_pod_resource_request{cluster=~"$cluster",resource="cpu",unit="cores"}
+        )
+        and on(cluster,namespace,pod)
+        max by(cluster,namespace,pod)(
+          kube_pod_status_phase{cluster=~"$cluster",phase=~"Pending|Running"} == 1
+        )
+      )
+      or on(cluster,namespace,pod,node)
+      sum by(cluster,namespace,pod,node)(
+        max by(cluster,namespace,pod,node,container)(
+          cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{cluster=~"$cluster"}
+        )
+      )
+    ),
+    "resource", "cpu", "", ""
+  )
 )`,
     cpuUsage: `sum(
   label_join(
@@ -48,7 +80,7 @@ export const queries = {
     sum(
       label_join(
         label_join(
-          k8s_node_cpu_usage{k8s_cluster_name=~"$prometheus"},
+          k8s_node_cpu_usage{k8s_cluster_name=~"$cluster"},
           "cluster",
           ",",
           "k8s_cluster_name"
@@ -69,25 +101,55 @@ export const queries = {
   ) by(cluster,node,resource)
 )`,
     memoryLimits: `sum(
-  max(
-    namespace_memory:kube_pod_container_resource_limits:sum{cluster=~"$cluster"}
-  ) by(cluster,namespace)
+  label_replace(
+    (
+      (max by(cluster,namespace,pod,node)(
+          kube_pod_resource_limit{cluster=~"$cluster",resource="memory",unit="bytes"}
+        )
+        and on(cluster,namespace,pod)
+        max by(cluster,namespace,pod)(
+          kube_pod_status_phase{cluster=~"$cluster",phase=~"Pending|Running"} == 1
+        )
+      )
+      or on(cluster,namespace,pod,node)
+      sum by(cluster,namespace,pod,node)(
+        max by(cluster,namespace,pod,node,container)(
+          cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{cluster=~"$cluster"}
+        )
+      )
+    ),
+    "resource", "memory", "", ""
+  )
 )`,
     memoryRequests: `sum(
-  max(
-    namespace_memory:kube_pod_container_resource_requests:sum{
-      cluster=~"$cluster"
-    }
-  ) by(cluster,namespace)
+  label_replace(
+    (
+      (max by(cluster,namespace,pod,node)(
+          kube_pod_resource_request{cluster=~"$cluster",resource="memory",unit="bytes"}
+        )
+        and on(cluster,namespace,pod)
+        max by(cluster,namespace,pod)(
+          kube_pod_status_phase{cluster=~"$cluster",phase=~"Pending|Running"} == 1
+        )
+      )
+      or on(cluster,namespace,pod,node)
+      sum by(cluster,namespace,pod,node)(
+        max by(cluster,namespace,pod,node,container)(
+          cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{cluster=~"$cluster"}
+        )
+      )
+    ),
+    "resource", "memory", "", ""
+  )
 )`,
     memoryUsage: `sum(
   label_join(
     (
       max(
-        node_memory_Active_file_bytes{cluster=~"$cluster"}
+        node_memory_MemTotal_bytes{cluster=~"$cluster"}
       ) by(cluster,instance)
-        + on(cluster,instance) group_left()
-      max(node_memory_AnonPages_bytes{cluster=~"$cluster"}) by(cluster,instance)
+        - on(cluster,instance) group_left()
+      max(node_memory_MemAvailable_bytes{cluster=~"$cluster"}) by(cluster,instance)
     )
       or
     max(node_memory_working_set_bytes{cluster=~"$cluster"}) by(cluster,instance),
@@ -107,8 +169,10 @@ export const queries = {
     max(
       node_cpu_hourly_cost{cluster=~"$cluster"}
     ) by(cluster,node)
-  )[$__range:1h]
-)`,
+  )[$__range:5m]
+)
+  /
+12`,
     costsMemoryAllocation: `sum_over_time(
   sum(
     (
@@ -132,74 +196,79 @@ export const queries = {
     max(
       node_ram_hourly_cost{cluster=~"$cluster"}
     ) by(cluster,node)
-  )[$__range:1h]
-)`,
+  )[$__range:5m]
+)
+  /
+12`,
     costsCPUIdle: `sum_over_time(
   sum(
-    label_replace(
-      sum(
-        label_join(
-          (
-            sum(
-              max(
-                (
-                  1
-                    -
-                  rate(
-                    node_cpu_seconds_total{
-                      cluster=~"$cluster",mode=~"idle"
-                    }[$__rate_interval]
-                  )
-                )
-                  >=
-                0
-              ) by(cluster,instance,cpu,core)
-            ) by(cluster,instance)
-              or
-            sum(
+    (
+      sum by(cluster,node)(
+        label_replace(
+          sum by(cluster,instance)(
+            max by(cluster,instance,cpu,core)(
               rate(
-                node_cpu_usage_seconds_total{
-                  cluster=~"$cluster"
+                node_cpu_seconds_total{
+                  cluster=~"$cluster",mode=~"idle"
                 }[$__rate_interval]
               )
-                >=
-              0
-            ) by(cluster,instance)
-          )
-            or
-          sum(
-            label_join(
-              label_join(
-                rate(
-                  k8s_node_cpu_time_seconds_total{
-                    k8s_cluster_name=~"$cluster"
-                  }[$__rate_interval]
-                ),
-                "cluster",
-                ",",
-                "k8s_cluster_name"
-              ),
-              "instance",
-              ",",
-              "k8s_node_name"
             )
-          ) by(cluster,instance),
+          ),
           "node",
-          ",",
-          "instance"
+          "$1",
+          "instance",
+          "([^:]+).*"
         )
-      ) by(cluster,instance),
-      "node",
-      "$1",
-      "instance",
-      "([^:]+).*"
+      )
+        or on(cluster,node)
+      (
+        max by(cluster,node)(
+          kube_node_status_capacity{cluster=~"$cluster",resource="cpu"}
+        )
+          - on(cluster,node)
+        sum by(cluster,node)(
+          label_replace(
+            (
+              sum by(cluster,instance)(
+                rate(
+                  node_cpu_usage_seconds_total{cluster=~"$cluster"}[$__rate_interval]
+                ) >= 0
+              )
+                or
+              sum by(cluster,instance)(
+                label_join(
+                  label_join(
+                    rate(
+                      k8s_node_cpu_time_seconds_total{
+                        k8s_cluster_name=~"$cluster"
+                      }[$__rate_interval]
+                    ),
+                    "cluster",
+                    ",",
+                    "k8s_cluster_name"
+                  ),
+                  "instance",
+                  ",",
+                  "k8s_node_name"
+                )
+              )
+            ),
+            "node",
+            "$1",
+            "instance",
+            "([^:]+).*"
+          )
+        )
+      )
     )
       * on(cluster,node) group_left()
     max(
       node_cpu_hourly_cost{cluster=~"$cluster"}
     ) by(cluster,node)
-  )[$__range:1h]
-)`,
+  )[$__range:5m]
+)
+  /
+12`,
     costsMemoryIdle: `sum_over_time(
   sum(
     (
@@ -233,152 +302,154 @@ export const queries = {
     max(
       node_ram_hourly_cost{cluster=~"$cluster"}
     ) by(cluster,node)
-  )[$__range:1h]
-)`,
-    costsTotalPrior30d: `sum_over_time(
-  sum(max(node_total_hourly_cost{cluster=~"$cluster"} offset 30d) by(cluster,node))[30d:1h]
+  )[$__range:5m]
 )
+  /
+12`,
+    costsTotalPrior30d: `sum_over_time(
+  sum(max(node_total_hourly_cost{cluster=~"$cluster"} offset 30d) by(cluster,node))[30d:5m]
+)
+  /
+12
   or
 vector(0)`,
     costsTotalCurrent30d: `sum_over_time(
-  sum(max(node_total_hourly_cost{cluster=~"$cluster"}) by(cluster,node))[30d:1h]
+  sum(max(node_total_hourly_cost{cluster=~"$cluster"}) by(cluster,node))[30d:5m]
 )
+  /
+12
   or
 vector(0)`,
     costsPerPodCurrent30d: `(
   sum_over_time(
-    sum(max(node_total_hourly_cost{cluster=~"$cluster"}) by(cluster,node))[30d:1h]
+    sum(max(node_total_hourly_cost{cluster=~"$cluster"}) by(cluster,node))[30d:5m]
   )
+    /
+  12
     or
   vector(0)
 )
   /
 (
   avg_over_time(
-    sum(max(kubelet_running_pods{cluster=~"$cluster"}) by(cluster,instance))[30d:1h]
+    sum(max(kubelet_running_pods{cluster=~"$cluster"}) by(cluster,instance))[30d:5m]
   )
     or
   vector(0)
 )`,
     costsPotentialSavings: `(
   (
-    (
+    sum(
+      floor(
+        max(
+          max(
+            kube_node_status_capacity{resource=~"cpu",cluster=~"$cluster"}
+          ) by(cluster,node,resource)
+        ) by(cluster,node)
+          - on(cluster,node) group_left()
+        sum(
+          max(
+            node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{
+              container!="POD",container!="",cluster=~"$cluster"
+            }
+          ) by(cluster,namespace,node,pod,container,resource)
+        ) by(cluster,node)
+      )
+        * on(cluster,node) group_left()
+      max(node_cpu_hourly_cost{cluster=~"$cluster"}) by(cluster,node)
+    )
+      or
+    vector(0)
+  )
+    +
+  (
+    sum(
       (
         (
-          sum(
-            floor(
+          (
+            (
               max(
                 max(
-                  kube_node_status_capacity{resource=~"cpu",cluster=~"$cluster"}
+                  kube_node_status_capacity{
+                    resource=~"memory",cluster=~"$cluster"
+                  }
                 ) by(cluster,node,resource)
               ) by(cluster,node)
                 - on(cluster,node) group_left()
               sum(
                 max(
-                  node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{
+                  node_namespace_pod_container:container_memory_working_set_bytes{
                     container!="POD",container!="",cluster=~"$cluster"
                   }
                 ) by(cluster,namespace,node,pod,container,resource)
               ) by(cluster,node)
             )
-              * on(cluster,node) group_left()
-            max(node_cpu_hourly_cost{cluster=~"$cluster"}) by(cluster,node)
-          )
-            or
-          (
-            vector(0)
-              +
-            sum(
-              (
-                (
-                  (
-                    (
-                      max(
-                        max(
-                          kube_node_status_capacity{
-                            resource=~"memory",cluster=~"$cluster"
-                          }
-                        ) by(cluster,node,resource)
-                      ) by(cluster,node)
-                        - on(cluster,node) group_left()
-                      sum(
-                        max(
-                          node_namespace_pod_container:container_memory_working_set_bytes{
-                            container!="POD",container!="",cluster=~"$cluster"
-                          }
-                        ) by(cluster,namespace,node,pod,container,resource)
-                      ) by(cluster,node)
-                    )
-                      /
-                    1024
-                  )
-                    /
-                  1024
-                )
-                  /
-                1024
-              )
-                * on(cluster,node) group_left()
-              max(node_ram_hourly_cost{cluster=~"$cluster"}) by(cluster,node)
-            )
-          )
-        )
-          or
-        (
-          vector(0)
-            +
-          sum(
-            max(node_gpu_count{cluster=~"$cluster"}) by(cluster,node)
-              - on(cluster,node) group_left()
-            (
-              sum(
-                max(
-                  container_gpu_allocation{cluster=~"$cluster"}
-                ) by(cluster,node,namespace,pod,container)
-              ) by(cluster,node)
-                * on(cluster,node) group_left()
-              max(node_gpu_hourly_cost{cluster=~"$cluster"}) by(cluster,node)
-            )
-          )
-        )
-      )
-        or
-      (
-        vector(0)
-          +
-        sum(
-          (
-            (
-              (
-                sum(
-                  pod_pvc_allocation{cluster=~"$cluster"}
-                    - on(cluster,namespace,persistentvolumeclaim) group_left()
-                  max(
-                    max(
-                      kubelet_volume_stats_used_bytes{cluster=~"$cluster"}
-                    ) without(node,instance)
-                  ) by(cluster,namespace,persistentvolumeclaim)
-                ) by(cluster,namespace,persistentvolume)
-                  /
-                1024
-              )
-                /
-              1024
-            )
               /
             1024
           )
-            * on(cluster,persistentvolume) group_left()
-          max(pv_hourly_cost{cluster=~"$cluster"}) by(cluster,persistentvolume)
+            /
+          1024
         )
+          /
+        1024
       )
+        * on(cluster,node) group_left()
+      max(node_ram_hourly_cost{cluster=~"$cluster"}) by(cluster,node)
     )
       or
     vector(0)
   )
-    *
-  24
+    +
+  (
+    sum(
+      (
+        max(node_gpu_count{cluster=~"$cluster"}) by(cluster,node)
+          - on(cluster,node) group_left()
+        sum(
+          max(
+            container_gpu_allocation{cluster=~"$cluster"}
+          ) by(cluster,node,namespace,pod,container)
+        ) by(cluster,node)
+      )
+        * on(cluster,node) group_left()
+      max(node_gpu_hourly_cost{cluster=~"$cluster"}) by(cluster,node)
+    )
+      or
+    vector(0)
+  )
+    +
+  (
+    sum(
+      (
+        (
+          (
+            sum(
+              pod_pvc_allocation{cluster=~"$cluster"}
+                - on(cluster,namespace,persistentvolumeclaim) group_left()
+              max(
+                max(
+                  kubelet_volume_stats_used_bytes{cluster=~"$cluster"}
+                ) without(node,instance)
+              ) by(cluster,namespace,persistentvolumeclaim)
+            ) by(cluster,namespace,persistentvolume)
+              /
+            1024
+          )
+            /
+          1024
+        )
+          /
+        1024
+      )
+        * on(cluster,persistentvolume) group_left()
+      max(pv_hourly_cost{cluster=~"$cluster"}) by(cluster,persistentvolume)
+    )
+      or
+    vector(0)
+  )
 )
+  *
+24
   *
 30`,
     alertsBySeverity: `count(
@@ -434,8 +505,8 @@ vector(0)`,
               cluster=~"$cluster"
             },
             "workload_type",
-            "",
             "daemonset",
+            "",
             ""
           ),
           "workload",
@@ -460,8 +531,8 @@ vector(0)`,
               cluster=~"$cluster"
             },
             "workload_type",
-            "",
             "deployment",
+            "",
             ""
           ),
           "workload",
@@ -487,8 +558,8 @@ vector(0)`,
             cluster=~"$cluster"
           },
           "workload_type",
-          "",
           "statefulset",
+          "",
           ""
         ),
         "workload",
@@ -514,8 +585,8 @@ vector(0)`,
           cluster=~"$cluster"
         },
         "workload_type",
-        "",
         "job",
+        "",
         ""
       ),
       "workload",
@@ -550,7 +621,11 @@ GRAFANA_ALERTS{
     info: `avg_over_time(
   (max(kube_node_info{cluster=~"$cluster",node=~".+"}) by(cluster,node))[$__range:]
 )`,
-    count: `count(kube_node_info{cluster=~"$cluster",node!=""})`,
+    count: `count(
+  group(
+    kube_node_info{cluster=~"$cluster",node!=""}
+  ) by(cluster,node)
+)`,
     cpuUsageAvgOverTime: `avg_over_time(
   (
     sum(
@@ -649,12 +724,16 @@ GRAFANA_ALERTS{
         "instance"
       )
     ) by(cluster,node)
+      / on(cluster,node) group_left()
+    (
+      max(
+        kube_node_status_capacity{cluster=~"$cluster",resource=~"cpu",node=~".+"}
+      ) by(cluster,node,resource)
+        >
+      0
+    )
   )[$__range:]
-)
-  / on(cluster,node) group_left()
-max(
-  kube_node_status_capacity{cluster=~"$cluster",resource=~"cpu",node=~".+"}
-) by(cluster,node,resource)`,
+)`,
     cpuUsageMaxOverTime: `max_over_time(
   (
     sum(
@@ -753,23 +832,27 @@ max(
         "instance"
       )
     ) by(cluster,node)
+      / on(cluster,node) group_left()
+    (
+      max(
+        kube_node_status_capacity{cluster=~"$cluster",resource=~"cpu",node=~".+"}
+      ) by(cluster,node,resource)
+        >
+      0
+    )
   )[$__range:]
-)
-  / on(cluster,node) group_left()
-max(
-  kube_node_status_capacity{cluster=~"$cluster",resource=~"cpu",node=~".+"}
-) by(cluster,node,resource)`,
+)`,
     memoryUsageAvgOverTime: `avg_over_time(
   (
     sum(
       label_join(
         (
           max(
-            node_memory_Active_file_bytes{cluster=~"$cluster",instance=~".+"}
+            node_memory_MemTotal_bytes{cluster=~"$cluster",instance=~".+"}
           ) by(cluster,instance)
-            + on(cluster,instance) group_left()
+            - on(cluster,instance) group_left()
           max(
-            node_memory_AnonPages_bytes{cluster=~"$cluster",instance=~".+"}
+            node_memory_MemAvailable_bytes{cluster=~"$cluster",instance=~".+"}
           ) by(cluster,instance)
         )
           or
@@ -789,11 +872,11 @@ max(
       label_join(
         (
           max(
-            node_memory_Active_file_bytes{cluster=~"$cluster",instance=~".+"}
+            node_memory_MemTotal_bytes{cluster=~"$cluster",instance=~".+"}
           ) by(cluster,instance)
-            + on(cluster,instance) group_left()
+            - on(cluster,instance) group_left()
           max(
-            node_memory_AnonPages_bytes{cluster=~"$cluster",instance=~".+"}
+            node_memory_MemAvailable_bytes{cluster=~"$cluster",instance=~".+"}
           ) by(cluster,instance)
         )
           or
@@ -805,23 +888,27 @@ max(
         "instance"
       )
     ) by(cluster,node)
+      / on(cluster,node) group_left()
+    (
+      max(
+        kube_node_status_capacity{cluster=~"$cluster",resource=~"memory",node=~".+"}
+      ) by(cluster,node,resource)
+        >
+      0
+    )
   )[$__range:]
-)
-  / on(cluster,node) group_left()
-max(
-  kube_node_status_capacity{cluster=~"$cluster",resource=~"memory",node=~".+"}
-) by(cluster,node,resource)`,
+)`,
     memoryUsageMaxOverTime: `max_over_time(
   (
     sum(
       label_join(
         (
           max(
-            node_memory_Active_file_bytes{cluster=~"$cluster",instance=~".+"}
+            node_memory_MemTotal_bytes{cluster=~"$cluster",instance=~".+"}
           ) by(cluster,instance)
-            + on(cluster,instance) group_left()
+            - on(cluster,instance) group_left()
           max(
-            node_memory_AnonPages_bytes{cluster=~"$cluster",instance=~".+"}
+            node_memory_MemAvailable_bytes{cluster=~"$cluster",instance=~".+"}
           ) by(cluster,instance)
         )
           or
@@ -841,11 +928,11 @@ max(
       label_join(
         (
           max(
-            node_memory_Active_file_bytes{cluster=~"$cluster",instance=~".+"}
+            node_memory_MemTotal_bytes{cluster=~"$cluster",instance=~".+"}
           ) by(cluster,instance)
-            + on(cluster,instance) group_left()
+            - on(cluster,instance) group_left()
           max(
-            node_memory_AnonPages_bytes{cluster=~"$cluster",instance=~".+"}
+            node_memory_MemAvailable_bytes{cluster=~"$cluster",instance=~".+"}
           ) by(cluster,instance)
         )
           or
@@ -857,12 +944,16 @@ max(
         "instance"
       )
     ) by(cluster,node)
+      / on(cluster,node) group_left()
+    (
+      max(
+        kube_node_status_capacity{cluster=~"$cluster",resource=~"memory",node=~".+"}
+      ) by(cluster,node,resource)
+        >
+      0
+    )
   )[$__range:]
-)
-  / on(cluster,node) group_left()
-max(
-  kube_node_status_capacity{cluster=~"$cluster",resource=~"memory",node=~".+"}
-) by(cluster,node,resource)`,
+)`,
     cpuCapacity: `max(
   kube_node_status_capacity{
     cluster=~"$cluster",
@@ -871,13 +962,25 @@ max(
   }
 ) by(cluster,node,resource)`,
     cpuLimits: `sum(
-  max(
-    cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits{
-      container!="",
-      cluster=~"$cluster",
-      node=~"$node(:[0-9]{2,5})?"
-    }
-  ) by(cluster,namespace,node,pod,container)
+  label_replace(
+    (
+      (max by(cluster,namespace,pod,node)(
+          kube_pod_resource_limit{cluster=~"$cluster",node=~"$node(:[0-9]{2,5})?",resource="cpu",unit="cores"}
+        )
+        and on(cluster,namespace,pod)
+        max by(cluster,namespace,pod)(
+          kube_pod_status_phase{cluster=~"$cluster",phase=~"Pending|Running"} == 1
+        )
+      )
+      or on(cluster,namespace,pod,node)
+      sum by(cluster,namespace,pod,node)(
+        max by(cluster,namespace,pod,node,container)(
+          cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits{cluster=~"$cluster",node=~"$node(:[0-9]{2,5})?",container!=""}
+        )
+      )
+    ),
+    "resource", "cpu", "", ""
+  )
 )
   or
 sum(
@@ -897,13 +1000,25 @@ sum(
   )
 )`,
     cpuRequests: `sum(
-  max(
-    cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{
-      container!="",
-      cluster=~"$cluster",
-      node=~"$node(:[0-9]{2,5})?"
-    }
-  ) by(cluster,namespace,node,pod,container,resource)
+  label_replace(
+    (
+      (max by(cluster,namespace,pod,node)(
+          kube_pod_resource_request{cluster=~"$cluster",node=~"$node(:[0-9]{2,5})?",resource="cpu",unit="cores"}
+        )
+        and on(cluster,namespace,pod)
+        max by(cluster,namespace,pod)(
+          kube_pod_status_phase{cluster=~"$cluster",phase=~"Pending|Running"} == 1
+        )
+      )
+      or on(cluster,namespace,pod,node)
+      sum by(cluster,namespace,pod,node)(
+        max by(cluster,namespace,pod,node,container)(
+          cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{cluster=~"$cluster",node=~"$node(:[0-9]{2,5})?",container!=""}
+        )
+      )
+    ),
+    "resource", "cpu", "", ""
+  )
 )`,
     cpuUsage: `sum(
   label_join(
@@ -941,7 +1056,10 @@ sum(
     sum(
       label_join(
         label_join(
-          k8s_node_cpu_usage{k8s_cluster_name=~"$cluster"},
+          k8s_node_cpu_usage{
+            k8s_cluster_name=~"$cluster",
+            k8s_node_name=~"$node"
+          },
           "cluster",
           ",",
           "k8s_cluster_name"
@@ -1017,34 +1135,58 @@ sum(
   }
 ) by(cluster,node,resource)`,
     memoryLimits: `sum(
-  max(
-    cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{
-      container!="",
-      cluster=~"$cluster",
-      node=~"$node(:[0-9]{2,5})?"
-    }
-  ) by(cluster,namespace,node,pod,container)
+  label_replace(
+    (
+      (max by(cluster,namespace,pod,node)(
+          kube_pod_resource_limit{cluster=~"$cluster",node=~"$node(:[0-9]{2,5})?",resource="memory",unit="bytes"}
+        )
+        and on(cluster,namespace,pod)
+        max by(cluster,namespace,pod)(
+          kube_pod_status_phase{cluster=~"$cluster",phase=~"Pending|Running"} == 1
+        )
+      )
+      or on(cluster,namespace,pod,node)
+      sum by(cluster,namespace,pod,node)(
+        max by(cluster,namespace,pod,node,container)(
+          cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{cluster=~"$cluster",node=~"$node(:[0-9]{2,5})?",container!=""}
+        )
+      )
+    ),
+    "resource", "memory", "", ""
+  )
 )`,
     memoryRequests: `sum(
-  max(
-    cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{
-      container!="",
-      cluster=~"$cluster",
-      node=~"$node(:[0-9]{2,5})?"
-    }
-  ) by(cluster,namespace,node,pod,container,resource)
+  label_replace(
+    (
+      (max by(cluster,namespace,pod,node)(
+          kube_pod_resource_request{cluster=~"$cluster",node=~"$node(:[0-9]{2,5})?",resource="memory",unit="bytes"}
+        )
+        and on(cluster,namespace,pod)
+        max by(cluster,namespace,pod)(
+          kube_pod_status_phase{cluster=~"$cluster",phase=~"Pending|Running"} == 1
+        )
+      )
+      or on(cluster,namespace,pod,node)
+      sum by(cluster,namespace,pod,node)(
+        max by(cluster,namespace,pod,node,container)(
+          cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{cluster=~"$cluster",node=~"$node(:[0-9]{2,5})?",container!=""}
+        )
+      )
+    ),
+    "resource", "memory", "", ""
+  )
 )`,
     memoryUsage: `label_join(
   (
     max(
-      node_memory_Active_file_bytes{
+      node_memory_MemTotal_bytes{
         cluster=~"$cluster",
         instance=~"$node"
       }
     ) by(cluster,instance)
-      + on(cluster,instance) group_left()
+      - on(cluster,instance) group_left()
     max(
-      node_memory_AnonPages_bytes{
+      node_memory_MemAvailable_bytes{
         cluster=~"$cluster",
         instance=~"$node"
       }
@@ -1100,13 +1242,25 @@ sum(
 ) by(cluster,namespace,pod,node)
   /
 sum(
-  max(
-    cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{
-      cluster=~"$cluster",
-      node=~"$node",
-      pod=~"$pod"
-    }
-  ) by(cluster,namespace,pod,container,node)
+  label_replace(
+    (
+      (max by(cluster,namespace,pod,node)(
+          kube_pod_resource_request{cluster=~"$cluster",pod=~"$pod",node=~"$node",resource="cpu",unit="cores"}
+        )
+        and on(cluster,namespace,pod)
+        max by(cluster,namespace,pod)(
+          kube_pod_status_phase{cluster=~"$cluster",pod=~"$pod",phase=~"Pending|Running"} == 1
+        )
+      )
+      or on(cluster,namespace,pod,node)
+      sum by(cluster,namespace,pod,node)(
+        max by(cluster,namespace,pod,node,container)(
+          cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{cluster=~"$cluster",pod=~"$pod",node=~"$node"}
+        )
+      )
+    ),
+    "resource", "cpu", "", ""
+  )
 ) by(cluster,namespace,pod,node)`,
     memoryDistribution: `(
   sum(
@@ -1147,13 +1301,25 @@ sum(
 ) by(cluster,namespace,pod,node)
   /
 sum(
-  max(
-    cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{
-      cluster=~"$cluster",
-      node=~"$node",
-      pod=~"$pod"
-    }
-  ) by(cluster,namespace,pod,container,node)
+  label_replace(
+    (
+      (max by(cluster,namespace,pod,node)(
+          kube_pod_resource_request{cluster=~"$cluster",pod=~"$pod",node=~"$node",resource="memory",unit="bytes"}
+        )
+        and on(cluster,namespace,pod)
+        max by(cluster,namespace,pod)(
+          kube_pod_status_phase{cluster=~"$cluster",pod=~"$pod",phase=~"Pending|Running"} == 1
+        )
+      )
+      or on(cluster,namespace,pod,node)
+      sum by(cluster,namespace,pod,node)(
+        max by(cluster,namespace,pod,node,container)(
+          cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{cluster=~"$cluster",pod=~"$pod",node=~"$node"}
+        )
+      )
+    ),
+    "resource", "memory", "", ""
+  )
 ) by(cluster,namespace,pod,node)`,
     networkBandwidthRx: `sum(
   max(
@@ -1170,7 +1336,7 @@ sum(
         instance=~"$node(:[0-9]{2,5})?"
       }[$__rate_interval]
     )
-  ) by(cluster,instance,device)
+  ) by(cluster,instance,device,nic)
 )`,
     networkBandwidthTx: `-sum(
   max(
@@ -1187,7 +1353,7 @@ sum(
         instance=~"$node(:[0-9]{2,5})?"
       }[$__rate_interval]
     )
-  ) by(cluster,instance,device)
+  ) by(cluster,instance,device,nic)
 )`,
     networkSaturationRx: `sum(
   max(
@@ -1363,8 +1529,10 @@ sum(
         }
       ) by(cluster,node)
     ) by(cluster,node)
-  )[$__range:1h]
-)`,
+  )[$__range:5m]
+)
+  /
+12`,
     costsMemoryAllocation: `sum_over_time(
   (
     (
@@ -1395,125 +1563,97 @@ sum(
         node=~"$node(:[0-9]{2,5})?"
       }
     ) by(cluster,node)
-  )[$__range:1h]
-)`,
+  )[$__range:5m]
+)
+  /
+12`,
     costsCPUIdle: `sum_over_time(
   sum by(cluster,node)(
-    label_replace(
-      sum(
-        label_join(
-          (
-            sum(
-              max(
-                (
-                  1
-                    -
-                  rate(
-                    node_cpu_seconds_total{
-                      cluster=~"$cluster",
-                      instance=~"$node(:[0-9]{2,5})?",
-                      mode=~"idle"
-                    }[$__rate_interval]
-                  )
-                )
-                  >=
-                0
-              ) by(cluster,instance,cpu,core)
-            ) by(cluster,instance)
-              or
-            sum(
+    (
+      sum by(cluster,node)(
+        label_replace(
+          sum by(cluster,instance)(
+            max by(cluster,instance,cpu,core)(
               rate(
-                node_cpu_usage_seconds_total{
+                node_cpu_seconds_total{
                   cluster=~"$cluster",
-                  instance=~"$node(:[0-9]{2,5})?"
+                  instance=~"$node(:[0-9]{2,5})?",
+                  mode=~"idle"
                 }[$__rate_interval]
               )
-                >=
-              0
-            ) by(cluster,instance)
-          )
-            or
-          sum(
-            label_join(
-              label_join(
-                rate(
-                  k8s_node_cpu_time_seconds_total{
-                    k8s_cluster_name=~"$cluster"
-                  }[$__rate_interval]
-                ),
-                "cluster",
-                ",",
-                "k8s_cluster_name"
-              ),
-              "instance",
-              ",",
-              "k8s_node_name"
-            )
-          ) by(cluster,instance),
-          "node",
-          ",",
-          "instance"
-        )
-          or
-        label_join(
-          (
-            sum(
-              max(
-                (
-                  1
-                    -
-                  rate(
-                    node_cpu_seconds_total{
-                      cluster=~"$cluster",
-                      node=~"$node(:[0-9]{2,5})?",
-                      mode=~"idle"
-                    }[$__rate_interval]
-                  )
-                )
-                  >=
-                0
-              ) by(cluster,instance,cpu,core)
-            ) by(cluster,instance)
-              or
-            sum(
+                or
               rate(
-                node_cpu_usage_seconds_total{
+                node_cpu_seconds_total{
                   cluster=~"$cluster",
-                  node=~"$node(:[0-9]{2,5})?"
+                  node=~"$node(:[0-9]{2,5})?",
+                  mode=~"idle"
                 }[$__rate_interval]
               )
-                >=
-              0
-            ) by(cluster,instance)
-          )
-            or
-          sum(
-            label_join(
-              label_join(
-                rate(
-                  k8s_node_cpu_time_seconds_total{
-                    k8s_cluster_name=~"$cluster",
-                    k8s_node_name=~"$node(:[0-9]{2,5})?"
-                  }[$__rate_interval]
-                ),
-                "cluster",
-                ",",
-                "k8s_cluster_name"
-              ),
-              "instance",
-              ",",
-              "k8s_node_name"
             )
-          ) by(cluster,instance),
+          ),
           "node",
-          ",",
-          "instance"
+          "$1",
+          "instance",
+          "([^:]+).*"
         )
-      ) by(cluster,node,instance),
-      "node",
-      "$1",
-      "instance",
-      "([^:]+).*"
+      )
+        or on(cluster,node)
+      (
+        max by(cluster,node)(
+          kube_node_status_capacity{
+            cluster=~"$cluster",
+            node=~"$node(:[0-9]{2,5})?",
+            resource="cpu"
+          }
+        )
+          - on(cluster,node)
+        sum by(cluster,node)(
+          label_replace(
+            (
+              sum by(cluster,instance)(
+                (
+                  rate(
+                    node_cpu_usage_seconds_total{
+                      cluster=~"$cluster",
+                      instance=~"$node(:[0-9]{2,5})?"
+                    }[$__rate_interval]
+                  )
+                    or
+                  rate(
+                    node_cpu_usage_seconds_total{
+                      cluster=~"$cluster",
+                      node=~"$node(:[0-9]{2,5})?"
+                    }[$__rate_interval]
+                  )
+                ) >= 0
+              )
+                or
+              sum by(cluster,instance)(
+                label_join(
+                  label_join(
+                    rate(
+                      k8s_node_cpu_time_seconds_total{
+                        k8s_cluster_name=~"$cluster",
+                        k8s_node_name=~"$node"
+                      }[$__rate_interval]
+                    ),
+                    "cluster",
+                    ",",
+                    "k8s_cluster_name"
+                  ),
+                  "instance",
+                  ",",
+                  "k8s_node_name"
+                )
+              )
+            ),
+            "node",
+            "$1",
+            "instance",
+            "([^:]+).*"
+          )
+        )
+      )
     )
       * on(cluster,node) group_left()
     max(
@@ -1522,8 +1662,10 @@ sum(
         node=~"$node(:[0-9]{2,5})?"
       }
     ) by(cluster,node)
-  )[$__range:1h]
-)`,
+  )[$__range:5m]
+)
+  /
+12`,
     costsMemoryIdle: `sum_over_time(
   sum by(cluster,node)(
     (
@@ -1562,15 +1704,17 @@ sum(
         node=~"$node(:[0-9]{2,5})?"
       }
     ) by(cluster,node)
-  )[$__range:1h]
-)`,
+  )[$__range:5m]
+)
+  /
+12`,
   },
   namespaces: {
     labelsByCluster: `label_values(kube_namespace_status_phase{cluster=~"$cluster"}, namespace)`,
     count: `count(
   group(
     kube_namespace_status_phase{cluster=~"$cluster",namespace=~"$namespace"}
-  ) by(namespace)
+  ) by(cluster,namespace)
 )`,
     info: `sum(
   topk(
@@ -1624,14 +1768,34 @@ sum(
         }
       ) by(cluster,namespace,pod,container)
     ) by(cluster,namespace)
+      / on(cluster,namespace) group_left()
+    (
+      sum(
+        label_replace(
+          (
+            (max by(cluster,namespace,pod,node)(
+                kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",resource="cpu",unit="cores"}
+              )
+              and on(cluster,namespace,pod)
+              max by(cluster,namespace,pod)(
+                kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",phase=~"Pending|Running"} == 1
+              )
+            )
+            or on(cluster,namespace,pod,node)
+            sum by(cluster,namespace,pod,node)(
+              max by(cluster,namespace,pod,node,container)(
+                cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace"}
+              )
+            )
+          ),
+          "resource", "cpu", "", ""
+        )
+      ) by(cluster,namespace)
+        >
+      0
+    )
   )[$__range:$__interval]
-)
-  / on(cluster,namespace) group_left()
-sum(
-  namespace_cpu:kube_pod_container_resource_requests:sum{
-    namespace=~"$namespace",cluster=~"$cluster"
-  }
-) by(cluster,namespace)`,
+)`,
     cpuUsageMaxOverTime: `max_over_time(
   (
     sum(
@@ -1658,14 +1822,34 @@ sum(
         }
       ) by(cluster,namespace,pod,container)
     ) by(cluster,namespace)
+      / on(cluster,namespace) group_left()
+    (
+      sum(
+        label_replace(
+          (
+            (max by(cluster,namespace,pod,node)(
+                kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",resource="cpu",unit="cores"}
+              )
+              and on(cluster,namespace,pod)
+              max by(cluster,namespace,pod)(
+                kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",phase=~"Pending|Running"} == 1
+              )
+            )
+            or on(cluster,namespace,pod,node)
+            sum by(cluster,namespace,pod,node)(
+              max by(cluster,namespace,pod,node,container)(
+                cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace"}
+              )
+            )
+          ),
+          "resource", "cpu", "", ""
+        )
+      ) by(cluster,namespace)
+        >
+      0
+    )
   )[$__range:$__interval]
-)
-  / on(cluster,namespace) group_left()
-sum(
-  namespace_cpu:kube_pod_container_resource_requests:sum{
-    cluster=~"$cluster",namespace=~"$namespace"
-  }
-) by(cluster,namespace)`,
+)`,
     memoryUsageAvgOverTime: `avg_over_time(
   (
     sum(
@@ -1692,14 +1876,34 @@ sum(
         }
       ) by(cluster,namespace,pod,container)
     ) by(cluster,namespace)
+      / on(cluster,namespace) group_left()
+    (
+      sum(
+        label_replace(
+          (
+            (max by(cluster,namespace,pod,node)(
+                kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",resource="memory",unit="bytes"}
+              )
+              and on(cluster,namespace,pod)
+              max by(cluster,namespace,pod)(
+                kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",phase=~"Pending|Running"} == 1
+              )
+            )
+            or on(cluster,namespace,pod,node)
+            sum by(cluster,namespace,pod,node)(
+              max by(cluster,namespace,pod,node,container)(
+                cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace"}
+              )
+            )
+          ),
+          "resource", "memory", "", ""
+        )
+      ) by(cluster,namespace)
+        >
+      0
+    )
   )[$__range:$__interval]
-)
-  / on(cluster,namespace) group_left()
-sum(
-  namespace_memory:kube_pod_container_resource_requests:sum{
-    cluster=~"$cluster",namespace=~"$namespace"
-  }
-) by(cluster,namespace)`,
+)`,
     memoryUsageMaxOverTime: `max_over_time(
   (
     sum(
@@ -1726,18 +1930,56 @@ sum(
         }
       ) by(cluster,namespace,pod,container)
     ) by(cluster,namespace)
+      / on(cluster,namespace) group_left()
+    (
+      sum(
+        label_replace(
+          (
+            (max by(cluster,namespace,pod,node)(
+                kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",resource="memory",unit="bytes"}
+              )
+              and on(cluster,namespace,pod)
+              max by(cluster,namespace,pod)(
+                kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",phase=~"Pending|Running"} == 1
+              )
+            )
+            or on(cluster,namespace,pod,node)
+            sum by(cluster,namespace,pod,node)(
+              max by(cluster,namespace,pod,node,container)(
+                cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace"}
+              )
+            )
+          ),
+          "resource", "memory", "", ""
+        )
+      ) by(cluster,namespace)
+        >
+      0
+    )
   )[$__range:$__interval]
-)
-  / on(cluster,namespace) group_left()
-sum(
-  namespace_memory:kube_pod_container_resource_requests:sum{
-    cluster=~"$cluster",namespace=~"$namespace"
-  }
-) by(cluster,namespace)`,
+)`,
     cpuAllocation: `max(
-  namespace_cpu:kube_pod_container_resource_requests:sum{
-    cluster=~"$cluster",namespace="$namespace"
-  }
+  sum(
+    label_replace(
+      (
+        (max by(cluster,namespace,pod,node)(
+            kube_pod_resource_request{cluster=~"$cluster",namespace="$namespace",resource="cpu",unit="cores"}
+          )
+          and on(cluster,namespace,pod)
+          max by(cluster,namespace,pod)(
+            kube_pod_status_phase{cluster=~"$cluster",namespace="$namespace",phase=~"Pending|Running"} == 1
+          )
+        )
+        or on(cluster,namespace,pod,node)
+        sum by(cluster,namespace,pod,node)(
+          max by(cluster,namespace,pod,node,container)(
+            cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{cluster=~"$cluster",namespace="$namespace"}
+          )
+        )
+      ),
+      "resource", "cpu", "", ""
+    )
+  ) by(cluster,namespace,resource)
     or
   sum(
     max(
@@ -1752,10 +1994,26 @@ sum(
     ) by(namespace,pod,container)
   ) by(namespace)
 ) by(namespace)`,
-    cpuLimits: `max(
-  namespace_cpu:kube_pod_container_resource_limits:sum{
-    cluster=~"$cluster",namespace=~"$namespace"
-  }
+    cpuLimits: `sum(
+  label_replace(
+    (
+      (max by(cluster,namespace,pod,node)(
+          kube_pod_resource_limit{cluster=~"$cluster",namespace=~"$namespace",resource="cpu",unit="cores"}
+        )
+        and on(cluster,namespace,pod)
+        max by(cluster,namespace,pod)(
+          kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",phase=~"Pending|Running"} == 1
+        )
+      )
+      or on(cluster,namespace,pod,node)
+      sum by(cluster,namespace,pod,node)(
+        max by(cluster,namespace,pod,node,container)(
+          cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits{cluster=~"$cluster",namespace=~"$namespace"}
+        )
+      )
+    ),
+    "resource", "cpu", "", ""
+  )
 ) by(cluster,namespace)
   or
 sum(
@@ -1774,10 +2032,26 @@ sum(
     "k8s_namespace_name"
   )
 )`,
-    cpuRequests: `max(
-  namespace_cpu:kube_pod_container_resource_requests:sum{
-    cluster=~"$cluster",namespace=~"$namespace"
-  }
+    cpuRequests: `sum(
+  label_replace(
+    (
+      (max by(cluster,namespace,pod,node)(
+          kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",resource="cpu",unit="cores"}
+        )
+        and on(cluster,namespace,pod)
+        max by(cluster,namespace,pod)(
+          kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",phase=~"Pending|Running"} == 1
+        )
+      )
+      or on(cluster,namespace,pod,node)
+      sum by(cluster,namespace,pod,node)(
+        max by(cluster,namespace,pod,node,container)(
+          cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace"}
+        )
+      )
+    ),
+    "resource", "cpu", "", ""
+  )
 ) by(cluster,namespace)`,
     cpuUsage: `sum(
   max(
@@ -1792,9 +2066,27 @@ sum(
   ) by(cluster,namespace,pod,container)
 )`,
     memoryAllocation: `max(
-  namespace_memory:kube_pod_container_resource_requests:sum{
-    cluster=~"$cluster",namespace="$namespace"
-  }
+  sum(
+    label_replace(
+      (
+        (max by(cluster,namespace,pod,node)(
+            kube_pod_resource_request{cluster=~"$cluster",namespace="$namespace",resource="memory",unit="bytes"}
+          )
+          and on(cluster,namespace,pod)
+          max by(cluster,namespace,pod)(
+            kube_pod_status_phase{cluster=~"$cluster",namespace="$namespace",phase=~"Pending|Running"} == 1
+          )
+        )
+        or on(cluster,namespace,pod,node)
+        sum by(cluster,namespace,pod,node)(
+          max by(cluster,namespace,pod,node,container)(
+            cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{cluster=~"$cluster",namespace="$namespace"}
+          )
+        )
+      ),
+      "resource", "memory", "", ""
+    )
+  ) by(cluster,namespace,resource)
     or
   sum(
     max(
@@ -1807,15 +2099,47 @@ sum(
     ) by(namespace,pod,container)
   ) by(namespace)
 ) by(namespace)`,
-    memoryLimits: `max(
-  namespace_memory:kube_pod_container_resource_limits:sum{
-    cluster=~"$cluster",namespace=~"$namespace"
-  }
+    memoryLimits: `sum(
+  label_replace(
+    (
+      (max by(cluster,namespace,pod,node)(
+          kube_pod_resource_limit{cluster=~"$cluster",namespace=~"$namespace",resource="memory",unit="bytes"}
+        )
+        and on(cluster,namespace,pod)
+        max by(cluster,namespace,pod)(
+          kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",phase=~"Pending|Running"} == 1
+        )
+      )
+      or on(cluster,namespace,pod,node)
+      sum by(cluster,namespace,pod,node)(
+        max by(cluster,namespace,pod,node,container)(
+          cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{cluster=~"$cluster",namespace=~"$namespace"}
+        )
+      )
+    ),
+    "resource", "memory", "", ""
+  )
 ) by(cluster,namespace)`,
-    memoryRequests: `max(
-  namespace_memory:kube_pod_container_resource_requests:sum{
-    cluster=~"$cluster",namespace=~"$namespace"
-  }
+    memoryRequests: `sum(
+  label_replace(
+    (
+      (max by(cluster,namespace,pod,node)(
+          kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",resource="memory",unit="bytes"}
+        )
+        and on(cluster,namespace,pod)
+        max by(cluster,namespace,pod)(
+          kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",phase=~"Pending|Running"} == 1
+        )
+      )
+      or on(cluster,namespace,pod,node)
+      sum by(cluster,namespace,pod,node)(
+        max by(cluster,namespace,pod,node,container)(
+          cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace"}
+        )
+      )
+    ),
+    "resource", "memory", "", ""
+  )
 ) by(cluster,namespace)`,
     memoryUsage: `sum(
   max(
@@ -1828,16 +2152,22 @@ sum(
   ) by(cluster,namespace,pod,container)
 )`,
     podsCount: `count(
-  namespace_workload_pod:kube_pod_owner:relabel{
-    cluster=~"$cluster",
-    namespace=~"$namespace",
-    workload=~"$workload",
-    workload_type=~"$workloadtype"
-  }
+  group(
+    namespace_workload_pod:kube_pod_owner:relabel{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      workload=~"$workload",
+      workload_type=~"$workloadtype"
+    }
+  ) by(cluster,namespace,workload,workload_type,pod)
 ) by(cluster,namespace,workload,workload_type)`,
     images: `count(
-  count(kube_pod_container_info) by(pod,image_spec)
-    * on(pod) group_left(namespace)
+  count(
+    kube_pod_container_info{
+      cluster=~"$cluster",namespace="$namespace",pod=~"$pod"
+    }
+  ) by(cluster,namespace,pod,image_spec)
+    and on(cluster,namespace,pod)
   namespace_workload_pod:kube_pod_owner:relabel{
     pod=~"$pod",cluster=~"$cluster",namespace="$namespace",workload=~"$workload"
   }
@@ -2002,13 +2332,25 @@ sum(
   sum by (namespace)(
     max(
       sum(
-        kube_pod_container_resource_requests{
-          cluster=~"$cluster",
-          namespace=~"$namespace",
-          container!="POD",
-          container!="",
-          resource="cpu"
-        }
+        (label_replace(
+            (
+              max by(cluster,namespace,pod,node)(
+                kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",resource="cpu",unit="cores"}
+              )
+              or on(cluster,namespace,pod,node)
+              sum by(cluster,namespace,pod,node)(
+                max by(cluster,namespace,pod,node,container)(
+                  kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",container!="POD",container!="",resource="cpu"}
+                )
+              )
+            ),
+            "resource", "cpu", "", ""
+          )
+          and on(cluster,namespace,pod)
+          max by(cluster,namespace,pod)(
+            kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",phase=~"Pending|Running"} == 1
+          )
+        )
       ) by(cluster,namespace,node,resource)
         or
       sum(
@@ -2023,7 +2365,7 @@ sum(
             }[$__rate_interval]
           )
             or
-          label_replace(
+          (
             rate(
               container_cpu_usage_seconds_total{
                 cluster=~"$cluster",
@@ -2032,11 +2374,18 @@ sum(
                 container!="POD",
                 container!=""
               }[$__rate_interval]
-            ),
-            "node",
-            "$1",
-            "instance",
-            "([^:]+).*"
+            )
+              * on(cluster,namespace,pod) group_left(node)
+            topk by(cluster,namespace,pod)(
+              1,
+              group by(cluster,namespace,pod,node)(
+                kube_pod_info{
+                  cluster=~"$cluster",
+                  namespace=~"$namespace",
+                  node!=""
+                }
+              )
+            )
           )
         ) by(cluster,namespace,node,pod,container)
       ) by(cluster,namespace,node)
@@ -2045,8 +2394,10 @@ sum(
     max(
       node_cpu_hourly_cost{cluster=~"$cluster"}
     ) by(cluster,node)
-  )[$__range:1h]
-)`,
+  )[$__range:5m]
+)
+  /
+12`,
     costsMemoryAllocation: `sum_over_time(
   sum by (namespace)(
     (
@@ -2054,13 +2405,25 @@ sum(
         (
           max(
             sum(
-              kube_pod_container_resource_requests{
-                cluster=~"$cluster",
-                namespace=~"$namespace",
-                container!="POD",
-                container!="",
-                resource="memory"
-              }
+              (label_replace(
+                  (
+                    max by(cluster,namespace,pod,node)(
+                      kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",resource="memory",unit="bytes"}
+                    )
+                    or on(cluster,namespace,pod,node)
+                    sum by(cluster,namespace,pod,node)(
+                      max by(cluster,namespace,pod,node,container)(
+                        kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",container!="POD",container!="",resource="memory"}
+                      )
+                    )
+                  ),
+                  "resource", "memory", "", ""
+                )
+                and on(cluster,namespace,pod)
+                max by(cluster,namespace,pod)(
+                  kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",phase=~"Pending|Running"} == 1
+                )
+              )
             ) by(cluster,node,namespace,resource)
               or
             sum(
@@ -2073,18 +2436,25 @@ sum(
                   container!=""
                 }
                   or
-                label_replace(
+                (
                   container_memory_working_set_bytes{
                     cluster=~"$cluster",
                     namespace=~"$namespace",
                     node="",
                     container!="POD",
                     container!=""
-                  },
-                  "node",
-                  "$1",
-                  "instance",
-                  "([^:]+).*"
+                  }
+                    * on(cluster,namespace,pod) group_left(node)
+                  topk by(cluster,namespace,pod)(
+                    1,
+                    group by(cluster,namespace,pod,node)(
+                      kube_pod_info{
+                        cluster=~"$cluster",
+                        namespace=~"$namespace",
+                        node!=""
+                      }
+                    )
+                  )
                 )
               ) by(cluster,namespace,node,pod,container)
             ) by(cluster,node,namespace)
@@ -2102,19 +2472,33 @@ sum(
     max(
       node_ram_hourly_cost{cluster=~"$cluster"}
     ) by(cluster,node)
-  )[$__range:1h]
-)`,
+  )[$__range:5m]
+)
+  /
+12`,
     costsCPUIdle: `sum_over_time(
   sum(
     (
       sum(
-        kube_pod_container_resource_requests{
-          cluster=~"$cluster",
-          namespace=~"$namespace",
-          container!="POD",
-          container!="",
-          resource="cpu"
-        }
+        (label_replace(
+            (
+              max by(cluster,namespace,pod,node)(
+                kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",resource="cpu",unit="cores"}
+              )
+              or on(cluster,namespace,pod,node)
+              sum by(cluster,namespace,pod,node)(
+                max by(cluster,namespace,pod,node,container)(
+                  kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",container!="POD",container!="",resource="cpu"}
+                )
+              )
+            ),
+            "resource", "cpu", "", ""
+          )
+          and on(cluster,namespace,pod)
+          max by(cluster,namespace,pod)(
+            kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",phase=~"Pending|Running"} == 1
+          )
+        )
       ) by(cluster,node,resource)
         - on(cluster,node) group_left()
       sum(
@@ -2129,7 +2513,7 @@ sum(
             }[$__rate_interval]
           )
             or
-          label_replace(
+          (
             rate(
               container_cpu_usage_seconds_total{
                 cluster=~"$cluster",
@@ -2138,11 +2522,18 @@ sum(
                 container!="POD",
                 container!=""
               }[$__rate_interval]
-            ),
-            "node",
-            "$1",
-            "instance",
-            "([^:]+).*"
+            )
+              * on(cluster,namespace,pod) group_left(node)
+            topk by(cluster,namespace,pod)(
+              1,
+              group by(cluster,namespace,pod,node)(
+                kube_pod_info{
+                  cluster=~"$cluster",
+                  namespace=~"$namespace",
+                  node!=""
+                }
+              )
+            )
           )
         ) by(cluster,namespace,node,pod,container)
       ) by(cluster,node)
@@ -2151,8 +2542,10 @@ sum(
     max(
       node_cpu_hourly_cost{cluster=~"$cluster"}
     ) by(cluster,node)
-  )[$__range:1h]
-)`,
+  )[$__range:5m]
+)
+  /
+12`,
     costsMemoryIdle: `sum_over_time(
   sum(
     (
@@ -2160,13 +2553,25 @@ sum(
         (
           (
             sum(
-              kube_pod_container_resource_requests{
-                cluster=~"$cluster",
-                namespace=~"$namespace",
-                container!="POD",
-                container!="",
-                resource="memory"
-              }
+              (label_replace(
+                  (
+                    max by(cluster,namespace,pod,node)(
+                      kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",resource="memory",unit="bytes"}
+                    )
+                    or on(cluster,namespace,pod,node)
+                    sum by(cluster,namespace,pod,node)(
+                      max by(cluster,namespace,pod,node,container)(
+                        kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",container!="POD",container!="",resource="memory"}
+                      )
+                    )
+                  ),
+                  "resource", "memory", "", ""
+                )
+                and on(cluster,namespace,pod)
+                max by(cluster,namespace,pod)(
+                  kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",phase=~"Pending|Running"} == 1
+                )
+              )
             ) by(cluster,node)
               - on(cluster,node) group_left()
             sum(
@@ -2179,18 +2584,25 @@ sum(
                   container!=""
                 }
                   or
-                label_replace(
+                (
                   container_memory_working_set_bytes{
                     cluster=~"$cluster",
                     namespace=~"$namespace",
                     node="",
                     container!="POD",
                     container!=""
-                  },
-                  "node",
-                  "$1",
-                  "instance",
-                  "([^:]+).*"
+                  }
+                    * on(cluster,namespace,pod) group_left(node)
+                  topk by(cluster,namespace,pod)(
+                    1,
+                    group by(cluster,namespace,pod,node)(
+                      kube_pod_info{
+                        cluster=~"$cluster",
+                        namespace=~"$namespace",
+                        node!=""
+                      }
+                    )
+                  )
                 )
               ) by(cluster,namespace,node,pod,container)
             ) by(cluster,node)
@@ -2208,8 +2620,10 @@ sum(
     max(
       node_ram_hourly_cost{cluster=~"$cluster"}
     ) by(cluster,node)
-  )[$__range:1h]
-)`,
+  )[$__range:5m]
+)
+  /
+12`,
   },
   workloads: {
     labelsByClusterNamespace: `query_result(
@@ -2661,11 +3075,25 @@ sum(
     )
   )
     or
+  count(
+    group(
+      last_over_time(
+        namespace_workload_pod:kube_pod_owner:relabel{
+          cluster=~"$cluster",
+          namespace=~"$namespace",
+          workload=~"$workload",
+          workload_type=~"barepod|staticpod|BarePod|StaticPod"
+        }[$__range:]
+      )
+    ) by(cluster,namespace,workload,workload_type,pod)
+  ) by(cluster,namespace,workload,workload_type)
+    or
   last_over_time(
     namespace_workload_pod:kube_pod_owner:relabel{
       cluster=~"$cluster",
       namespace=~"$namespace",
       workload=~"$workload",
+      workload_type!~"barepod|staticpod|BarePod|StaticPod",
       workload_type!="replicaset",
       workload_type!="deployment",
       workload_type!="daemonset",
@@ -2674,6 +3102,8 @@ sum(
   )
 ) by(cluster,namespace,workload,workload_type)
 `,
+    // Historical owners retain row identity; NaN prevents missing telemetry or
+    // unsupported controllers from becoming zero/ready during table calculations.
     readyPods: `max(
   (
     (
@@ -2807,346 +3237,425 @@ sum(
     )
   )
     or
-  namespace_workload_pod:kube_pod_owner:relabel{
-    cluster=~"$cluster",
-    namespace=~"$namespace",
-    workload=~"$workload",
-    workload_type!="replicaset",
-    workload_type!="deployment",
-    workload_type!="daemonset",
-    workload_type!="statefulset"
-  }
-) by(cluster,namespace,workload,workload_type)`,
-    cpuUsageAvgOverTime: `sum(
-  topk(
-    1,
-    group(
-      namespace_workload_pod:kube_pod_owner:relabel{
-        cluster=~"$cluster",
-        namespace=~"$namespace",
-        workload=~"$workload"
-      }
-    ) by(cluster,namespace,workload,workload_type,pod)
-  ) by(cluster,namespace,pod)
-    * on(cluster,namespace,pod) group_left()
-  avg_over_time(
+  sum(
     (
+      max(
+        kube_pod_status_ready{
+          cluster=~"$cluster",
+          namespace=~"$namespace",
+          condition="true"
+        }
+      ) by(cluster,namespace,pod)
+        * on(cluster,namespace,pod) group_right()
+      group(
+        namespace_workload_pod:kube_pod_owner:relabel{
+          cluster=~"$cluster",
+          namespace=~"$namespace",
+          workload=~"$workload",
+          workload_type=~"barepod|staticpod|BarePod|StaticPod"
+        }
+      ) by(cluster,namespace,workload,workload_type,pod)
+    )
+      or
+    (
+      group(
+        last_over_time(
+          namespace_workload_pod:kube_pod_owner:relabel{
+            cluster=~"$cluster",
+            namespace=~"$namespace",
+            workload=~"$workload",
+            workload_type!="replicaset",
+            workload_type!="deployment",
+            workload_type!="daemonset",
+            workload_type!="statefulset"
+          }[$__range:]
+        )
+      ) by(cluster,namespace,workload,workload_type,pod)
+        * NaN
+    )
+  ) by(cluster,namespace,workload,workload_type)
+) by(cluster,namespace,workload,workload_type)`,
+    cpuUsageAvgOverTime: `avg_over_time(
+  (
+    sum(
       sum(
         max(
           node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{
             cluster=~"$cluster",
             namespace=~"$namespace",
-            pod=~".+-.+",
+            pod!="",
             container!="POD",
             container!=""
           }
         ) by(cluster,namespace,pod,pod,container)
       ) by(cluster,namespace,pod)
-    )[$__range:$__interval]
-  )
-) by(cluster,namespace,workload,workload_type)`,
-    cpuUsageAvgPercentOverTime: `sum(
-  topk(
-    1,
-    group(
-      namespace_workload_pod:kube_pod_owner:relabel{
-        cluster=~"$cluster",
-        namespace=~"$namespace",
-        workload=~"$workload"
-      }
-    ) by(cluster,namespace,workload,workload_type,pod)
-  ) by(cluster,namespace,pod)
-    * on(cluster,namespace,pod) group_left()
-  avg_over_time(
-    (
+        * on(cluster,namespace,pod) group_left(workload,workload_type)
+      topk(
+        1,
+        group(
+          namespace_workload_pod:kube_pod_owner:relabel{
+            cluster=~"$cluster",
+            namespace=~"$namespace",
+            workload=~"$workload"
+          }
+        ) by(cluster,namespace,workload,workload_type,pod)
+      ) by(cluster,namespace,pod)
+    ) by(cluster,namespace,workload,workload_type)
+  )[$__range:$__interval]
+)`,
+    cpuUsageAvgPercentOverTime: `avg_over_time(
+  (
+    sum(
       sum(
         max(
           node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{
             cluster=~"$cluster",
             namespace=~"$namespace",
-            pod=~".+-.+",
+            pod!="",
             container!="POD",
             container!=""
           }
         ) by(cluster,namespace,pod,pod,container)
       ) by(cluster,namespace,pod)
-    )[$__range:$__interval]
-  )
-) by(cluster,namespace,workload,workload_type)
-  /
-sum(
-  topk(
-    1,
-    group(
-      namespace_workload_pod:kube_pod_owner:relabel{
-        cluster=~"$cluster",
-        namespace=~"$namespace",
-        workload=~"$workload"
-      }
-    ) by(cluster,namespace,workload,workload_type,pod)
-  ) by(cluster,namespace,pod)
-    * on(cluster,namespace,pod) group_left()
-  sum(
-    kube_pod_container_resource_requests{
-      cluster=~"$cluster",
-      namespace=~"$namespace",
-      container!="POD",
-      container!="",
-      pod=~".+-.+",
-      resource="cpu"
-    }
-  ) by(cluster,namespace,pod)
-) by(cluster,namespace,workload,workload_type)`,
-    cpuUsageMaxOverTime: `sum(
-  topk(
-    1,
-    group(
-      namespace_workload_pod:kube_pod_owner:relabel{
-        cluster=~"$cluster",
-        namespace=~"$namespace",
-        workload=~"$workload"
-      }
-    ) by(cluster,namespace,workload,workload_type,pod)
-  ) by(cluster,namespace,pod)
-    * on(cluster,namespace,pod) group_left()
-  max_over_time(
+        * on(cluster,namespace,pod) group_left(workload,workload_type)
+      topk(
+        1,
+        group(
+          namespace_workload_pod:kube_pod_owner:relabel{
+            cluster=~"$cluster",
+            namespace=~"$namespace",
+            workload=~"$workload"
+          }
+        ) by(cluster,namespace,workload,workload_type,pod)
+      ) by(cluster,namespace,pod)
+    ) by(cluster,namespace,workload,workload_type)
+      /
     (
+      sum(
+        topk(
+          1,
+          group(
+            namespace_workload_pod:kube_pod_owner:relabel{
+              cluster=~"$cluster",
+              namespace=~"$namespace",
+              workload=~"$workload"
+            }
+          ) by(cluster,namespace,workload,workload_type,pod)
+        ) by(cluster,namespace,pod)
+          * on(cluster,namespace,pod) group_left()
+        sum(
+          label_replace(
+            (
+              max by(cluster,namespace,pod,node)(
+                kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",pod!="",resource="cpu",unit="cores"}
+              )
+              or on(cluster,namespace,pod,node)
+              sum by(cluster,namespace,pod,node)(
+                max by(cluster,namespace,pod,node,container)(
+                  kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",pod!="",container!="POD",container!="",resource="cpu"}
+                )
+              )
+            ),
+            "resource", "cpu", "", ""
+          )
+        ) by(cluster,namespace,pod)
+      ) by(cluster,namespace,workload,workload_type)
+        >
+      0
+    )
+  )[$__range:$__interval]
+)`,
+    cpuUsageMaxOverTime: `max_over_time(
+  (
+    sum(
       sum(
         max(
           node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{
             cluster=~"$cluster",
             namespace=~"$namespace",
-            pod=~".+-.+",
+            pod!="",
             container!="POD",
             container!=""
           }
         ) by(cluster,namespace,pod,container)
       ) by(cluster,namespace,pod)
-    )[$__range:$__interval]
-  )
-) by(cluster,namespace,workload,workload_type)`,
-    cpuUsageMaxPercentOverTime: `sum(
-  topk(
-    1,
-    group(
-      namespace_workload_pod:kube_pod_owner:relabel{
-        cluster=~"$cluster",
-        namespace=~"$namespace",
-        workload=~"$workload"
-      }
-    ) by(cluster,namespace,workload,workload_type,pod)
-  ) by(cluster,namespace,pod)
-    * on(cluster,namespace,pod) group_left()
-  max_over_time(
-    (
+        * on(cluster,namespace,pod) group_left(workload,workload_type)
+      topk(
+        1,
+        group(
+          namespace_workload_pod:kube_pod_owner:relabel{
+            cluster=~"$cluster",
+            namespace=~"$namespace",
+            workload=~"$workload"
+          }
+        ) by(cluster,namespace,workload,workload_type,pod)
+      ) by(cluster,namespace,pod)
+    ) by(cluster,namespace,workload,workload_type)
+  )[$__range:$__interval]
+)`,
+    cpuUsageMaxPercentOverTime: `max_over_time(
+  (
+    sum(
       sum(
         max(
           node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{
             cluster=~"$cluster",
             namespace=~"$namespace",
-            pod=~".+-.+",
+            pod!="",
             container!="POD",
             container!=""
           }
         ) by(cluster,namespace,pod,container)
       ) by(cluster,namespace,pod)
-    )[$__range:$__interval]
-  )
-) by(cluster,namespace,workload,workload_type)
-  /
-sum(
-  topk(
-    1,
-    group(
-      namespace_workload_pod:kube_pod_owner:relabel{
-        cluster=~"$cluster",
-        namespace=~"$namespace",
-        workload=~"$workload"
-      }
-    ) by(cluster,namespace,workload,workload_type,pod)
-  ) by(cluster,namespace,pod)
-    * on(cluster,namespace,pod) group_left()
-  sum(
-    kube_pod_container_resource_requests{
-      cluster=~"$cluster",
-      namespace=~"$namespace",
-      container!="POD",
-      container!="",
-      pod=~".+-.+",
-      resource="cpu"
-    }
-  ) by(cluster,namespace,pod)
-) by(cluster,namespace,workload,workload_type)`,
-    memoryUsageAvgOverTime: `sum(
-  topk(
-    1,
-    group(
-      namespace_workload_pod:kube_pod_owner:relabel{
-        cluster=~"$cluster",
-        namespace=~"$namespace",
-        workload=~"$workload"
-      }
-    ) by(cluster,namespace,workload,workload_type,pod)
-  ) by(cluster,namespace,pod)
-    * on(cluster,namespace,pod) group_left()
-  avg_over_time(
+        * on(cluster,namespace,pod) group_left(workload,workload_type)
+      topk(
+        1,
+        group(
+          namespace_workload_pod:kube_pod_owner:relabel{
+            cluster=~"$cluster",
+            namespace=~"$namespace",
+            workload=~"$workload"
+          }
+        ) by(cluster,namespace,workload,workload_type,pod)
+      ) by(cluster,namespace,pod)
+    ) by(cluster,namespace,workload,workload_type)
+      /
     (
+      sum(
+        topk(
+          1,
+          group(
+            namespace_workload_pod:kube_pod_owner:relabel{
+              cluster=~"$cluster",
+              namespace=~"$namespace",
+              workload=~"$workload"
+            }
+          ) by(cluster,namespace,workload,workload_type,pod)
+        ) by(cluster,namespace,pod)
+          * on(cluster,namespace,pod) group_left()
+        sum(
+          label_replace(
+            (
+              max by(cluster,namespace,pod,node)(
+                kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",pod!="",resource="cpu",unit="cores"}
+              )
+              or on(cluster,namespace,pod,node)
+              sum by(cluster,namespace,pod,node)(
+                max by(cluster,namespace,pod,node,container)(
+                  kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",pod!="",container!="POD",container!="",resource="cpu"}
+                )
+              )
+            ),
+            "resource", "cpu", "", ""
+          )
+        ) by(cluster,namespace,pod)
+      ) by(cluster,namespace,workload,workload_type)
+        >
+      0
+    )
+  )[$__range:$__interval]
+)`,
+    memoryUsageAvgOverTime: `avg_over_time(
+  (
+    sum(
       sum(
         max(
           node_namespace_pod_container:container_memory_working_set_bytes{
             cluster=~"$cluster",
             namespace=~"$namespace",
-            pod=~".+-.+",
+            pod!="",
             container!="POD",
             container!=""
           }
         ) by(cluster,namespace,pod,container)
       ) by(cluster,namespace,pod)
-    )[$__range:$__interval]
-  )
-) by(cluster,namespace,workload,workload_type)`,
-    memoryUsageAvgPercentOverTime: `sum(
-  topk(
-    1,
-    group(
-      namespace_workload_pod:kube_pod_owner:relabel{
-        cluster=~"$cluster",
-        namespace=~"$namespace",
-        workload=~"$workload"
-      }
-    ) by(cluster,namespace,workload,workload_type,pod)
-  ) by(cluster,namespace,pod)
-    * on(cluster,namespace,pod) group_left()
-  avg_over_time(
-    (
+        * on(cluster,namespace,pod) group_left(workload,workload_type)
+      topk(
+        1,
+        group(
+          namespace_workload_pod:kube_pod_owner:relabel{
+            cluster=~"$cluster",
+            namespace=~"$namespace",
+            workload=~"$workload"
+          }
+        ) by(cluster,namespace,workload,workload_type,pod)
+      ) by(cluster,namespace,pod)
+    ) by(cluster,namespace,workload,workload_type)
+  )[$__range:$__interval]
+)`,
+    memoryUsageAvgPercentOverTime: `avg_over_time(
+  (
+    sum(
       sum(
         max(
           node_namespace_pod_container:container_memory_working_set_bytes{
             cluster=~"$cluster",
             namespace=~"$namespace",
-            pod=~".+-.+",
+            pod!="",
             container!="POD",
             container!=""
           }
         ) by(cluster,namespace,pod,container)
       ) by(cluster,namespace,pod)
-    )[$__range:$__interval]
-  )
-) by(cluster,namespace,workload,workload_type)
-  /
-sum(
-  topk(
-    1,
-    group(
-      namespace_workload_pod:kube_pod_owner:relabel{
-        cluster=~"$cluster",
-        namespace=~"$namespace",
-        workload=~"$workload"
-      }
-    ) by(cluster,namespace,workload,workload_type,pod)
-  ) by(cluster,namespace,pod)
-    * on(cluster,namespace,pod) group_left()
-  sum(
-    kube_pod_container_resource_requests{
-      cluster=~"$cluster",
-      namespace=~"$namespace",
-      container!="POD",
-      container!="",
-      pod=~".+-.+",
-      resource="memory"
-    }
-  ) by(cluster,namespace,pod)
-) by(cluster,namespace,workload,workload_type)`,
-    memoryUsageMaxOverTime: `sum(
-  topk(
-    1,
-    group(
-      namespace_workload_pod:kube_pod_owner:relabel{
-        cluster=~"$cluster",
-        namespace=~"$namespace",
-        workload=~"$workload"
-      }
-    ) by(cluster,namespace,workload,workload_type,pod)
-  ) by(cluster,namespace,pod)
-    * on(cluster,namespace,pod) group_left()
-  max_over_time(
+        * on(cluster,namespace,pod) group_left(workload,workload_type)
+      topk(
+        1,
+        group(
+          namespace_workload_pod:kube_pod_owner:relabel{
+            cluster=~"$cluster",
+            namespace=~"$namespace",
+            workload=~"$workload"
+          }
+        ) by(cluster,namespace,workload,workload_type,pod)
+      ) by(cluster,namespace,pod)
+    ) by(cluster,namespace,workload,workload_type)
+      /
     (
+      sum(
+        topk(
+          1,
+          group(
+            namespace_workload_pod:kube_pod_owner:relabel{
+              cluster=~"$cluster",
+              namespace=~"$namespace",
+              workload=~"$workload"
+            }
+          ) by(cluster,namespace,workload,workload_type,pod)
+        ) by(cluster,namespace,pod)
+          * on(cluster,namespace,pod) group_left()
+        sum(
+          label_replace(
+            (
+              max by(cluster,namespace,pod,node)(
+                kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",pod!="",resource="memory",unit="bytes"}
+              )
+              or on(cluster,namespace,pod,node)
+              sum by(cluster,namespace,pod,node)(
+                max by(cluster,namespace,pod,node,container)(
+                  kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",pod!="",container!="POD",container!="",resource="memory"}
+                )
+              )
+            ),
+            "resource", "memory", "", ""
+          )
+        ) by(cluster,namespace,pod)
+      ) by(cluster,namespace,workload,workload_type)
+        >
+      0
+    )
+  )[$__range:$__interval]
+)`,
+    memoryUsageMaxOverTime: `max_over_time(
+  (
+    sum(
       sum(
         max(
           node_namespace_pod_container:container_memory_working_set_bytes{
             cluster=~"$cluster",
             namespace=~"$namespace",
-            pod=~".+-.+",
+            pod!="",
             container!="POD",
             container!=""
           }
         ) by(cluster,namespace,pod,container)
       ) by(cluster,namespace,pod)
-    )[$__range:$__interval]
-  )
-) by(cluster,namespace,workload,workload_type)`,
-    memoryUsageMaxPercentOverTime: `sum(
-  topk(
-    1,
-    group(
-      namespace_workload_pod:kube_pod_owner:relabel{
-        cluster=~"$cluster",
-        namespace=~"$namespace",
-        workload=~"$workload"
-      }
-    ) by(cluster,namespace,workload,workload_type,pod)
-  ) by(cluster,namespace,pod)
-    * on(cluster,namespace,pod) group_left()
-  max_over_time(
-    (
+        * on(cluster,namespace,pod) group_left(workload,workload_type)
+      topk(
+        1,
+        group(
+          namespace_workload_pod:kube_pod_owner:relabel{
+            cluster=~"$cluster",
+            namespace=~"$namespace",
+            workload=~"$workload"
+          }
+        ) by(cluster,namespace,workload,workload_type,pod)
+      ) by(cluster,namespace,pod)
+    ) by(cluster,namespace,workload,workload_type)
+  )[$__range:$__interval]
+)`,
+    memoryUsageMaxPercentOverTime: `max_over_time(
+  (
+    sum(
       sum(
         max(
           node_namespace_pod_container:container_memory_working_set_bytes{
             cluster=~"$cluster",
             namespace=~"$namespace",
-            pod=~".+-.+",
+            pod!="",
             container!="POD",
             container!=""
           }
         ) by(cluster,namespace,pod,container)
       ) by(cluster,namespace,pod)
-    )[$__range:$__interval]
-  )
-) by(cluster,namespace,workload,workload_type)
-  /
-sum(
-  topk(
-    1,
-    group(
-      namespace_workload_pod:kube_pod_owner:relabel{
-        cluster=~"$cluster",
-        namespace=~"$namespace",
-        workload=~"$workload"
-      }
-    ) by(cluster,namespace,workload,workload_type,pod)
-  ) by(cluster,namespace,pod)
-    * on(cluster,namespace,pod) group_left()
-  sum(
-    kube_pod_container_resource_requests{
-      cluster=~"$cluster",
-      namespace=~"$namespace",
-      container!="POD",
-      container!="",
-      pod=~".+-.+",
-      resource="memory"
-    }
-  ) by(cluster,namespace,pod)
-) by(cluster,namespace,workload,workload_type)`,
+        * on(cluster,namespace,pod) group_left(workload,workload_type)
+      topk(
+        1,
+        group(
+          namespace_workload_pod:kube_pod_owner:relabel{
+            cluster=~"$cluster",
+            namespace=~"$namespace",
+            workload=~"$workload"
+          }
+        ) by(cluster,namespace,workload,workload_type,pod)
+      ) by(cluster,namespace,pod)
+    ) by(cluster,namespace,workload,workload_type)
+      /
+    (
+      sum(
+        topk(
+          1,
+          group(
+            namespace_workload_pod:kube_pod_owner:relabel{
+              cluster=~"$cluster",
+              namespace=~"$namespace",
+              workload=~"$workload"
+            }
+          ) by(cluster,namespace,workload,workload_type,pod)
+        ) by(cluster,namespace,pod)
+          * on(cluster,namespace,pod) group_left()
+        sum(
+          label_replace(
+            (
+              max by(cluster,namespace,pod,node)(
+                kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",pod!="",resource="memory",unit="bytes"}
+              )
+              or on(cluster,namespace,pod,node)
+              sum by(cluster,namespace,pod,node)(
+                max by(cluster,namespace,pod,node,container)(
+                  kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",pod!="",container!="POD",container!="",resource="memory"}
+                )
+              )
+            ),
+            "resource", "memory", "", ""
+          )
+        ) by(cluster,namespace,pod)
+      ) by(cluster,namespace,workload,workload_type)
+        >
+      0
+    )
+  )[$__range:$__interval]
+)`,
     cpuAllocation: `max(
   sum(
-    max(
-      cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{
-        container!="",
-        cluster=~"$cluster",
-        namespace=~"$namespace",
-        pod=~"$pod"
-      }
-    ) by(cluster,namespace,node,pod,container,resource)
+    label_replace(
+      (
+        (max by(cluster,namespace,pod,node)(
+            kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",resource="cpu",unit="cores"}
+          )
+          and on(cluster,namespace,pod)
+          max by(cluster,namespace,pod)(
+            kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",phase=~"Pending|Running"} == 1
+          )
+        )
+        or on(cluster,namespace,pod,node)
+        sum by(cluster,namespace,pod,node)(
+          max by(cluster,namespace,pod,node,container)(
+            cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",container!=""}
+          )
+        )
+      ),
+      "resource", "cpu", "", ""
+    )
   ) by(resource)
     or
   sum(
@@ -3161,24 +3670,46 @@ sum(
   )
 )`,
     cpuLimits: `sum(
-  max(
-    cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits{
-      container!="",
-      cluster=~"$cluster",
-      namespace=~"$namespace",
-      pod=~"$pod"
-    }
-  ) by(cluster,namespace,node,pod,container)
+  label_replace(
+    (
+      (max by(cluster,namespace,pod,node)(
+          kube_pod_resource_limit{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",resource="cpu",unit="cores"}
+        )
+        and on(cluster,namespace,pod)
+        max by(cluster,namespace,pod)(
+          kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",phase=~"Pending|Running"} == 1
+        )
+      )
+      or on(cluster,namespace,pod,node)
+      sum by(cluster,namespace,pod,node)(
+        max by(cluster,namespace,pod,node,container)(
+          cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",container!=""}
+        )
+      )
+    ),
+    "resource", "cpu", "", ""
+  )
 )`,
     cpuRequests: `sum(
-  max(
-    cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{
-      container!="",
-      cluster=~"$cluster",
-      namespace=~"$namespace",
-      pod=~"$pod"
-    }
-  ) by(cluster,namespace,node,pod,container,resource)
+  label_replace(
+    (
+      (max by(cluster,namespace,pod,node)(
+          kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",resource="cpu",unit="cores"}
+        )
+        and on(cluster,namespace,pod)
+        max by(cluster,namespace,pod)(
+          kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",phase=~"Pending|Running"} == 1
+        )
+      )
+      or on(cluster,namespace,pod,node)
+      sum by(cluster,namespace,pod,node)(
+        max by(cluster,namespace,pod,node,container)(
+          cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",container!=""}
+        )
+      )
+    ),
+    "resource", "cpu", "", ""
+  )
 ) by(resource)`,
     cpuUsage: `sum(
   max(
@@ -3192,14 +3723,20 @@ sum(
 )`,
     memoryAllocation: `max(
   sum(
-    kube_pod_container_resource_requests{
-      cluster=~"$cluster",
-      namespace="$namespace",
-      pod=~"$pod",
-      container!="POD",
-      container!="",
-      resource="memory"
-    }
+    label_replace(
+      (
+        max by(cluster,namespace,pod,node)(
+          kube_pod_resource_request{cluster=~"$cluster",namespace="$namespace",pod=~"$pod",resource="memory",unit="bytes"}
+        )
+        or on(cluster,namespace,pod,node)
+        sum by(cluster,namespace,pod,node)(
+          max by(cluster,namespace,pod,node,container)(
+            kube_pod_container_resource_requests{cluster=~"$cluster",namespace="$namespace",pod=~"$pod",container!="POD",container!="",resource="memory"}
+          )
+        )
+      ),
+      "resource", "memory", "", ""
+    )
   ) by(namespace,resource)
     or
   sum(
@@ -3215,24 +3752,46 @@ sum(
   ) by(namespace)
 ) by(namespace)`,
     memoryLimits: `sum(
-  max(
-    cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{
-      container!="",
-      cluster=~"$cluster",
-      namespace=~"$namespace",
-      pod=~"$pod"
-    }
-  ) by(cluster,namespace,node,pod,container)
+  label_replace(
+    (
+      (max by(cluster,namespace,pod,node)(
+          kube_pod_resource_limit{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",resource="memory",unit="bytes"}
+        )
+        and on(cluster,namespace,pod)
+        max by(cluster,namespace,pod)(
+          kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",phase=~"Pending|Running"} == 1
+        )
+      )
+      or on(cluster,namespace,pod,node)
+      sum by(cluster,namespace,pod,node)(
+        max by(cluster,namespace,pod,node,container)(
+          cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",container!=""}
+        )
+      )
+    ),
+    "resource", "memory", "", ""
+  )
 )`,
     memoryRequests: `sum(
-  max(
-    cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{
-      container!="",
-      cluster=~"$cluster",
-      namespace=~"$namespace",
-      pod=~"$pod"
-    }
-  ) by(cluster,namespace,node,pod,container,resource)
+  label_replace(
+    (
+      (max by(cluster,namespace,pod,node)(
+          kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",resource="memory",unit="bytes"}
+        )
+        and on(cluster,namespace,pod)
+        max by(cluster,namespace,pod)(
+          kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",phase=~"Pending|Running"} == 1
+        )
+      )
+      or on(cluster,namespace,pod,node)
+      sum by(cluster,namespace,pod,node)(
+        max by(cluster,namespace,pod,node,container)(
+          cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",container!=""}
+        )
+      )
+    ),
+    "resource", "memory", "", ""
+  )
 )`,
     memoryUsage: `sum(
   max(
@@ -3246,12 +3805,14 @@ sum(
   ) by(cluster,namespace,pod,container)
 )`,
     podsCount: `count(
-  namespace_workload_pod:kube_pod_owner:relabel{
-    cluster=~"$cluster",
-    namespace=~"$namespace",
-    workload=~"$workload",
-    workload_type=~"$workloadtype"
-  }
+  group(
+    namespace_workload_pod:kube_pod_owner:relabel{
+      cluster=~"$cluster",
+      namespace=~"$namespace",
+      workload=~"$workload",
+      workload_type=~"$workloadtype"
+    }
+  ) by(cluster,namespace,pod)
 )`,
     images: `count(
   kube_pod_container_info{
@@ -3398,14 +3959,25 @@ sum(
 ) by(cluster,namespace,workload,workload_type)
   / on(cluster,namespace,workload,workload_type) group_left()
 sum(
-  max(
-    cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{
-      container!="POD",
-      container!="",
-      cluster=~"$cluster",
-      namespace=~"$namespace"
-    }
-  ) by(cluster,namespace,pod,container)
+  label_replace(
+    (
+      (max by(cluster,namespace,pod,node)(
+          kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",resource="cpu",unit="cores"}
+        )
+        and on(cluster,namespace,pod)
+        max by(cluster,namespace,pod)(
+          kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",phase=~"Pending|Running"} == 1
+        )
+      )
+      or on(cluster,namespace,pod,node)
+      sum by(cluster,namespace,pod,node)(
+        max by(cluster,namespace,pod,node,container)(
+          cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",container!="POD",container!=""}
+        )
+      )
+    ),
+    "resource", "cpu", "", ""
+  )
     * on(cluster,namespace,pod) group_left(workload,workload_type)
   group(
     namespace_workload_pod:kube_pod_owner:relabel{
@@ -3455,14 +4027,25 @@ sum(
 ) by(cluster,namespace,workload,workload_type)
   / on(cluster,namespace,workload,workload_type) group_left()
 sum(
-  max(
-    cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{
-      container!="POD",
-      container!="",
-      cluster=~"$cluster",
-      namespace=~"$namespace"
-    }
-  ) by(cluster,namespace,pod,container)
+  label_replace(
+    (
+      (max by(cluster,namespace,pod,node)(
+          kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",resource="memory",unit="bytes"}
+        )
+        and on(cluster,namespace,pod)
+        max by(cluster,namespace,pod)(
+          kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",phase=~"Pending|Running"} == 1
+        )
+      )
+      or on(cluster,namespace,pod,node)
+      sum by(cluster,namespace,pod,node)(
+        max by(cluster,namespace,pod,node,container)(
+          cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",container!="POD",container!=""}
+        )
+      )
+    ),
+    "resource", "memory", "", ""
+  )
     * on(cluster,namespace,pod) group_left(workload,workload_type)
   group(
     namespace_workload_pod:kube_pod_owner:relabel{
@@ -3645,14 +4228,25 @@ sum(
 )`,
     cpuRequestsJoinKey: `label_join(
   sum(
-    max(
-      cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{
-        container!="POD",
-        container!="",
-        cluster=~"$cluster",
-        namespace=~"$namespace"
-      }
-    ) by(cluster,namespace,pod,container)
+    label_replace(
+      (
+        (max by(cluster,namespace,pod,node)(
+            kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",resource="cpu",unit="cores"}
+          )
+          and on(cluster,namespace,pod)
+          max by(cluster,namespace,pod)(
+            kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",phase=~"Pending|Running"} == 1
+          )
+        )
+        or on(cluster,namespace,pod,node)
+        sum by(cluster,namespace,pod,node)(
+          max by(cluster,namespace,pod,node,container)(
+            cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",container!="POD",container!=""}
+          )
+        )
+      ),
+      "resource", "cpu", "", ""
+    )
       * on(cluster,namespace,pod) group_left(workload,workload_type)
     group(
       namespace_workload_pod:kube_pod_owner:relabel{
@@ -3694,14 +4288,25 @@ sum(
   /
 label_join(
   sum(
-    max(
-      cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{
-        container!="POD",
-        container!="",
-        cluster=~"$cluster",
-        namespace=~"$namespace"
-      }
-    ) by(cluster,namespace,pod,container)
+    label_replace(
+      (
+        (max by(cluster,namespace,pod,node)(
+            kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",resource="cpu",unit="cores"}
+          )
+          and on(cluster,namespace,pod)
+          max by(cluster,namespace,pod)(
+            kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",phase=~"Pending|Running"} == 1
+          )
+        )
+        or on(cluster,namespace,pod,node)
+        sum by(cluster,namespace,pod,node)(
+          max by(cluster,namespace,pod,node,container)(
+            cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",container!="POD",container!=""}
+          )
+        )
+      ),
+      "resource", "cpu", "", ""
+    )
       * on(cluster,namespace,pod) group_left(workload,workload_type)
     group(
       namespace_workload_pod:kube_pod_owner:relabel{
@@ -3718,14 +4323,25 @@ label_join(
 )`,
     cpuLimitsJoinKey: `label_join(
   sum(
-    max(
-      cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits{
-        container!="POD",
-        container!="",
-        cluster=~"$cluster",
-        namespace=~"$namespace"
-      }
-    ) by(cluster,namespace,pod,container)
+    label_replace(
+      (
+        (max by(cluster,namespace,pod,node)(
+            kube_pod_resource_limit{cluster=~"$cluster",namespace=~"$namespace",resource="cpu",unit="cores"}
+          )
+          and on(cluster,namespace,pod)
+          max by(cluster,namespace,pod)(
+            kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",phase=~"Pending|Running"} == 1
+          )
+        )
+        or on(cluster,namespace,pod,node)
+        sum by(cluster,namespace,pod,node)(
+          max by(cluster,namespace,pod,node,container)(
+            cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits{cluster=~"$cluster",namespace=~"$namespace",container!="POD",container!=""}
+          )
+        )
+      ),
+      "resource", "cpu", "", ""
+    )
       * on(cluster,namespace,pod) group_left(workload,workload_type)
     group(
       namespace_workload_pod:kube_pod_owner:relabel{
@@ -3767,14 +4383,25 @@ label_join(
   /
 label_join(
   sum(
-    max(
-      cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits{
-        container!="POD",
-        container!="",
-        cluster=~"$cluster",
-        namespace=~"$namespace"
-      }
-    ) by(cluster,namespace,pod,container)
+    label_replace(
+      (
+        (max by(cluster,namespace,pod,node)(
+            kube_pod_resource_limit{cluster=~"$cluster",namespace=~"$namespace",resource="cpu",unit="cores"}
+          )
+          and on(cluster,namespace,pod)
+          max by(cluster,namespace,pod)(
+            kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",phase=~"Pending|Running"} == 1
+          )
+        )
+        or on(cluster,namespace,pod,node)
+        sum by(cluster,namespace,pod,node)(
+          max by(cluster,namespace,pod,node,container)(
+            cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits{cluster=~"$cluster",namespace=~"$namespace",container!="POD",container!=""}
+          )
+        )
+      ),
+      "resource", "cpu", "", ""
+    )
       * on(cluster,namespace,pod) group_left(workload,workload_type)
     group(
       namespace_workload_pod:kube_pod_owner:relabel{
@@ -3815,14 +4442,25 @@ label_join(
 )`,
     memoryRequestsJoinKey: `label_join(
   sum(
-    max(
-      cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{
-        container!="POD",
-        container!="",
-        cluster=~"$cluster",
-        namespace=~"$namespace"
-      }
-    ) by(cluster,namespace,pod,container)
+    label_replace(
+      (
+        (max by(cluster,namespace,pod,node)(
+            kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",resource="memory",unit="bytes"}
+          )
+          and on(cluster,namespace,pod)
+          max by(cluster,namespace,pod)(
+            kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",phase=~"Pending|Running"} == 1
+          )
+        )
+        or on(cluster,namespace,pod,node)
+        sum by(cluster,namespace,pod,node)(
+          max by(cluster,namespace,pod,node,container)(
+            cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",container!="POD",container!=""}
+          )
+        )
+      ),
+      "resource", "memory", "", ""
+    )
       * on(cluster,namespace,pod) group_left(workload,workload_type)
     group(
       namespace_workload_pod:kube_pod_owner:relabel{
@@ -3864,14 +4502,25 @@ label_join(
   /
 label_join(
   sum(
-    max(
-      cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{
-        container!="POD",
-        container!="",
-        cluster=~"$cluster",
-        namespace=~"$namespace"
-      }
-    ) by(cluster,namespace,pod,container)
+    label_replace(
+      (
+        (max by(cluster,namespace,pod,node)(
+            kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",resource="memory",unit="bytes"}
+          )
+          and on(cluster,namespace,pod)
+          max by(cluster,namespace,pod)(
+            kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",phase=~"Pending|Running"} == 1
+          )
+        )
+        or on(cluster,namespace,pod,node)
+        sum by(cluster,namespace,pod,node)(
+          max by(cluster,namespace,pod,node,container)(
+            cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",container!="POD",container!=""}
+          )
+        )
+      ),
+      "resource", "memory", "", ""
+    )
       * on(cluster,namespace,pod) group_left(workload,workload_type)
     group(
       namespace_workload_pod:kube_pod_owner:relabel{
@@ -3888,14 +4537,25 @@ label_join(
 )`,
     memoryLimitsJoinKey: `label_join(
   sum(
-    max(
-      cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{
-        container!="POD",
-        container!="",
-        cluster=~"$cluster",
-        namespace=~"$namespace"
-      }
-    ) by(cluster,namespace,pod,container)
+    label_replace(
+      (
+        (max by(cluster,namespace,pod,node)(
+            kube_pod_resource_limit{cluster=~"$cluster",namespace=~"$namespace",resource="memory",unit="bytes"}
+          )
+          and on(cluster,namespace,pod)
+          max by(cluster,namespace,pod)(
+            kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",phase=~"Pending|Running"} == 1
+          )
+        )
+        or on(cluster,namespace,pod,node)
+        sum by(cluster,namespace,pod,node)(
+          max by(cluster,namespace,pod,node,container)(
+            cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{cluster=~"$cluster",namespace=~"$namespace",container!="POD",container!=""}
+          )
+        )
+      ),
+      "resource", "memory", "", ""
+    )
       * on(cluster,namespace,pod) group_left(workload,workload_type)
     group(
       namespace_workload_pod:kube_pod_owner:relabel{
@@ -3937,14 +4597,25 @@ label_join(
   /
 label_join(
   sum(
-    max(
-      cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{
-        container!="POD",
-        container!="",
-        cluster=~"$cluster",
-        namespace=~"$namespace"
-      }
-    ) by(cluster,namespace,pod,container)
+    label_replace(
+      (
+        (max by(cluster,namespace,pod,node)(
+            kube_pod_resource_limit{cluster=~"$cluster",namespace=~"$namespace",resource="memory",unit="bytes"}
+          )
+          and on(cluster,namespace,pod)
+          max by(cluster,namespace,pod)(
+            kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",phase=~"Pending|Running"} == 1
+          )
+        )
+        or on(cluster,namespace,pod,node)
+        sum by(cluster,namespace,pod,node)(
+          max by(cluster,namespace,pod,node,container)(
+            cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{cluster=~"$cluster",namespace=~"$namespace",container!="POD",container!=""}
+          )
+        )
+      ),
+      "resource", "memory", "", ""
+    )
       * on(cluster,namespace,pod) group_left(workload,workload_type)
     group(
       namespace_workload_pod:kube_pod_owner:relabel{
@@ -4144,32 +4815,31 @@ label_join(
   ) by(cluster,namespace,pod,workload,workload_type)
 ) by(workload,workload_type)`,
     costsCPUAllocation: `sum(
-  topk(
-    1,
-    group(
-      namespace_workload_pod:kube_pod_owner:relabel{
-        cluster=~"$cluster",
-        namespace=~"$namespace",
-        workload=~"$workload",
-        workload_type=~"$workloadtype"
-      }
-    ) by(cluster,namespace,workload,workload_type,pod)
-  ) by(cluster,namespace,pod)
-    * on(cluster,namespace,pod) group_left()
   sum(
     sum_over_time(
       (
         sum(
           max(
             sum(
-              kube_pod_container_resource_requests{
-                cluster=~"$cluster",
-                namespace=~"$namespace",
-                container!="POD",
-                container!="",
-                pod=~".+",
-                resource="cpu"
-              }
+              (label_replace(
+                  (
+                    max by(cluster,namespace,pod,node)(
+                      kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",pod=~".+",resource="cpu",unit="cores"}
+                    )
+                    or on(cluster,namespace,pod,node)
+                    sum by(cluster,namespace,pod,node)(
+                      max by(cluster,namespace,pod,node,container)(
+                        kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",pod=~".+",container!="POD",container!="",resource="cpu"}
+                      )
+                    )
+                  ),
+                  "resource", "cpu", "", ""
+                )
+                and on(cluster,namespace,pod)
+                max by(cluster,namespace,pod)(
+                  kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",pod=~".+",phase=~"Pending|Running"} == 1
+                )
+              )
             ) by(cluster,namespace,node,pod,resource)
               or
             sum(
@@ -4184,7 +4854,7 @@ label_join(
                 }[$__rate_interval]
               )
                 or
-              label_replace(
+              (
                 rate(
                   container_cpu_usage_seconds_total{
                     cluster=~"$cluster",
@@ -4194,34 +4864,44 @@ label_join(
                     container!="POD",
                     container!=""
                   }[$__rate_interval]
-                ),
-                "node",
-                "$1",
-                "instance",
-                "([^:]+).*"
+                )
+                  * on(cluster,namespace,pod) group_left(node)
+                topk by(cluster,namespace,pod)(
+                  1,
+                  group by(cluster,namespace,pod,node)(
+                    kube_pod_info{
+                      cluster=~"$cluster",
+                      namespace=~"$namespace",
+                      node!="",
+                      pod=~".+"
+                    }
+                  )
+                )
               )
             ) by(cluster,namespace,node,pod)
           ) by(cluster,namespace,node,pod)
             * on(cluster,node) group_left()
           max(node_cpu_hourly_cost{cluster=~"$cluster"}) by(cluster,node)
         ) by(cluster,namespace,pod)
-      )[$__range:1h]
+          * on(cluster,namespace,pod) group_left(workload,workload_type)
+        topk(
+          1,
+          group(
+            namespace_workload_pod:kube_pod_owner:relabel{
+              cluster=~"$cluster",
+              namespace=~"$namespace",
+              workload=~"$workload",
+              workload_type=~"$workloadtype"
+            }
+          ) by(cluster,namespace,workload,workload_type,pod)
+        ) by(cluster,namespace,pod)
+      )[$__range:5m]
     )
-  ) by(cluster,namespace,pod)
+      /
+    12
+  ) by(cluster,namespace,pod,workload,workload_type)
 ) by(cluster,namespace,workload,workload_type)`,
     costsMemoryAllocation: `sum(
-  topk(
-    1,
-    group(
-      namespace_workload_pod:kube_pod_owner:relabel{
-        cluster=~"$cluster",
-        namespace=~"$namespace",
-        workload=~"$workload",
-        workload_type=~"$workloadtype"
-      }
-    ) by(cluster,namespace,workload,workload_type,pod)
-  ) by(cluster,namespace,pod)
-    * on(cluster,namespace,pod) group_left()
   sum(
     sum_over_time(
       (
@@ -4231,15 +4911,26 @@ label_join(
               (
                 max(
                   sum(
-                    kube_pod_container_resource_requests{
-                      cluster=~"$cluster",
-                      namespace=~"$namespace",
-                      pod=~".+",
-                      container!="POD",
-                      container!="",
-                      resource="memory"
-                    }
-                  ) by(cluster,node,pod,resource)
+                    (label_replace(
+                        (
+                          max by(cluster,namespace,pod,node)(
+                            kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",pod=~".+",resource="memory",unit="bytes"}
+                          )
+                          or on(cluster,namespace,pod,node)
+                          sum by(cluster,namespace,pod,node)(
+                            max by(cluster,namespace,pod,node,container)(
+                              kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",pod=~".+",container!="POD",container!="",resource="memory"}
+                            )
+                          )
+                        ),
+                        "resource", "memory", "", ""
+                      )
+                      and on(cluster,namespace,pod)
+                      max by(cluster,namespace,pod)(
+                        kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",pod=~".+",phase=~"Pending|Running"} == 1
+                      )
+                    )
+                  ) by(cluster,namespace,node,pod,resource)
                     or
                   sum(
                     container_memory_working_set_bytes{
@@ -4251,7 +4942,7 @@ label_join(
                       container!=""
                     }
                       or
-                    label_replace(
+                    (
                       container_memory_working_set_bytes{
                         cluster=~"$cluster",
                         namespace=~"$namespace",
@@ -4259,11 +4950,19 @@ label_join(
                         pod=~".+",
                         container!="POD",
                         container!=""
-                      },
-                      "node",
-                      "$1",
-                      "instance",
-                      "([^:]+).*"
+                      }
+                        * on(cluster,namespace,pod) group_left(node)
+                      topk by(cluster,namespace,pod)(
+                        1,
+                        group by(cluster,namespace,pod,node)(
+                          kube_pod_info{
+                            cluster=~"$cluster",
+                            namespace=~"$namespace",
+                            node!="",
+                            pod=~".+"
+                          }
+                        )
+                      )
                     )
                   ) by(cluster,namespace,node,pod)
                 ) by(cluster,namespace,node,pod)
@@ -4279,37 +4978,50 @@ label_join(
             * on(cluster,node) group_left()
           max(node_ram_hourly_cost{cluster=~"$cluster"}) by(cluster,node)
         ) by(cluster,namespace,pod)
-      )[$__range:1h]
+          * on(cluster,namespace,pod) group_left(workload,workload_type)
+        topk(
+          1,
+          group(
+            namespace_workload_pod:kube_pod_owner:relabel{
+              cluster=~"$cluster",
+              namespace=~"$namespace",
+              workload=~"$workload",
+              workload_type=~"$workloadtype"
+            }
+          ) by(cluster,namespace,workload,workload_type,pod)
+        ) by(cluster,namespace,pod)
+      )[$__range:5m]
     )
-  ) by(cluster,namespace,pod)
+      /
+    12
+  ) by(cluster,namespace,pod,workload,workload_type)
 ) by(cluster,namespace,workload,workload_type)`,
     costsCPUIdle: `sum(
-  topk(
-    1,
-    group(
-      namespace_workload_pod:kube_pod_owner:relabel{
-        cluster=~"$cluster",
-        namespace=~"$namespace",
-        workload=~"$workload",
-        workload_type=~"$workloadtype"
-      }
-    ) by(cluster,namespace,workload,workload_type,pod)
-  ) by(cluster,namespace,pod)
-    * on(cluster,namespace,pod) group_left()
   sum(
     sum_over_time(
       (
         sum(
           (
             sum(
-              kube_pod_container_resource_requests{
-                cluster=~"$cluster",
-                namespace=~"$namespace",
-                container!="POD",
-                container!="",
-                pod=~".+",
-                resource="cpu"
-              }
+              (label_replace(
+                  (
+                    max by(cluster,namespace,pod,node)(
+                      kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",pod=~".+",resource="cpu",unit="cores"}
+                    )
+                    or on(cluster,namespace,pod,node)
+                    sum by(cluster,namespace,pod,node)(
+                      max by(cluster,namespace,pod,node,container)(
+                        kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",pod=~".+",container!="POD",container!="",resource="cpu"}
+                      )
+                    )
+                  ),
+                  "resource", "cpu", "", ""
+                )
+                and on(cluster,namespace,pod)
+                max by(cluster,namespace,pod)(
+                  kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",pod=~".+",phase=~"Pending|Running"} == 1
+                )
+              )
             ) by(cluster,namespace,node,pod)
               - on(cluster,namespace,node,pod) group_left()
             sum(
@@ -4324,7 +5036,7 @@ label_join(
                 }[$__rate_interval]
               )
                 or
-              label_replace(
+              (
                 rate(
                   container_cpu_usage_seconds_total{
                     cluster=~"$cluster",
@@ -4334,34 +5046,44 @@ label_join(
                     container!="POD",
                     container!=""
                   }[$__rate_interval]
-                ),
-                "node",
-                "$1",
-                "instance",
-                "([^:]+).*"
+                )
+                  * on(cluster,namespace,pod) group_left(node)
+                topk by(cluster,namespace,pod)(
+                  1,
+                  group by(cluster,namespace,pod,node)(
+                    kube_pod_info{
+                      cluster=~"$cluster",
+                      namespace=~"$namespace",
+                      node!="",
+                      pod=~".+"
+                    }
+                  )
+                )
               )
             ) by(cluster,namespace,node,pod)
           )
             * on(cluster,node) group_left()
           max(node_cpu_hourly_cost{cluster=~"$cluster"}) by(cluster,node)
         ) by(cluster,namespace,pod)
-      )[$__range:1h]
+          * on(cluster,namespace,pod) group_left(workload,workload_type)
+        topk(
+          1,
+          group(
+            namespace_workload_pod:kube_pod_owner:relabel{
+              cluster=~"$cluster",
+              namespace=~"$namespace",
+              workload=~"$workload",
+              workload_type=~"$workloadtype"
+            }
+          ) by(cluster,namespace,workload,workload_type,pod)
+        ) by(cluster,namespace,pod)
+      )[$__range:5m]
     )
-  ) by(cluster,namespace,pod)
+      /
+    12
+  ) by(cluster,namespace,pod,workload,workload_type)
 ) by(cluster,namespace,workload,workload_type)`,
     costsMemoryIdle: `sum(
-  topk(
-    1,
-    group(
-      namespace_workload_pod:kube_pod_owner:relabel{
-        cluster=~"$cluster",
-        namespace=~"$namespace",
-        workload=~"$workload",
-        workload_type=~"$workloadtype"
-      }
-    ) by(cluster,namespace,workload,workload_type,pod)
-  ) by(cluster,namespace,pod)
-    * on(cluster,namespace,pod) group_left()
   sum(
     sum_over_time(
       (
@@ -4371,14 +5093,25 @@ label_join(
               (
                 (
                   sum(
-                    kube_pod_container_resource_requests{
-                      cluster=~"$cluster",
-                      namespace=~"$namespace",
-                      container!="POD",
-                      container!="",
-                      pod=~".+",
-                      resource="memory"
-                    }
+                    (label_replace(
+                        (
+                          max by(cluster,namespace,pod,node)(
+                            kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",pod=~".+",resource="memory",unit="bytes"}
+                          )
+                          or on(cluster,namespace,pod,node)
+                          sum by(cluster,namespace,pod,node)(
+                            max by(cluster,namespace,pod,node,container)(
+                              kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",pod=~".+",container!="POD",container!="",resource="memory"}
+                            )
+                          )
+                        ),
+                        "resource", "memory", "", ""
+                      )
+                      and on(cluster,namespace,pod)
+                      max by(cluster,namespace,pod)(
+                        kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",pod=~".+",phase=~"Pending|Running"} == 1
+                      )
+                    )
                   ) by(cluster,namespace,node,pod)
                     - on(cluster,namespace,node,pod) group_left()
                   sum(
@@ -4391,7 +5124,7 @@ label_join(
                       container!=""
                     }
                       or
-                    label_replace(
+                    (
                       container_memory_working_set_bytes{
                         cluster=~"$cluster",
                         namespace=~"$namespace",
@@ -4399,11 +5132,19 @@ label_join(
                         pod=~".+",
                         container!="POD",
                         container!=""
-                      },
-                      "node",
-                      "$1",
-                      "instance",
-                      "([^:]+).*"
+                      }
+                        * on(cluster,namespace,pod) group_left(node)
+                      topk by(cluster,namespace,pod)(
+                        1,
+                        group by(cluster,namespace,pod,node)(
+                          kube_pod_info{
+                            cluster=~"$cluster",
+                            namespace=~"$namespace",
+                            node!="",
+                            pod=~".+"
+                          }
+                        )
+                      )
                     )
                   ) by(cluster,namespace,node,pod)
                 )
@@ -4419,9 +5160,23 @@ label_join(
             * on(cluster,node) group_left()
           max(node_ram_hourly_cost{cluster=~"$cluster"}) by(cluster,node)
         ) by(cluster,namespace,pod)
-      )[$__range:1h]
+          * on(cluster,namespace,pod) group_left(workload,workload_type)
+        topk(
+          1,
+          group(
+            namespace_workload_pod:kube_pod_owner:relabel{
+              cluster=~"$cluster",
+              namespace=~"$namespace",
+              workload=~"$workload",
+              workload_type=~"$workloadtype"
+            }
+          ) by(cluster,namespace,workload,workload_type,pod)
+        ) by(cluster,namespace,pod)
+      )[$__range:5m]
     )
-  ) by(cluster,namespace,pod)
+      /
+    12
+  ) by(cluster,namespace,pod,workload,workload_type)
 ) by(cluster,namespace,workload,workload_type)`,
     search: `sum(
   namespace_workload_pod:kube_pod_owner:relabel{
@@ -4510,7 +5265,11 @@ label_join(
 ) by(container)`,
   },
   pods: {
-    count: `count(kube_pod_info{cluster=~"$cluster", namespace=~"$namespace", pod!=""})`,
+    count: `count(
+  group(
+    kube_pod_info{cluster=~"$cluster",namespace=~"$namespace",pod!=""}
+  ) by(cluster,namespace,pod)
+)`,
     labelsByClusterNamespace: `label_values(
   namespace_workload_pod:kube_pod_owner:relabel{
     cluster=~"$cluster",namespace=~"$namespace"
@@ -4589,20 +5348,29 @@ label_join(
         container!=""
       }
     ) by(cluster,namespace,pod)
+      /
+    (
+      sum(
+        label_replace(
+          (
+            max by(cluster,namespace,pod,node)(
+              kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",node=~"$node",resource="cpu",unit="cores"}
+            )
+            or on(cluster,namespace,pod,node)
+            sum by(cluster,namespace,pod,node)(
+              max by(cluster,namespace,pod,node,container)(
+                kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",node=~"$node",container!="POD",container!="",resource="cpu"}
+              )
+            )
+          ),
+          "resource", "cpu", "", ""
+        )
+      ) by(cluster,namespace,pod)
+        >
+      0
+    )
   )[$__range:$__interval]
-)
-  /
-sum(
-  kube_pod_container_resource_requests{
-    cluster=~"$cluster",
-    node=~"$node",
-    namespace=~"$namespace",
-    pod=~"$pod",
-    container!="POD",
-    container!="",
-    resource="cpu"
-  }
-) by(cluster,namespace,pod)`,
+)`,
     cpuUsageMaxOverTime: `max_over_time(
   (
     sum(
@@ -4629,20 +5397,29 @@ sum(
         container!=""
       }
     ) by(cluster,namespace,pod)
+      /
+    (
+      sum(
+        label_replace(
+          (
+            max by(cluster,namespace,pod,node)(
+              kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",node=~"$node",resource="cpu",unit="cores"}
+            )
+            or on(cluster,namespace,pod,node)
+            sum by(cluster,namespace,pod,node)(
+              max by(cluster,namespace,pod,node,container)(
+                kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",node=~"$node",container!="POD",container!="",resource="cpu"}
+              )
+            )
+          ),
+          "resource", "cpu", "", ""
+        )
+      ) by(cluster,namespace,pod)
+        >
+      0
+    )
   )[$__range:$__interval]
-)
-  /
-sum(
-  kube_pod_container_resource_requests{
-    cluster=~"$cluster",
-    node=~"$node",
-    namespace=~"$namespace",
-    pod=~"$pod",
-    container!="POD",
-    container!="",
-    resource="cpu"
-  }
-) by(cluster,namespace,pod)`,
+)`,
     memoryUsageAvgOverTime: `avg_over_time(
   (
     sum(
@@ -4669,20 +5446,29 @@ sum(
         container!=""
       }
     ) by(cluster,namespace,pod)
+      /
+    (
+      sum(
+        label_replace(
+          (
+            max by(cluster,namespace,pod,node)(
+              kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",node=~"$node",resource="memory",unit="bytes"}
+            )
+            or on(cluster,namespace,pod,node)
+            sum by(cluster,namespace,pod,node)(
+              max by(cluster,namespace,pod,node,container)(
+                kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",node=~"$node",container!="POD",container!="",resource="memory"}
+              )
+            )
+          ),
+          "resource", "memory", "", ""
+        )
+      ) by(cluster,namespace,pod)
+        >
+      0
+    )
   )[$__range:$__interval]
-)
-  /
-sum(
-  kube_pod_container_resource_requests{
-    cluster=~"$cluster",
-    node=~"$node",
-    namespace=~"$namespace",
-    pod=~"$pod",
-    container!="POD",
-    container!="",
-    resource="memory"
-  }
-) by(cluster,namespace,pod)`,
+)`,
     memoryUsageMaxOverTime: `max_over_time(
   (
     sum(
@@ -4713,30 +5499,50 @@ sum(
         }
       ) by(cluster,namespace,pod,container)
     ) by(cluster,namespace,pod)
+      /
+    (
+      sum(
+        label_replace(
+          (
+            max by(cluster,namespace,pod,node)(
+              kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",node=~"$node",resource="memory",unit="bytes"}
+            )
+            or on(cluster,namespace,pod,node)
+            sum by(cluster,namespace,pod,node)(
+              max by(cluster,namespace,pod,node,container)(
+                kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",node=~"$node",container!="POD",container!="",resource="memory"}
+              )
+            )
+          ),
+          "resource", "memory", "", ""
+        )
+      ) by(cluster,namespace,pod)
+        >
+      0
+    )
   )[$__range:$__interval]
-)
-  /
-sum(
-  kube_pod_container_resource_requests{
-    cluster=~"$cluster",
-    node=~"$node",
-    namespace=~"$namespace",
-    pod=~"$pod",
-    container!="POD",
-    container!="",
-    resource="memory"
-  }
-) by(cluster,namespace,pod)`,
+)`,
     cpuAllocation: `max(
   sum(
-    max(
-      cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{
-        container!="",
-        cluster=~"$cluster",
-        namespace=~"$namespace",
-        pod=~"$pod"
-      }
-    ) by(cluster,namespace,node,pod,container,resource)
+    label_replace(
+      (
+        (max by(cluster,namespace,pod,node)(
+            kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",resource="cpu",unit="cores"}
+          )
+          and on(cluster,namespace,pod)
+          max by(cluster,namespace,pod)(
+            kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",phase=~"Pending|Running"} == 1
+          )
+        )
+        or on(cluster,namespace,pod,node)
+        sum by(cluster,namespace,pod,node)(
+          max by(cluster,namespace,pod,node,container)(
+            cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",container!=""}
+          )
+        )
+      ),
+      "resource", "cpu", "", ""
+    )
   ) by(namespace,resource)
     or
   sum(
@@ -4753,24 +5559,46 @@ sum(
   ) by(namespace)
 ) by(namespace)`,
     cpuLimits: `sum(
-  max(
-    cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits{
-      container!="",
-      cluster=~"$cluster",
-      namespace=~"$namespace",
-      pod=~"$pod"
-    }
-  ) by(cluster,namespace,node,pod,container)
+  label_replace(
+    (
+      (max by(cluster,namespace,pod,node)(
+          kube_pod_resource_limit{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",resource="cpu",unit="cores"}
+        )
+        and on(cluster,namespace,pod)
+        max by(cluster,namespace,pod)(
+          kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",phase=~"Pending|Running"} == 1
+        )
+      )
+      or on(cluster,namespace,pod,node)
+      sum by(cluster,namespace,pod,node)(
+        max by(cluster,namespace,pod,node,container)(
+          cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",container!=""}
+        )
+      )
+    ),
+    "resource", "cpu", "", ""
+  )
 ) by(pod)`,
     cpuRequests: `sum(
-  max(
-    cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{
-      container!="",
-      cluster=~"$cluster",
-      namespace=~"$namespace",
-      pod=~"$pod"
-    }
-  ) by(cluster,namespace,node,pod,container,resource)
+  label_replace(
+    (
+      (max by(cluster,namespace,pod,node)(
+          kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",resource="cpu",unit="cores"}
+        )
+        and on(cluster,namespace,pod)
+        max by(cluster,namespace,pod)(
+          kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",phase=~"Pending|Running"} == 1
+        )
+      )
+      or on(cluster,namespace,pod,node)
+      sum by(cluster,namespace,pod,node)(
+        max by(cluster,namespace,pod,node,container)(
+          cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",container!=""}
+        )
+      )
+    ),
+    "resource", "cpu", "", ""
+  )
 ) by(pod)`,
     cpuUsage: `sum(
   max(
@@ -4786,14 +5614,25 @@ sum(
 ) by(pod)`,
     memoryAllocation: `max(
   sum(
-    max(
-      cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{
-        container!="",
-        cluster=~"$cluster",
-        namespace=~"$namespace",
-        pod=~"$pod"
-      }
-    ) by(cluster,namespace,node,pod,container,resource)
+    label_replace(
+      (
+        (max by(cluster,namespace,pod,node)(
+            kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",resource="memory",unit="bytes"}
+          )
+          and on(cluster,namespace,pod)
+          max by(cluster,namespace,pod)(
+            kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",phase=~"Pending|Running"} == 1
+          )
+        )
+        or on(cluster,namespace,pod,node)
+        sum by(cluster,namespace,pod,node)(
+          max by(cluster,namespace,pod,node,container)(
+            cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",container!=""}
+          )
+        )
+      ),
+      "resource", "memory", "", ""
+    )
   ) by(namespace,resource)
     or
   sum(
@@ -4808,24 +5647,46 @@ sum(
   ) by(namespace)
 ) by(namespace)`,
     memoryLimits: `sum(
-  max(
-    cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{
-      container!="",
-      cluster=~"$cluster",
-      namespace=~"$namespace",
-      pod=~"$pod"
-    }
-  ) by(cluster,namespace,node,pod,container)
+  label_replace(
+    (
+      (max by(cluster,namespace,pod,node)(
+          kube_pod_resource_limit{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",resource="memory",unit="bytes"}
+        )
+        and on(cluster,namespace,pod)
+        max by(cluster,namespace,pod)(
+          kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",phase=~"Pending|Running"} == 1
+        )
+      )
+      or on(cluster,namespace,pod,node)
+      sum by(cluster,namespace,pod,node)(
+        max by(cluster,namespace,pod,node,container)(
+          cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",container!=""}
+        )
+      )
+    ),
+    "resource", "memory", "", ""
+  )
 ) by(pod)`,
     memoryRequests: `sum(
-  max(
-    cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{
-      container!="",
-      cluster=~"$cluster",
-      namespace=~"$namespace",
-      pod=~"$pod"
-    }
-  ) by(cluster,namespace,node,pod,container,resource)
+  label_replace(
+    (
+      (max by(cluster,namespace,pod,node)(
+          kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",resource="memory",unit="bytes"}
+        )
+        and on(cluster,namespace,pod)
+        max by(cluster,namespace,pod)(
+          kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",phase=~"Pending|Running"} == 1
+        )
+      )
+      or on(cluster,namespace,pod,node)
+      sum by(cluster,namespace,pod,node)(
+        max by(cluster,namespace,pod,node,container)(
+          cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",container!=""}
+        )
+      )
+    ),
+    "resource", "memory", "", ""
+  )
 ) by(pod)`,
     memoryUsage: `sum(
   max(
@@ -4949,6 +5810,7 @@ sum(
   sum(
     node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{
       cluster=~"$cluster",
+      namespace=~"$namespace",
       node=~"$node",
       pod=~"$pod"
     }
@@ -4962,11 +5824,25 @@ sum(
 )`,
     cpuRequestsJoinKey: `label_join(
   sum(
-    cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{
-      cluster=~"$cluster",
-      node=~"$node",
-      pod=~"$pod"
-    }
+    label_replace(
+      (
+        (max by(cluster,namespace,pod,node)(
+            kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",node=~"$node",resource="cpu",unit="cores"}
+          )
+          and on(cluster,namespace,pod)
+          max by(cluster,namespace,pod)(
+            kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",phase=~"Pending|Running"} == 1
+          )
+        )
+        or on(cluster,namespace,pod,node)
+        sum by(cluster,namespace,pod,node)(
+          max by(cluster,namespace,pod,node,container)(
+            cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",node=~"$node"}
+          )
+        )
+      ),
+      "resource", "cpu", "", ""
+    )
   ) by(cluster,namespace,pod,node),
   "join_key",
   ".",
@@ -4978,14 +5854,30 @@ sum(
     cpuRequestsPercentJoinKey: `label_join(
   sum(
     node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{
-      cluster=~"$cluster",node=~"$node",pod=~"$pod"
+      cluster=~"$cluster",namespace=~"$namespace",node=~"$node",pod=~"$pod"
     }
   ) by(cluster,namespace,pod,node)
     /
   sum(
-    cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{
-      cluster=~"$cluster",node=~"$node",pod=~"$pod"
-    }
+    label_replace(
+      (
+        (max by(cluster,namespace,pod,node)(
+            kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",node=~"$node",resource="cpu",unit="cores"}
+          )
+          and on(cluster,namespace,pod)
+          max by(cluster,namespace,pod)(
+            kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",phase=~"Pending|Running"} == 1
+          )
+        )
+        or on(cluster,namespace,pod,node)
+        sum by(cluster,namespace,pod,node)(
+          max by(cluster,namespace,pod,node,container)(
+            cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",node=~"$node"}
+          )
+        )
+      ),
+      "resource", "cpu", "", ""
+    )
   ) by(cluster,namespace,pod,node),
   "join_key",
   ".",
@@ -4996,11 +5888,25 @@ sum(
 )`,
     cpuLimitsJoinKey: `label_join(
   sum(
-    cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits{
-      cluster=~"$cluster",
-      node=~"$node",
-      pod=~"$pod"
-    }
+    label_replace(
+      (
+        (max by(cluster,namespace,pod,node)(
+            kube_pod_resource_limit{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",node=~"$node",resource="cpu",unit="cores"}
+          )
+          and on(cluster,namespace,pod)
+          max by(cluster,namespace,pod)(
+            kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",phase=~"Pending|Running"} == 1
+          )
+        )
+        or on(cluster,namespace,pod,node)
+        sum by(cluster,namespace,pod,node)(
+          max by(cluster,namespace,pod,node,container)(
+            cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",node=~"$node"}
+          )
+        )
+      ),
+      "resource", "cpu", "", ""
+    )
   ) by(cluster,namespace,pod,node),
   "join_key",
   ".",
@@ -5012,14 +5918,30 @@ sum(
     cpuLimitsPercentJoinKey: `label_join(
   sum(
     node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{
-      cluster=~"$cluster",node=~"$node",pod=~"$pod"
+      cluster=~"$cluster",namespace=~"$namespace",node=~"$node",pod=~"$pod"
     }
   ) by(cluster,namespace,pod,node)
     /
   sum(
-    cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits{
-      cluster=~"$cluster",node=~"$node",pod=~"$pod"
-    }
+    label_replace(
+      (
+        (max by(cluster,namespace,pod,node)(
+            kube_pod_resource_limit{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",node=~"$node",resource="cpu",unit="cores"}
+          )
+          and on(cluster,namespace,pod)
+          max by(cluster,namespace,pod)(
+            kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",phase=~"Pending|Running"} == 1
+          )
+        )
+        or on(cluster,namespace,pod,node)
+        sum by(cluster,namespace,pod,node)(
+          max by(cluster,namespace,pod,node,container)(
+            cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",node=~"$node"}
+          )
+        )
+      ),
+      "resource", "cpu", "", ""
+    )
   ) by(cluster,namespace,pod,node),
   "join_key",
   ".",
@@ -5032,6 +5954,7 @@ sum(
   sum(
     node_namespace_pod_container:container_memory_working_set_bytes{
       cluster=~"$cluster",
+      namespace=~"$namespace",
       node=~"$node",
       pod=~"$pod"
     }
@@ -5045,11 +5968,25 @@ sum(
 )`,
     memoryRequestsJoinKey: `label_join(
   sum(
-    cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{
-      cluster=~"$cluster",
-      node=~"$node",
-      pod=~"$pod"
-    }
+    label_replace(
+      (
+        (max by(cluster,namespace,pod,node)(
+            kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",node=~"$node",resource="memory",unit="bytes"}
+          )
+          and on(cluster,namespace,pod)
+          max by(cluster,namespace,pod)(
+            kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",phase=~"Pending|Running"} == 1
+          )
+        )
+        or on(cluster,namespace,pod,node)
+        sum by(cluster,namespace,pod,node)(
+          max by(cluster,namespace,pod,node,container)(
+            cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",node=~"$node"}
+          )
+        )
+      ),
+      "resource", "memory", "", ""
+    )
   ) by(cluster,namespace,pod,node),
   "join_key",
   ".",
@@ -5061,14 +5998,30 @@ sum(
     memoryRequestsPercentJoinKey: `label_join(
   sum(
     node_namespace_pod_container:container_memory_working_set_bytes{
-      cluster=~"$cluster",node=~"$node",pod=~"$pod"
+      cluster=~"$cluster",namespace=~"$namespace",node=~"$node",pod=~"$pod"
     }
   ) by(cluster,namespace,pod,node)
     /
   sum(
-    cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{
-      cluster=~"$cluster",node=~"$node",pod=~"$pod"
-    }
+    label_replace(
+      (
+        (max by(cluster,namespace,pod,node)(
+            kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",node=~"$node",resource="memory",unit="bytes"}
+          )
+          and on(cluster,namespace,pod)
+          max by(cluster,namespace,pod)(
+            kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",phase=~"Pending|Running"} == 1
+          )
+        )
+        or on(cluster,namespace,pod,node)
+        sum by(cluster,namespace,pod,node)(
+          max by(cluster,namespace,pod,node,container)(
+            cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",node=~"$node"}
+          )
+        )
+      ),
+      "resource", "memory", "", ""
+    )
   ) by(cluster,namespace,pod,node),
   "join_key",
   ".",
@@ -5079,11 +6032,25 @@ sum(
 )`,
     memoryLimitsJoinKey: `label_join(
   sum(
-    cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{
-      cluster=~"$cluster",
-      node=~"$node",
-      pod=~"$pod"
-    }
+    label_replace(
+      (
+        (max by(cluster,namespace,pod,node)(
+            kube_pod_resource_limit{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",node=~"$node",resource="memory",unit="bytes"}
+          )
+          and on(cluster,namespace,pod)
+          max by(cluster,namespace,pod)(
+            kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",phase=~"Pending|Running"} == 1
+          )
+        )
+        or on(cluster,namespace,pod,node)
+        sum by(cluster,namespace,pod,node)(
+          max by(cluster,namespace,pod,node,container)(
+            cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",node=~"$node"}
+          )
+        )
+      ),
+      "resource", "memory", "", ""
+    )
   ) by(cluster,namespace,pod,node),
   "join_key",
   ".",
@@ -5095,14 +6062,30 @@ sum(
     memoryLimitsPercentJoinKey: `label_join(
   sum(
     node_namespace_pod_container:container_memory_working_set_bytes{
-      cluster=~"$cluster",node=~"$node",pod=~"$pod"
+      cluster=~"$cluster",namespace=~"$namespace",node=~"$node",pod=~"$pod"
     }
   ) by(cluster,namespace,pod,node)
     /
   sum(
-    cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{
-      cluster=~"$cluster",node=~"$node",pod=~"$pod"
-    }
+    label_replace(
+      (
+        (max by(cluster,namespace,pod,node)(
+            kube_pod_resource_limit{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",node=~"$node",resource="memory",unit="bytes"}
+          )
+          and on(cluster,namespace,pod)
+          max by(cluster,namespace,pod)(
+            kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",phase=~"Pending|Running"} == 1
+          )
+        )
+        or on(cluster,namespace,pod,node)
+        sum by(cluster,namespace,pod,node)(
+          max by(cluster,namespace,pod,node,container)(
+            cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",node=~"$node"}
+          )
+        )
+      ),
+      "resource", "memory", "", ""
+    )
   ) by(cluster,namespace,pod,node),
   "join_key",
   ".",
@@ -5254,14 +6237,25 @@ sum(
   sum by(cluster,namespace,pod)(
     max(
       sum(
-        kube_pod_container_resource_requests{
-          cluster=~"$cluster",
-          namespace=~"$namespace",
-          pod=~"$pod",
-          container=~".+",
-          node=~"$node",
-          resource="cpu"
-        }
+        (label_replace(
+            (
+              max by(cluster,namespace,pod,node)(
+                kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",node=~"$node",resource="cpu",unit="cores"}
+              )
+              or on(cluster,namespace,pod,node)
+              sum by(cluster,namespace,pod,node)(
+                max by(cluster,namespace,pod,node,container)(
+                  kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",node=~"$node",container=~".+",resource="cpu"}
+                )
+              )
+            ),
+            "resource", "cpu", "", ""
+          )
+          and on(cluster,namespace,pod)
+          max by(cluster,namespace,pod)(
+            kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",phase=~"Pending|Running"} == 1
+          )
+        )
       ) by(cluster,node,namespace,pod,resource)
         or
       sum(
@@ -5273,23 +6267,33 @@ sum(
               pod=~"$pod",
               container=~".+",
               node=~"$node",
+              node!=""
             }[$__rate_interval]
           )
             or
-          label_replace(
+          (
             rate(
               container_cpu_usage_seconds_total{
                 cluster=~"$cluster",
                 namespace=~"$namespace",
                 pod=~"$pod",
                 container=~".+",
-                node=~"$node"
+                node=""
               }[$__rate_interval]
-            ),
-            "node",
-            "$1",
-            "instance",
-            "([^:]+).*"
+            )
+              * on(cluster,namespace,pod) group_left(node)
+            topk by(cluster,namespace,pod)(
+              1,
+              group by(cluster,namespace,pod,node)(
+                kube_pod_info{
+                  cluster=~"$cluster",
+                  namespace=~"$namespace",
+                  pod=~"$pod",
+                  node=~"$node",
+                  node!=""
+                }
+              )
+            )
           )
         ) by(cluster,node,namespace,pod,container)
       ) by(cluster,node,namespace,pod)
@@ -5298,8 +6302,10 @@ sum(
     max(
       node_cpu_hourly_cost{cluster=~"$cluster"}
     ) by(cluster,node)
-  )[$__range:1h]
-)`,
+  )[$__range:5m]
+)
+  /
+12`,
     costsMemoryAllocation: `sum_over_time(
   sum by(cluster,namespace,pod)(
     (
@@ -5307,14 +6313,25 @@ sum(
         (
           max(
             sum(
-              kube_pod_container_resource_requests{
-                cluster=~"$cluster",
-                namespace=~"$namespace",
-                pod=~"$pod",
-                container=~".+",
-                node=~"$node",
-                resource="memory"
-              }
+              (label_replace(
+                  (
+                    max by(cluster,namespace,pod,node)(
+                      kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",node=~"$node",resource="memory",unit="bytes"}
+                    )
+                    or on(cluster,namespace,pod,node)
+                    sum by(cluster,namespace,pod,node)(
+                      max by(cluster,namespace,pod,node,container)(
+                        kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",node=~"$node",container=~".+",resource="memory"}
+                      )
+                    )
+                  ),
+                  "resource", "memory", "", ""
+                )
+                and on(cluster,namespace,pod)
+                max by(cluster,namespace,pod)(
+                  kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",phase=~"Pending|Running"} == 1
+                )
+              )
             ) by(cluster,node,namespace,pod,resource)
               or
             sum(
@@ -5324,21 +6341,31 @@ sum(
                   namespace=~"$namespace",
                   pod=~"$pod",
                   container=~".+",
-                  node=~"$node"
+                  node=~"$node",
+                  node!=""
                 }
                   or
-                label_replace(
+                (
                   container_memory_working_set_bytes{
                     cluster=~"$cluster",
                     namespace=~"$namespace",
                     pod=~"$pod",
                     container=~".+",
-                    node=~"$node"
-                  },
-                  "node",
-                  "$1",
-                  "instance",
-                  "([^:]+).*"
+                    node=""
+                  }
+                    * on(cluster,namespace,pod) group_left(node)
+                  topk by(cluster,namespace,pod)(
+                    1,
+                    group by(cluster,namespace,pod,node)(
+                      kube_pod_info{
+                        cluster=~"$cluster",
+                        namespace=~"$namespace",
+                        pod=~"$pod",
+                        node=~"$node",
+                        node!=""
+                      }
+                    )
+                  )
                 )
               ) by(cluster,node,namespace,pod,container)
             ) by(cluster,node,namespace,pod)
@@ -5356,68 +6383,81 @@ sum(
     max(
       node_ram_hourly_cost{cluster=~"$cluster"}
     ) by(cluster,node)
-  )[$__range:1h]
-)`,
+  )[$__range:5m]
+)
+  /
+12`,
     costsCPUIdle: `sum_over_time(
   sum by(cluster,namespace,pod)(
     (
-      (
-        (
+      sum(
+        (label_replace(
+            (
+              max by(cluster,namespace,pod,node)(
+                kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",node=~"$node",resource="cpu",unit="cores"}
+              )
+              or on(cluster,namespace,pod,node)
+              sum by(cluster,namespace,pod,node)(
+                max by(cluster,namespace,pod,node,container)(
+                  kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",node=~"$node",container=~".+",resource="cpu"}
+                )
+              )
+            ),
+            "resource", "cpu", "", ""
+          )
+          and on(cluster,namespace,pod)
+          max by(cluster,namespace,pod)(
+            kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",phase=~"Pending|Running"} == 1
+          )
+        )
+      ) by(cluster,namespace,pod)
+        - on(cluster,namespace,pod) group_left(node)
+      sum(
+        max(
+          rate(
+            container_cpu_usage_seconds_total{
+              cluster=~"$cluster",
+              namespace=~"$namespace",
+              pod=~"$pod",
+              container=~".+",
+              node=~"$node",
+              node!=""
+            }[$__rate_interval]
+          )
+            or
           (
-            sum(
-              kube_pod_container_resource_requests{
+            rate(
+              container_cpu_usage_seconds_total{
                 cluster=~"$cluster",
                 namespace=~"$namespace",
                 pod=~"$pod",
                 container=~".+",
-                node=~"$node",
-                resource="memory"
-              }
-            ) by(cluster,namespace,pod)
-              - on(cluster,namespace,pod) group_left(node)
-            sum(
-              max(
-                rate(
-                  container_cpu_usage_seconds_total{
-                    cluster=~"$cluster",
-                    namespace=~"$namespace",
-                    pod=~"$pod",
-                    container=~".+",
-                    node=~"$node"
-                  }[$__rate_interval]
-                )
-                  or
-                label_replace(
-                  rate(
-                    container_cpu_usage_seconds_total{
-                      cluster=~"$cluster",
-                      namespace=~"$namespace",
-                      pod=~"$pod",
-                      container=~".+",
-                      node=~"$node"
-                    }[$__rate_interval]
-                  ),
-                  "node",
-                  "$1",
-                  "instance",
-                  "([^:]+).*"
-                )
-              ) by(cluster,node,namespace,pod,container)
-            ) by(cluster,node,namespace,pod)
+                node=""
+              }[$__rate_interval]
+            )
+              * on(cluster,namespace,pod) group_left(node)
+            topk by(cluster,namespace,pod)(
+              1,
+              group by(cluster,namespace,pod,node)(
+                kube_pod_info{
+                  cluster=~"$cluster",
+                  namespace=~"$namespace",
+                  pod=~"$pod",
+                  node=~"$node",
+                  node!=""
+                }
+              )
+            )
           )
-            /
-          1024
-        )
-          /
-        1024
-      )
-        /
-      1024
+        ) by(cluster,node,namespace,pod,container)
+      ) by(cluster,node,namespace,pod)
     )
       * on(cluster,node) group_left()
-    max(node_ram_hourly_cost{cluster=~"$cluster"}) by(cluster,node)
-  )[$__range:1h]
-)`,
+    max(node_cpu_hourly_cost{cluster=~"$cluster"}) by(cluster,node)
+  )[$__range:5m]
+)
+  /
+12`,
     costsMemoryIdle: `sum_over_time(
   sum by(cluster,namespace,pod)(
     (
@@ -5425,14 +6465,25 @@ sum(
         (
           (
             sum(
-              kube_pod_container_resource_requests{
-                cluster=~"$cluster",
-                namespace=~"$namespace",
-                pod=~"$pod",
-                container=~".+",
-                node=~"$node",
-                resource="memory"
-              }
+              (label_replace(
+                  (
+                    max by(cluster,namespace,pod,node)(
+                      kube_pod_resource_request{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",node=~"$node",resource="memory",unit="bytes"}
+                    )
+                    or on(cluster,namespace,pod,node)
+                    sum by(cluster,namespace,pod,node)(
+                      max by(cluster,namespace,pod,node,container)(
+                        kube_pod_container_resource_requests{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",node=~"$node",container=~".+",resource="memory"}
+                      )
+                    )
+                  ),
+                  "resource", "memory", "", ""
+                )
+                and on(cluster,namespace,pod)
+                max by(cluster,namespace,pod)(
+                  kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",phase=~"Pending|Running"} == 1
+                )
+              )
             ) by(cluster,namespace,pod)
               - on(cluster,namespace,pod) group_left(node)
             sum(
@@ -5442,21 +6493,31 @@ sum(
                   namespace=~"$namespace",
                   pod=~"$pod",
                   container=~".+",
-                  node=~"$node"
+                  node=~"$node",
+                  node!=""
                 }
                   or
-                label_replace(
+                (
                   container_memory_working_set_bytes{
                     cluster=~"$cluster",
                     namespace=~"$namespace",
                     pod=~"$pod",
                     container=~".+",
-                    node=~"$node"
-                  },
-                  "node",
-                  "$1",
-                  "instance",
-                  "([^:]+).*"
+                    node=""
+                  }
+                    * on(cluster,namespace,pod) group_left(node)
+                  topk by(cluster,namespace,pod)(
+                    1,
+                    group by(cluster,namespace,pod,node)(
+                      kube_pod_info{
+                        cluster=~"$cluster",
+                        namespace=~"$namespace",
+                        pod=~"$pod",
+                        node=~"$node",
+                        node!=""
+                      }
+                    )
+                  )
                 )
               ) by(cluster,node,namespace,pod,container)
             ) by(cluster,node,namespace,pod)
@@ -5474,8 +6535,10 @@ sum(
     max(
       node_ram_hourly_cost{cluster=~"$cluster"}
     ) by(cluster,node)
-  )[$__range:1h]
-)`,
+  )[$__range:5m]
+)
+  /
+12`,
     search: `sum(
   namespace_workload_pod:kube_pod_owner:relabel{
     cluster=~"$cluster",namespace=~".+",pod=~"$searchterm"
@@ -5526,19 +6589,23 @@ sum(
         container!=""
       }
     ) by(container)
+      /
+    (
+      sum(
+        kube_pod_container_resource_requests{
+          cluster=~"$cluster",
+          namespace="$namespace",
+          pod="$pod",
+          container!="POD",
+          container!="",
+          resource="cpu"
+        }
+      ) by(container)
+        >
+      0
+    )
   )[$__range:$__interval]
-)
-  /
-sum(
-  kube_pod_container_resource_requests{
-    cluster=~"$cluster",
-    namespace="$namespace",
-    pod="$pod",
-    container!="POD",
-    container!="",
-    resource="cpu"
-  }
-) by(container)`,
+)`,
     cpuUsageMaxOverTime: `max_over_time(
   (
     max(
@@ -5563,19 +6630,23 @@ sum(
         container!=""
       }
     ) by(container)
+      /
+    (
+      sum(
+        kube_pod_container_resource_requests{
+          cluster=~"$cluster",
+          namespace="$namespace",
+          pod="$pod",
+          container!="POD",
+          container!="",
+          resource="cpu"
+        }
+      ) by(container)
+        >
+      0
+    )
   )[$__range:$__interval]
-)
-  /
-sum(
-  kube_pod_container_resource_requests{
-    cluster=~"$cluster",
-    namespace="$namespace",
-    pod="$pod",
-    container!="POD",
-    container!="",
-    resource="cpu"
-  }
-) by(container)`,
+)`,
     memoryUsageAvgOverTime: `avg_over_time(
   (
     avg(
@@ -5600,19 +6671,23 @@ sum(
         container!=""
       }
     ) by(container)
+      /
+    (
+      sum(
+        kube_pod_container_resource_requests{
+          cluster=~"$cluster",
+          namespace="$namespace",
+          pod="$pod",
+          container!="POD",
+          container!="",
+          resource="memory"
+        }
+      ) by(container)
+        >
+      0
+    )
   )[$__range:$__interval]
-)
-  /
-sum(
-  kube_pod_container_resource_requests{
-    cluster=~"$cluster",
-    namespace="$namespace",
-    pod="$pod",
-    container!="POD",
-    container!="",
-    resource="memory"
-  }
-) by(container)`,
+)`,
     memoryUsageMaxOverTime: `max_over_time(
   (
     max(
@@ -5637,19 +6712,23 @@ sum(
         container!=""
       }
     ) by(container)
+      /
+    (
+      sum(
+        kube_pod_container_resource_requests{
+          cluster=~"$cluster",
+          namespace="$namespace",
+          pod="$pod",
+          container!="POD",
+          container!="",
+          resource="memory"
+        }
+      ) by(container)
+        >
+      0
+    )
   )[$__range:$__interval]
-)
-  /
-sum(
-  kube_pod_container_resource_requests{
-    cluster=~"$cluster",
-    namespace="$namespace",
-    pod="$pod",
-    container!="POD",
-    container!="",
-    resource="memory"
-  }
-) by(container)`,
+)`,
     cpuDistribution: `sum(
   max(
     node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate5m{
@@ -6077,24 +7156,26 @@ sum(
     labelsByClusterNamespacePod: `label_values(kube_pod_spec_volumes_persistentvolumeclaims_info{cluster=~"$cluster",namespace=~"$namespace",pod=~"$pod",volume!=""}, persistentvolumeclaim)`,
     labelsPodsByClusterNamespacePersistentVolumeClaim: `label_values(kube_pod_spec_volumes_persistentvolumeclaims_info{cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc",volume!=""}, pod)`,
     count: `count(
-  kube_persistentvolumeclaim_info{
-    cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim!=""
-  }
+  group(
+    kube_persistentvolumeclaim_info{
+      cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim!=""
+    }
+  ) by(cluster,namespace,persistentvolumeclaim)
 )`,
     aboveWarningThreshold: `count(
   max(
     kubelet_volume_stats_used_bytes{cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"}
-  ) by(persistentvolumeclaim,namespace)
+  ) by(cluster,namespace,persistentvolumeclaim)
     and
   (
     (
       max(
         kubelet_volume_stats_used_bytes{cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"}
-      ) by(persistentvolumeclaim,namespace)
+      ) by(cluster,namespace,persistentvolumeclaim)
         /
       max(
         kubelet_volume_stats_capacity_bytes{cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"}
-      ) by(persistentvolumeclaim,namespace)
+      ) by(cluster,namespace,persistentvolumeclaim)
     )
       >=
     (80 / 100)
@@ -6103,11 +7184,15 @@ sum(
   or
 vector(0)`,
     fullIn5Days: `count(
-  kubelet_volume_stats_available_bytes{cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"}
+  min(
+    kubelet_volume_stats_available_bytes{cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"}
+  ) by(cluster,namespace,persistentvolumeclaim)
     and
   (
     predict_linear(
-      kubelet_volume_stats_available_bytes{cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"}[1d],
+      (min(
+        kubelet_volume_stats_available_bytes{cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"}
+      ) by(cluster,namespace,persistentvolumeclaim))[1d:],
       ((5 * 24) * 60) * 60
     )
       <
@@ -6117,11 +7202,15 @@ vector(0)`,
   or
 vector(0)`,
     fullIn2Days: `count(
-  kubelet_volume_stats_available_bytes{cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"}
+  min(
+    kubelet_volume_stats_available_bytes{cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"}
+  ) by(cluster,namespace,persistentvolumeclaim)
     and
   (
     predict_linear(
-      kubelet_volume_stats_available_bytes{cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"}[1d],
+      (min(
+        kubelet_volume_stats_available_bytes{cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"}
+      ) by(cluster,namespace,persistentvolumeclaim))[1d:],
       ((2 * 24) * 60) * 60
     )
       <
@@ -6130,104 +7219,110 @@ vector(0)`,
 )
   or
 vector(0)`,
-    unused: `sum(
-  count(
+    unused: `count(
+  group(
     kube_persistentvolumeclaim_info{cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"}
-  ) by(persistentvolumeclaim,namespace)
-    unless
-  count(
-    kubelet_volume_stats_available_bytes{cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"}
-  ) by(persistentvolumeclaim,namespace)
+  ) by(cluster,namespace,persistentvolumeclaim)
+    unless on(cluster,namespace,persistentvolumeclaim)
+  group(
+    kube_pod_spec_volumes_persistentvolumeclaims_info{cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"}
+  ) by(cluster,namespace,persistentvolumeclaim)
 )
   or
 vector(0)`,
     lostState: `count(
-  kube_persistentvolumeclaim_status_phase{cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc",phase="Lost"}
+  max(
+    kube_persistentvolumeclaim_status_phase{cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc",phase="Lost"}
+  ) by(cluster,namespace,persistentvolumeclaim)
     ==
   1
 )
   or
 vector(0)`,
     pendingState: `count(
-  kube_persistentvolumeclaim_status_phase{cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc",phase="Pending"}
+  max(
+    kube_persistentvolumeclaim_status_phase{cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc",phase="Pending"}
+  ) by(cluster,namespace,persistentvolumeclaim)
     ==
   1
 )
   or
 vector(0)`,
-    info: `sum(
+    info: `max(
   kube_persistentvolumeclaim_info{cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"}
-) by(persistentvolumeclaim,namespace,storageclass,volumename)`,
-    capacity: `sum(
+) by(cluster,namespace,persistentvolumeclaim,storageclass,volumename)`,
+    capacity: `max(
   kubelet_volume_stats_capacity_bytes{
     cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"
   }
-) by(persistentvolumeclaim,namespace)`,
-    requested: `sum(
+) by(cluster,namespace,persistentvolumeclaim)`,
+    requested: `max(
   kube_persistentvolumeclaim_resource_requests_storage_bytes{
     cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"
   }
-) by(persistentvolumeclaim,namespace)`,
-    used: `sum(
+) by(cluster,namespace,persistentvolumeclaim)`,
+    used: `max(
   kubelet_volume_stats_used_bytes{
     cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"
   }
-) by(persistentvolumeclaim,namespace)`,
-    available: `sum(
+) by(cluster,namespace,persistentvolumeclaim)`,
+    available: `min(
   kubelet_volume_stats_available_bytes{
     cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"
   }
-) by(persistentvolumeclaim,namespace)`,
-    phase: `sum(
+) by(cluster,namespace,persistentvolumeclaim)`,
+    phase: `max(
   kube_persistentvolumeclaim_status_phase{
     cluster=~"$cluster",namespace=~"$namespace",phase=~"(Pending|Lost)",persistentvolumeclaim=~"$pvc"
   }
-) by(persistentvolumeclaim,namespace)
+) by(cluster,namespace,persistentvolumeclaim)
   +
-sum(
+max(
   kube_persistentvolumeclaim_status_phase{
     cluster=~"$cluster",namespace=~"$namespace",phase=~"(Lost)",persistentvolumeclaim=~"$pvc"
   }
-) by(persistentvolumeclaim,namespace)`,
-    usedPercent: `sum(
+) by(cluster,namespace,persistentvolumeclaim)`,
+    usedPercent: `max(
   kubelet_volume_stats_used_bytes{
     cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"
   }
-    /
+) by(cluster,namespace,persistentvolumeclaim)
+  /
+max(
   kubelet_volume_stats_capacity_bytes{
     cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"
   }
-) by(persistentvolumeclaim,namespace)`,
-    inodesCapacity: `sum(
+) by(cluster,namespace,persistentvolumeclaim)`,
+    inodesCapacity: `max(
   kubelet_volume_stats_inodes{
     cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"
   }
-) by(persistentvolumeclaim,namespace)`,
-    inodesUsed: `sum(
+) by(cluster,namespace,persistentvolumeclaim)`,
+    inodesUsed: `max(
   kubelet_volume_stats_inodes_used{
     cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"
   }
-) by(persistentvolumeclaim,namespace)`,
-    hourlyUsageRage: `sum(
-  rate(
+) by(cluster,namespace,persistentvolumeclaim)`,
+    hourlyUsageRage: `deriv(
+  (max(
     kubelet_volume_stats_used_bytes{
       cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"
-    }[1h]
-  )
-) by(namespace,persistentvolumeclaim)`,
-    dailyUsageRage: `sum(
-  rate(
+    }
+  ) by(cluster,namespace,persistentvolumeclaim))[1h:]
+)`,
+    dailyUsageRage: `deriv(
+  (max(
     kubelet_volume_stats_used_bytes{
       cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"
-    }[1d]
-  )
-) by(namespace,persistentvolumeclaim)`,
-    weeklyUsageRage: `sum(
-  rate(
+    }
+  ) by(cluster,namespace,persistentvolumeclaim))[1d:]
+)`,
+    weeklyUsageRage: `deriv(
+  (max(
     kubelet_volume_stats_used_bytes{
       cluster=~"$cluster",namespace=~"$namespace",persistentvolumeclaim=~"$pvc"
-    }[1w]
-  )
-) by(namespace,persistentvolumeclaim)`,
+    }
+  ) by(cluster,namespace,persistentvolumeclaim))[1w:]
+)`,
   },
 };
