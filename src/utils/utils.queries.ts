@@ -2477,7 +2477,7 @@ sum(
   /
 12`,
     costsCPUIdle: `sum_over_time(
-  sum(
+  sum by (namespace)(
     (
       sum(
         (label_replace(
@@ -2499,8 +2499,8 @@ sum(
             kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",phase=~"Pending|Running"} == 1
           )
         )
-      ) by(cluster,node,resource)
-        - on(cluster,node) group_left()
+      ) by(cluster,namespace,node,resource)
+        - on(cluster,namespace,node) group_left()
       sum(
         max(
           rate(
@@ -2536,7 +2536,7 @@ sum(
             )
           )
         ) by(cluster,namespace,node,pod,container)
-      ) by(cluster,node)
+      ) by(cluster,namespace,node)
     )
       * on(cluster,node) group_left()
     max(
@@ -2547,7 +2547,7 @@ sum(
   /
 12`,
     costsMemoryIdle: `sum_over_time(
-  sum(
+  sum by (namespace)(
     (
       (
         (
@@ -2572,8 +2572,8 @@ sum(
                   kube_pod_status_phase{cluster=~"$cluster",namespace=~"$namespace",phase=~"Pending|Running"} == 1
                 )
               )
-            ) by(cluster,node)
-              - on(cluster,node) group_left()
+            ) by(cluster,namespace,node)
+              - on(cluster,namespace,node) group_left()
             sum(
               max(
                 container_memory_working_set_bytes{
@@ -2605,7 +2605,7 @@ sum(
                   )
                 )
               ) by(cluster,namespace,node,pod,container)
-            ) by(cluster,node)
+            ) by(cluster,namespace,node)
           )
             /
           1024

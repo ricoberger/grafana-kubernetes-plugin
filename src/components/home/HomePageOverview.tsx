@@ -95,6 +95,7 @@ export function HomePageOverview() {
         />
 
         <Nodes />
+        <Namespaces />
       </Stack>
     </Stack>
   );
@@ -149,14 +150,74 @@ function Nodes() {
               memoryIdleExpr={queries.nodes.costsMemoryIdle}
             />
           )}
-          {selected === 'info' && <TableKubernetesPods />}
+          {selected === 'info' && <TableKubernetes resourceId="node" />}
         </div>
       </Stack>
     </div>
   );
 }
 
-function TableKubernetesPods() {
+function Namespaces() {
+  const styles = useStyles2(getStyles);
+  const [selected, setSelected] = useState('usage');
+
+  return (
+    <div className={styles.pluginPage.section}>
+      <h4>Namespaces</h4>
+      <Stack direction="column" gap={2}>
+        <div className={styles.dashboard.header.container}>
+          <RadioButtonGroup
+            options={[
+              { label: 'Usage', value: 'usage' },
+              { label: 'Cost', value: 'cost' },
+              { label: 'Info', value: 'info' },
+            ]}
+            value={selected}
+            onChange={(value) => setSelected(value)}
+          />
+          <div className={styles.dashboard.header.spacer} />
+          <LegendResourceUsage />
+        </div>
+        <div className={styles.dashboard.row.height400px}>
+          {selected === 'usage' && (
+            <TableResourceUsage
+              title="Namespaces"
+              infoNamespaceExpr={queries.namespaces.info}
+              cpuUsageAvgExpr={queries.namespaces.cpuUsageAvgOverTime}
+              cpuUsageAvgPercentExpr={
+                queries.namespaces.cpuUsageAvgPercentOverTime
+              }
+              cpuUsageMaxExpr={queries.namespaces.cpuUsageMaxOverTime}
+              cpuUsageMaxPercentExpr={
+                queries.namespaces.cpuUsageMaxPercentOverTime
+              }
+              memoryUsageAvgExpr={queries.namespaces.memoryUsageAvgOverTime}
+              memoryUsageAvgPercentExpr={
+                queries.namespaces.memoryUsageAvgPercentOverTime
+              }
+              memoryUsageMaxExpr={queries.namespaces.memoryUsageMaxOverTime}
+              memoryUsageMaxPercentExpr={
+                queries.namespaces.memoryUsageMaxPercentOverTime
+              }
+            />
+          )}
+          {selected === 'cost' && (
+            <TableCosts
+              title="Namespaces"
+              cpuAllocationExpr={queries.namespaces.costsCPUAllocation}
+              memoryAllocationExpr={queries.namespaces.costsMemoryAllocation}
+              cpuIdleExpr={queries.namespaces.costsCPUIdle}
+              memoryIdleExpr={queries.namespaces.costsMemoryIdle}
+            />
+          )}
+          {selected === 'info' && <TableKubernetes resourceId="namespace" />}
+        </div>
+      </Stack>
+    </div>
+  );
+}
+
+function TableKubernetes({ resourceId }: { resourceId: string }) {
   const dataProvider = useQueryRunner({
     datasource: {
       type: datasourcePluginJson.id,
@@ -166,7 +227,7 @@ function TableKubernetesPods() {
       {
         refId: 'A',
         queryType: 'kubernetes-resources',
-        resourceId: 'node',
+        resourceId: resourceId,
         namespace: '*',
       },
     ],
