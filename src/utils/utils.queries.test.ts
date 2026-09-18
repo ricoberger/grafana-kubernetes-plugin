@@ -193,6 +193,26 @@ describe('raw query definitions', () => {
   );
 });
 
+describe('namespace cost table queries', () => {
+  it.each(['CPU', 'Memory'] as const)(
+    'keeps %s allocation and idle costs grouped by namespace',
+    (resource) => {
+      for (const kind of ['Allocation', 'Idle'] as const) {
+        const query = compact(queries.namespaces[`costs${resource}${kind}`]);
+        expect(query).toMatch(/^sum_over_time\(sumby\(namespace\)\(/);
+      }
+
+      const idle = compact(queries.namespaces[`costs${resource}Idle`]);
+      expect(idle).toContain(
+        `${resource === 'CPU' ? 'by(cluster,namespace,node,resource)' : 'by(cluster,namespace,node)'}-on(cluster,namespace,node)group_left()`,
+      );
+      expect(idle).toContain(
+        'by(cluster,namespace,node,pod,container))by(cluster,namespace,node)',
+      );
+    },
+  );
+});
+
 describe('pod-and-higher resource query coverage', () => {
   const groups: Array<{
     name: string;
