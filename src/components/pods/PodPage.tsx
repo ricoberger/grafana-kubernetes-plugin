@@ -23,6 +23,7 @@ import { prefixRoute } from '../../utils/utils.routing';
 import { getStyles } from '../../utils/utils.styles';
 import { PageOptions } from '../shared/PageOptions';
 import { TabLogs } from '../shared/TabLogs';
+import { PodPageCost } from './PodPageCost';
 import { PodPageCPU } from './PodPageCPU';
 import { PodPageMemory } from './PodPageMemory';
 import { PodPageNetwork } from './PodPageNetwork';
@@ -239,6 +240,14 @@ export function PodPage() {
                               }}
                             />
                             <Tab
+                              label="Cost"
+                              active={activeTab === 'cost'}
+                              onChangeTab={(ev) => {
+                                ev?.preventDefault();
+                                setActiveTab('cost');
+                              }}
+                            />
+                            <Tab
                               label="Logs"
                               active={activeTab === 'logs'}
                               onChangeTab={(ev) => {
@@ -252,6 +261,7 @@ export function PodPage() {
                           {activeTab === 'memory' && <PodPageMemory />}
                           {activeTab === 'network' && <PodPageNetwork />}
                           {activeTab === 'storage' && <PodPageStorage />}
+                          {activeTab === 'cost' && <PodPageCost />}
                           {activeTab === 'logs' && (
                             <TabLogs page="pod" resource="pod" />
                           )}

@@ -5,6 +5,7 @@ import {
   useQueryRunner,
   VizPanel,
 } from '@grafana/scenes-react';
+import { TableSortByFieldState } from '@grafana/schema';
 import React from 'react';
 
 import { ROUTES } from '../../constants';
@@ -13,6 +14,8 @@ import { prefixRoute } from '../../utils/utils.routing';
 
 interface Props {
   title: string;
+  description?: string;
+  sortBy?: TableSortByFieldState[];
   cpuAllocationExpr: string;
   memoryAllocationExpr: string;
   cpuIdleExpr: string;
@@ -21,6 +24,14 @@ interface Props {
 
 export function TableCosts({
   title,
+  description,
+  sortBy = [
+    { desc: false, displayName: 'NAMESPACE' },
+    { desc: false, displayName: 'POD' },
+    { desc: false, displayName: 'NODE' },
+    { desc: false, displayName: 'WORKLOAD' },
+    { desc: false, displayName: 'WORKLOAD TYPE' },
+  ],
   cpuAllocationExpr,
   memoryAllocationExpr,
   cpuIdleExpr,
@@ -152,28 +163,7 @@ export function TableCosts({
   });
 
   const viz = VizConfigBuilders.table()
-    .setOption('sortBy', [
-      {
-        desc: false,
-        displayName: 'NAMESPACE',
-      },
-      {
-        desc: false,
-        displayName: 'POD',
-      },
-      {
-        desc: false,
-        displayName: 'NODE',
-      },
-      {
-        desc: false,
-        displayName: 'WORKLOAD',
-      },
-      {
-        desc: false,
-        displayName: 'WORKLOAD TYPE',
-      },
-    ])
+    .setOption('sortBy', sortBy)
     .setOverrides((b) => {
       return b
         .matchFieldsWithName('node')
@@ -307,6 +297,7 @@ export function TableCosts({
   return (
     <VizPanel
       title={title}
+      description={description}
       menu={menu}
       viz={viz}
       dataProvider={dataTransformer}

@@ -23,6 +23,7 @@ import { prefixRoute } from '../../utils/utils.routing';
 import { getStyles } from '../../utils/utils.styles';
 import { PageOptions } from '../shared/PageOptions';
 import { TabLogs } from '../shared/TabLogs';
+import { WorkloadPageCost } from './WorkloadPageCost';
 import { WorkloadPageCPU } from './WorkloadPageCPU';
 import { WorkloadPageMemory } from './WorkloadPageMemory';
 import { WorkloadPageNetwork } from './WorkloadPageNetwork';
@@ -296,6 +297,14 @@ export function WorkloadPage() {
                                     }}
                                   />
                                   <Tab
+                                    label="Cost"
+                                    active={activeTab === 'cost'}
+                                    onChangeTab={(ev) => {
+                                      ev?.preventDefault();
+                                      setActiveTab('cost');
+                                    }}
+                                  />
+                                  <Tab
                                     label="Logs"
                                     active={activeTab === 'logs'}
                                     onChangeTab={(ev) => {
@@ -319,6 +328,7 @@ export function WorkloadPage() {
                                 {activeTab === 'storage' && (
                                   <WorkloadPageStorage />
                                 )}
+                                {activeTab === 'cost' && <WorkloadPageCost />}
                                 {activeTab === 'logs' && (
                                   <TabLogs
                                     page="workload"

@@ -193,7 +193,108 @@ describe('raw query definitions', () => {
   );
 });
 
+describe('cluster cost-rate queries', () => {
+  it.each([
+    'costsCPUAllocation',
+    'costsMemoryAllocation',
+    'costsCPUIdle',
+    'costsMemoryIdle',
+  ] as const)(
+    '%s preserves the hourly calculation without selected-range integration',
+    (name) => {
+      const total = compact(queries.cluster[name]);
+      const hourly = compact(queries.cluster[`${name}Rate`]);
+      expect(total).toBe(`sum_over_time(${hourly}[$__range:5m])/12`);
+      expect(hourly).toContain('*on(cluster,node)group_left()');
+      expect(hourly).not.toMatch(/sum_over_time|\$__range|vector\(0\)/);
+    },
+  );
+
+  it('deduplicates node total hourly prices without a zero fallback', () => {
+    expect(compact(queries.cluster.costsTotalRate)).toBe(
+      'sum(max(node_total_hourly_cost{cluster=~"$cluster"})by(cluster,node))',
+    );
+  });
+});
+
+describe.each(['nodes', 'workloads', 'pods'] as const)(
+  '%s cost-rate queries',
+  (scope) => {
+    it.each([
+      'costsCPUAllocation',
+      'costsMemoryAllocation',
+      'costsCPUIdle',
+      'costsMemoryIdle',
+    ] as const)(
+      '%s removes only time integration, preserving resource attribution and pricing',
+      (name) => {
+        const total = compact(queries[scope][name]);
+        const hourly = compact(queries[scope][`${name}Rate`]);
+        const start = total.indexOf('sum_over_time(');
+        expect(start).toBeGreaterThanOrEqual(0);
+        const opening = start + 'sum_over_time'.length;
+        const closing = closingParenthesis(total, opening);
+        const integrated = total.slice(opening + 1, closing);
+        const range = '[$__range:5m]';
+        expect(integrated.endsWith(range)).toBe(true);
+        expect(total.slice(closing + 1, closing + 4)).toBe('/12');
+        expect(hourly).toBe(
+          total.slice(0, start) +
+          integrated.slice(0, -range.length) +
+          total.slice(closing + 4),
+        );
+        expect(hourly).not.toMatch(
+          /sum_over_time|\$__range|vector\(0\)|clamp_min/,
+        );
+        expect(hourly).toContain('cluster=~"$cluster"');
+        expect(hourly).toContain(
+          name.startsWith('costsCPU')
+            ? 'node_cpu_hourly_cost'
+            : 'node_ram_hourly_cost',
+        );
+        if (scope === 'nodes') {
+          expect(hourly).toContain('node=~"$node(:[0-9]{2,5})?"');
+          expect(hourly).not.toContain('$pod');
+        } else {
+          expect(hourly).toContain('namespace=~"$namespace"');
+          if (scope === 'workloads') {
+            expect(hourly).toContain(
+              'on(cluster,namespace,pod)group_left(workload,workload_type)',
+            );
+            expect(hourly).toContain('workload=~"$workload"');
+            expect(hourly).toContain('workload_type=~"$workloadtype"');
+            expect(hourly).not.toContain('$pod');
+          } else {
+            expect(hourly).toContain('pod=~"$pod"');
+            expect(hourly).toContain('node=~"$node"');
+          }
+        }
+      },
+    );
+  },
+);
+
 describe('namespace cost table queries', () => {
+  it.each([
+    'costsCPUAllocation',
+    'costsMemoryAllocation',
+    'costsCPUIdle',
+    'costsMemoryIdle',
+  ] as const)(
+    '%s hourly rate preserves namespace totals, pricing and resource fallbacks',
+    (name) => {
+      const total = compact(queries.namespaces[name]);
+      const hourly = compact(queries.namespaces[`${name}Rate`]);
+      expect(total).toBe(`sum_over_time(${hourly}[$__range:5m])/12`);
+      expect(hourly).toMatch(/^sumby\(namespace\)\(/);
+      expect(hourly).toContain('namespace=~"$namespace"');
+      expect(hourly).toContain('*on(cluster,node)group_left()');
+      expect(hourly).not.toMatch(
+        /sum_over_time|\$__range|\$workload|vector\(0\)|clamp_min/,
+      );
+    },
+  );
+
   it.each(['CPU', 'Memory'] as const)(
     'keeps %s allocation and idle costs grouped by namespace',
     (resource) => {
