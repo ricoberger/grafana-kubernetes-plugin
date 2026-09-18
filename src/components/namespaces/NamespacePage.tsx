@@ -22,6 +22,7 @@ import { prefixRoute } from '../../utils/utils.routing';
 import { getStyles } from '../../utils/utils.styles';
 import { PageOptions } from '../shared/PageOptions';
 import { TabLogs } from '../shared/TabLogs';
+import { NamespacePageCost } from './NamespacePageCost';
 import { NamespacePageCPU } from './NamespacePageCPU';
 import { NamespacePageMemory } from './NamespacePageMemory';
 import { NamespacePageNetwork } from './NamespacePageNetwork';
@@ -230,6 +231,14 @@ export function NamespacePage() {
                               }}
                             />
                             <Tab
+                              label="Cost"
+                              active={activeTab === 'cost'}
+                              onChangeTab={(ev) => {
+                                ev?.preventDefault();
+                                setActiveTab('cost');
+                              }}
+                            />
+                            <Tab
                               label="Logs"
                               active={activeTab === 'logs'}
                               onChangeTab={(ev) => {
@@ -245,6 +254,7 @@ export function NamespacePage() {
                           {activeTab === 'memory' && <NamespacePageMemory />}
                           {activeTab === 'network' && <NamespacePageNetwork />}
                           {activeTab === 'storage' && <NamespacePageStorage />}
+                          {activeTab === 'cost' && <NamespacePageCost />}
                           {activeTab === 'logs' && (
                             <TabLogs page="namespace" resource="namespace" />
                           )}

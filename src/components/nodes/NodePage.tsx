@@ -22,6 +22,7 @@ import { prefixRoute } from '../../utils/utils.routing';
 import { getStyles } from '../../utils/utils.styles';
 import { PageOptions } from '../shared/PageOptions';
 import { TabLogs } from '../shared/TabLogs';
+import { NodePageCost } from './NodePageCost';
 import { NodePageCPU } from './NodePageCPU';
 import { NodePageMemory } from './NodePageMemory';
 import { NodePageNetwork } from './NodePageNetwork';
@@ -198,6 +199,14 @@ export function NodePage() {
                           }}
                         />
                         <Tab
+                          label="Cost"
+                          active={activeTab === 'cost'}
+                          onChangeTab={(ev) => {
+                            ev?.preventDefault();
+                            setActiveTab('cost');
+                          }}
+                        />
+                        <Tab
                           label="Logs"
                           active={activeTab === 'logs'}
                           onChangeTab={(ev) => {
@@ -211,6 +220,7 @@ export function NodePage() {
                       {activeTab === 'memory' && <NodePageMemory />}
                       {activeTab === 'network' && <NodePageNetwork />}
                       {activeTab === 'storage' && <NodePageStorage />}
+                      {activeTab === 'cost' && <NodePageCost />}
                       {activeTab === 'logs' && (
                         <TabLogs page="node" resource="node" />
                       )}
