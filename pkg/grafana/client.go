@@ -29,6 +29,16 @@ const (
 	defaultServiceAccountRole = "Viewer"
 )
 
+// cachedGroups is the value stored in the groups cache. It holds the resolved
+// groups of a user together with the time the entry expires. We store the
+// expiration time within the value, so we can use a shorter TTL for empty
+// results than for populated ones, which the underlying LRU cache doesn't
+// support on its own.
+type cachedGroups struct {
+	groups    []string
+	expiresAt time.Time
+}
+
 type Client interface {
 	GetUrl() *url.URL
 	GetImpersonateUser(ctx context.Context, headers http.Header) (string, error)
@@ -44,7 +54,7 @@ type client struct {
 	client               *goapi.GrafanaHTTPAPI
 	usersCache           *expirable.LRU[int64, string]
 	serviceAccountsCache *expirable.LRU[int64, string]
-	groupsCache          *expirable.LRU[string, []string]
+	groupsCache          *expirable.LRU[string, cachedGroups]
 }
 
 func NewClient(ctx context.Context, impersonateUser, impersonateGroups bool, username, password, serviceAccountRole string) (Client, error) {
@@ -73,11 +83,13 @@ func NewClient(ctx context.Context, impersonateUser, impersonateGroups bool, use
 	//	  account id. The cache can contain 1000 entries and each entry is valid
 	//	  for 24 hours, because this data shouldn't change often.
 	//	- The groups cache caches the groups of a user based on the user name.
-	//	  The cache can contain 100 entries which are valid for 1 hour, because
-	//	  the data can change more often.
-	usersCache := expirable.NewLRU[int64, string](100, nil, 60*time.Minute)
-	serviceAccountsCache := expirable.NewLRU[int64, string](100, nil, 60*time.Minute)
-	groupsCache := expirable.NewLRU[string, []string](100, nil, 60*time.Minute)
+	//	  The cache can contain 1000 entries. Populated entries are valid for
+	//	  60 minutes, while empty entries are only valid for 1 minute. The LRU
+	//	  TTL is set to the longer 60 minutes; the shorter TTL for empty entries
+	//	  is enforced via the expiration time stored in the value.
+	usersCache := expirable.NewLRU[int64, string](1000, nil, 60*time.Minute)
+	serviceAccountsCache := expirable.NewLRU[int64, string](1000, nil, 60*time.Minute)
+	groupsCache := expirable.NewLRU[string, cachedGroups](1000, nil, 60*time.Minute)
 
 	// The service account role used when creating new service accounts for
 	// users defaults to "Viewer" when no role is configured in the data
@@ -279,8 +291,12 @@ func (c *client) GetImpersonateGroups(ctx context.Context, headers http.Header) 
 		return nil, err
 	}
 
-	if val, ok := c.groupsCache.Get(user); ok {
-		return val, nil
+	// Return the groups from the cache if the entry is still valid. Empty
+	// entries expire earlier than populated ones, so a user whose group sync
+	// has not finished yet is retried soon instead of being stuck without
+	// groups for the full 60 minutes.
+	if val, ok := c.groupsCache.Get(user); ok && time.Now().Before(val.expiresAt) {
+		return val.groups, nil
 	}
 
 	getUserRes, err := c.client.Users.GetUserByLoginOrEmailWithParams(&users.GetUserByLoginOrEmailParams{
@@ -322,7 +338,11 @@ func (c *client) GetImpersonateGroups(ctx context.Context, headers http.Header) 
 		groups = append(groups, team.Name)
 	}
 
-	c.groupsCache.Add(user, groups)
+	ttl := 60 * time.Minute
+	if len(groups) == 0 {
+		ttl = 1 * time.Minute
+	}
+	c.groupsCache.Add(user, cachedGroups{groups: groups, expiresAt: time.Now().Add(ttl)})
 
 	return groups, nil
 }
