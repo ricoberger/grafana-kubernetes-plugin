@@ -1,7 +1,6 @@
 import { VariableHide, VariableRefresh } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import {
-  CustomVariable,
   DataSourceVariable,
   QueryVariable,
   RefreshPicker,
@@ -18,6 +17,7 @@ import resourcesImg from '../../img/logo.svg';
 import pluginJson from '../../plugin.json';
 import { prefixRoute } from '../../utils/utils.routing';
 import { getStyles } from '../../utils/utils.styles';
+import { TextBoxVariable } from '../shared/TextBoxVariable';
 import { SearchPagePods } from './SearchPagePods';
 import { SearchPageWorkloads } from './SearchPageWorkloads';
 
@@ -63,10 +63,9 @@ export function SearchPage() {
             refresh={VariableRefresh.onDashboardLoad}
             hide={VariableHide.hideVariable}
           >
-            <CustomVariable
+            <TextBoxVariable
               name="searchterm"
               label="Search Term"
-              query=".+"
               initialValue=".+"
             >
               <PluginPage
@@ -109,7 +108,7 @@ export function SearchPage() {
                   </div>
                 </Stack>
               </PluginPage>
-            </CustomVariable>
+            </TextBoxVariable>
           </QueryVariable>
         </QueryVariable>
       </DataSourceVariable>
