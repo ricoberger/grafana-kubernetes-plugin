@@ -117,6 +117,11 @@ export function Actions({ query, frame, rowIndex }: Props) {
                   url={`/explore?left=${encodeURIComponent(JSON.stringify({ datasource: datasource, queries: [{ queryType: 'kubernetes-logs', namespace: namespace, resourceId: resourceId, refId: 'A', name: name, container: '' }] }))}`}
                 />
               )}
+            <Menu.Item
+              label="Events"
+              target="_blank"
+              url={`/explore?left=${encodeURIComponent(JSON.stringify({ datasource: datasource, queries: [{ queryType: 'kubernetes-resources', namespace: namespace || '*', resourceId: 'event', refId: 'A', parameterName: 'fieldSelector', parameterValue: `involvedObject.name=${name}` }] }))}`}
+            />
             <Menu.Item label="Edit" onClick={() => setOpen('edit')} />
             <Menu.Item label="Delete" onClick={() => setOpen('delete')} />
           </Menu.Group>

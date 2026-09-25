@@ -208,7 +208,8 @@ By default the built-in logs datasource is used in the Kubernetes dashboards.
 You can also use another log datasource like VictoriaLogs to view the logs of
 Pods, Workloads, Namespaces and Nodes. An example configuration for VictoriaLogs
 is shown below. You can use the `${pod}`, `${namespace}` and `${node}` variables
-in the queries to filter the logs by the selected resource.
+in the queries to filter the logs by the selected resource. For Events you can
+also use the `${name}` variable to filter the logs by the name of the resource.
 
 ```json
 {
@@ -263,6 +264,20 @@ in the queries to filter the logs by the selected resource.
       {
         "refId": "A",
         "expr": "k8s.node.name:=\"${node}\" | sort by (_time) desc",
+        "queryType": "instant",
+        "maxLines": 1000
+      }
+    ]
+  },
+  "events": {
+    "datasource": {
+      "type": "victoriametrics-logs-datasource",
+      "uid": "victorialogs"
+    },
+    "queries": [
+      {
+        "refId": "A",
+        "expr": "service.name:=\"k8s_events\" AND k8s.namespace.name:=\"${namespace}\" AND k8s.object.name:=\"${name}\" | sort by (_time) desc",
         "queryType": "instant",
         "maxLines": 1000
       }
