@@ -26,7 +26,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Plugin
-        uses: grafana/plugin-actions/build-plugin@build-plugin/v1.2.0
+        uses: grafana/plugin-actions/build-plugin@build-plugin/v1.2.1
         env:
           SKIP_OSV_SCANNER: 'true'
         with:
