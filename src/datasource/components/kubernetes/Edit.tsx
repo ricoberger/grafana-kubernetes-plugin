@@ -11,7 +11,7 @@ import {
   useStyles2,
 } from '@grafana/ui';
 import { compare } from 'fast-json-patch';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useAsync } from 'react-use';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import YAML from 'yaml';
@@ -63,11 +63,18 @@ export function Edit({
     return manifest;
   }, [datasource, resourceId, namespace, name]);
 
-  useEffect(() => {
+  // Reset the editor value when a new manifest is loaded. This adjusts the
+  // state during rendering instead of in an effect, to avoid an additional
+  // render pass, see https://react.dev/learn/you-might-not-need-an-effect.
+  const [loadedManifest, setLoadedManifest] = useState<
+    KubernetesManifest | undefined
+  >(undefined);
+  if (state.value !== loadedManifest) {
+    setLoadedManifest(state.value);
     if (state.value) {
       setValue(YAML.stringify(state.value));
     }
-  }, [state.value]);
+  }
 
   const onSave = async () => {
     try {
