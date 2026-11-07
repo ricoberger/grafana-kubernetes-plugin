@@ -9,8 +9,10 @@ import '@testing-library/jest-dom';
 import 'jest-canvas-mock';
 import 'intersection-observer';
 import { TextEncoder, TextDecoder } from 'util';
+import { MessageChannel, MessagePort } from 'worker_threads';
 
-Object.assign(global, { TextDecoder, TextEncoder });
+// React 19's scheduler relies on MessageChannel, which jsdom does not implement.
+Object.assign(global, { TextDecoder, TextEncoder, MessageChannel, MessagePort });
 
 // https://jestjs.io/docs/manual-mocks#mocking-methods-which-are-not-implemented-in-jsdom
 Object.defineProperty(global, 'matchMedia', {
