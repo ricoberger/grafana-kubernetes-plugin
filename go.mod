@@ -1,6 +1,6 @@
 module github.com/ricoberger/grafana-kubernetes-plugin
 
-go 1.26.6
+go 1.27.3
 
 require (
 	github.com/alecthomas/kong v1.16.1

@@ -28,10 +28,10 @@ jobs:
       - name: Build Plugin
         uses: grafana/plugin-actions/build-plugin@build-plugin/v1.2.1
         env:
-          SKIP_OSV_SCANNER: 'true'
+          SKIP_OSV_SCANNER: true
         with:
-          go-version: 1.26.6
-          node-version: 22
+          go-version: 1.27.3
+          node-version: 24
           attestation: true
           use_changelog_generator: true
           token: ${{ secrets.GITHUB_TOKEN }}

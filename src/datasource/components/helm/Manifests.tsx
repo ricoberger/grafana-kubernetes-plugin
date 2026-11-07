@@ -32,12 +32,13 @@ export function Manifests({ namespace, release }: Props) {
   });
 
   const [selectedTemplate, setSelectedTemplate] = useState(0);
+  const releaseManifest = release?.manifest;
   const { manifests } = useMemo(() => {
     const parsedManifests: KubernetesManifest[] = [];
 
     try {
-      if (release?.manifest) {
-        const documents = YAML.parseAllDocuments(release?.manifest);
+      if (releaseManifest) {
+        const documents = YAML.parseAllDocuments(releaseManifest);
         for (const document of documents) {
           const jsonDocument = document.toJSON() as KubernetesManifest;
           parsedManifests.push(jsonDocument);
@@ -46,7 +47,7 @@ export function Manifests({ namespace, release }: Props) {
     } catch (_) { }
 
     return { manifests: parsedManifests };
-  }, [release?.manifest]);
+  }, [releaseManifest]);
 
   return (
     <Stack
