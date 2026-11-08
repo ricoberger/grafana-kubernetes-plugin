@@ -1,5 +1,22 @@
 # Changelog
 
+## [v0.7.0](https://github.com/ricoberger/grafana-kubernetes-plugin/tree/v0.7.0) (2026-11-08)
+
+[Full Changelog](https://github.com/ricoberger/grafana-kubernetes-plugin/compare/v0.6.0...v0.7.0)
+
+- feat\(events\): add details and link involved object [\#234](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/234) ([ricoberger](https://github.com/ricoberger))
+- chore: dependency updates [\#233](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/233) ([ricoberger](https://github.com/ricoberger))
+- chore: bump @grafana/create-plugin configuration to 7.17.0 [\#230](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/230) ([ricoberger](https://github.com/ricoberger))
+- chore: bump @grafana/create-plugin configuration to 7.11.0 [\#228](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/228) ([ricoberger](https://github.com/ricoberger))
+- feat\(events\): show events from logs [\#227](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/227) ([ricoberger](https://github.com/ricoberger))
+- feat\(search\): use free-text input for search term variable [\#226](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/226) ([ricoberger](https://github.com/ricoberger))
+- feat\(costs\): add resource cost tabs and hourly trends [\#225](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/225) ([ricoberger](https://github.com/ricoberger))
+- feat\(home\): add namespaces section to overview [\#224](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/224) ([ricoberger](https://github.com/ricoberger))
+- fix\(grafana\): shorten cache TTL for empty impersonate groups [\#223](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/223) ([ricoberger](https://github.com/ricoberger))
+- fix\(metrics\): correct resource accounting and historical queries [\#222](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/222) ([ricoberger](https://github.com/ricoberger))
+- chore: update dependencies [\#215](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/215) ([ricoberger](https://github.com/ricoberger))
+- chore: bump @grafana/create-plugin configuration to 7.9.1 [\#209](https://github.com/ricoberger/grafana-kubernetes-plugin/pull/209) ([ricoberger](https://github.com/ricoberger))
+
 ## [v0.6.0](https://github.com/ricoberger/grafana-kubernetes-plugin/tree/v0.6.0) (2026-07-12)
 
 [Full Changelog](https://github.com/ricoberger/grafana-kubernetes-plugin/compare/v0.5.1...v0.6.0)
