@@ -1,5 +1,6 @@
 import { ScrollContainer } from '@grafana/ui';
 import {
+  CoreV1Event,
   V1CronJob,
   V1DaemonSet,
   V1Deployment,
@@ -16,6 +17,7 @@ import { Metadata } from '../shared/details/Metadata';
 import { CronJob } from './overview/CronJob';
 import { DaemonSet } from './overview/DaemonSet';
 import { Deployment } from './overview/Deployment';
+import { Event } from './overview/Event';
 import { Job } from './overview/Job';
 import { Pod } from './overview/Pod';
 import { StatefulSet } from './overview/StatefulSet';
@@ -46,9 +48,9 @@ export function Overview({
         />
 
         {manifest &&
-          manifest.status &&
-          manifest.status.conditions &&
-          Array.isArray(manifest.status.conditions) ? (
+        manifest.status &&
+        manifest.status.conditions &&
+        Array.isArray(manifest.status.conditions) ? (
           <Conditions conditions={manifest.status.conditions} />
         ) : null}
 
@@ -84,6 +86,12 @@ export function Overview({
             datasource={datasource}
             namespace={namespace}
             manifest={manifest as V1StatefulSet}
+          />
+        )}
+        {manifest && resourceId === 'event' && (
+          <Event
+            datasource={datasource}
+            manifest={manifest as any as CoreV1Event}
           />
         )}
       </DefinitionLists>
